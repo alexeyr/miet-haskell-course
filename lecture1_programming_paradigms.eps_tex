@@ -1,0 +1,131 @@
+%% Creator: Inkscape inkscape 0.92.2, www.inkscape.org
+%% PDF/EPS/PS + LaTeX output extension by Johan Engelen, 2010
+%% Accompanies image file 'lecture1_programming_paradigms.eps' (pdf, eps, ps)
+%%
+%% To include the image in your LaTeX document, write
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics{<filename>.pdf}
+%% To scale the image, write
+%%   \def\svgwidth{<desired width>}
+%%   \input{<filename>.pdf_tex}
+%%  instead of
+%%   \includegraphics[width=<desired width>]{<filename>.pdf}
+%%
+%% Images with a different path to the parent latex file can
+%% be accessed with the `import' package (which may need to be
+%% installed) using
+%%   \usepackage{import}
+%% in the preamble, and then including the image with
+%%   \import{<path to file>}{<filename>.pdf_tex}
+%% Alternatively, one can specify
+%%   \graphicspath{{<path to file>/}}
+%% 
+%% For more information, please see info/svg-inkscape on CTAN:
+%%   http://tug.ctan.org/tex-archive/info/svg-inkscape
+%%
+\begingroup%
+  \makeatletter%
+  \providecommand\color[2][]{%
+    \errmessage{(Inkscape) Color is used for the text in Inkscape, but the package 'color.sty' is not loaded}%
+    \renewcommand\color[2][]{}%
+  }%
+  \providecommand\transparent[1]{%
+    \errmessage{(Inkscape) Transparency is used (non-zero) for the text in Inkscape, but the package 'transparent.sty' is not loaded}%
+    \renewcommand\transparent[1]{}%
+  }%
+  \providecommand\rotatebox[2]{#2}%
+  \ifx\svgwidth\undefined%
+    \setlength{\unitlength}{2150.99414063bp}%
+    \ifx\svgscale\undefined%
+      \relax%
+    \else%
+      \setlength{\unitlength}{\unitlength * \real{\svgscale}}%
+    \fi%
+  \else%
+    \setlength{\unitlength}{\svgwidth}%
+  \fi%
+  \global\let\svgwidth\undefined%
+  \global\let\svgscale\undefined%
+  \makeatother%
+  \begin{picture}(1,0.86843364)%
+    \put(0,0){\includegraphics[width=\unitlength]{lecture1_programming_paradigms.eps}}%
+    \put(0.62354661,0.33691851){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\textsl{Shared state}}}}%
+    \put(0.12936015,0.43575579){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Deterministic\\ logic programming}}}%
+    \put(0.12936015,0.37645341){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Relational & logic\\ programming}}}%
+    \put(0.12936015,0.31715104){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Constraint (logic)\\ programming}}}%
+    \put(0.12825011,0.25784867){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Concurrent \\ constraint\\ programming}}}%
+    \put(0.12918581,0.17895317){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Lazy concurrent\\ constraint\\ programming}}}%
+    \put(0.12825011,0.14418581){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\textsl{Logic and }\textsl{\\ }\textsl{constraints}}}}%
+    \put(0.32703476,0.67296528){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Descriptive\\ declarative\\ programming}}}%
+    \put(0.32703476,0.59389545){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{First-order\\ functional \\ programming}}}%
+    \put(0.32703472,0.51482563){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Functional\\ programming}}}%
+    \put(0.32703472,0.44563952){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Continuation\\ programming}}}%
+    \put(0.42587202,0.43081395){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Monotonic\\ dataflow\\ programming}}}%
+    \put(0.42587202,0.39622089){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Declarative\\ concurrent\\ programming}}}%
+    \put(0.32738344,0.33197667){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Lazy\\ dataflow\\ programming}}}%
+    \put(0.52488365,0.43558146){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Abstract data type\\ functional\\ programming}}}%
+    \put(0.52470931,0.26773238){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Nonmonotonic\\ dataflow\\ programming}}}%
+    \put(0.52470931,0.23313934){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Concurrent logic\\ programming}}}%
+    \put(0.52470931,0.14877896){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Functional reactive\\ programming}}}%
+    \put(0.52470931,0.12406971){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Weak synchronous\\ programming}}}%
+    \put(0.52453498,0.05505796){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Strong synchronous\\ programming}}}%
+    \put(0.62372095,0.37133722){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Abstract data type\\ imperative\\ programming}}}%
+    \put(0.62354661,0.29244174){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Multi-agent\\ dataflow\\ programming}}}%
+    \put(0.62354661,0.25784871){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\textsl{Dataflow and}\textsl{\\ }\textsl{message passing}}}}%
+    \put(0.72255821,0.34662791){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Event-loop\\ programming}}}%
+    \put(0.72255821,0.2774418){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Multi-agent\\ programming}}}%
+    \put(0.72255821,0.25273252){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Message-passing\\ concurrent\\ programming}}}%
+    \put(0.72255821,0.18354635){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Active object\\ programming}}}%
+    \put(0.72255821,0.15883705){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Object-capacity\\ programming}}}%
+    \put(0.72255821,0.13412775){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\textsl{Dataflow and }\textsl{\\ }\textsl{Message passing}}}}%
+    \put(0.9202328,0.11436026){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\textsl{Shared state}}}}%
+    \put(0.9202328,0.14895333){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Software\\ transactional\\ memory (STM)}}}%
+    \put(0.9202328,0.25273249){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Concurrent\\ object-oriented\\ programming}}}%
+    \put(0.9202328,0.21813944){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Shared-state\\ concurrent\\ programming}}}%
+    \put(0.9202328,0.35651163){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Sequential\\ object-oriented\\ programming}}}%
+    \put(0.9202328,0.32191859){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Stateful\\ functional\\ programming}}}%
+    \put(0.92040714,0.44529085){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Imperative\\ programming}}}%
+    \put(0.82633741,0.35651163){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Imperative\\ search\\ programming}}}%
+    \put(0.22542233,0.74709328){\color[rgb]{1,0.4,0}\makebox(0,0)[b]{\smash{Unnamed state \\ (sequencial or concurrent)}}}%
+    \put(0.77180256,0.74709328){\color[rgb]{1,0.4,0}\makebox(0,0)[b]{\smash{Named \\ state}}}%
+    \put(0.89742849,0.80259839){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{More Imperative\\ Paradigms}}}%
+    \put(0.17838723,0.80506934){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{More declarative\\ Paradigms}}}%
+    \put(0.22819746,0.43575579){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Lazy\\ functional\\ programming}}}%
+    \put(0.32703476,0.29738362){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{Lazy\\ declarative\\ concurrent\\ programming}}}%
+    \put(0.32703476,0.25290677){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\textsl{Functional}}}}%
+    \put(0.32703476,0.68779086){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{record}}}%
+    \put(0.32703476,0.60872105){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{procedure}}}%
+    \put(0.32703472,0.52965122){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{closure}}}%
+    \put(0.52453498,0.07976726){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{instantaneous\\ computation}}}%
+    \put(0.52342493,0.17366264){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{synchronisation on \\ partial termination}}}%
+    \put(0.52470931,0.29244171){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{nondeterministic\\ choice}}}%
+    \put(0.52488365,0.46029079){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{name (unforgetable\\ constant)}}}%
+    \put(0.72255821,0.36145349){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{port (channel)}}}%
+    \put(0.72255821,0.2922674){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{thread}}}%
+    \put(0.72255821,0.19837198){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{local cell}}}%
+    \put(0.9202328,0.37133722){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{closure}}}%
+    \put(0.9202328,0.26755808){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{thread}}}%
+    \put(0.9202328,0.16377891){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{log}}}%
+    \put(0.82774812,0.37098084){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{search}}}%
+    \put(0.92040714,0.46011645){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{cell (state)}}}%
+    \put(0.32703476,0.46046512){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{continuation}}}%
+    \put(0.42587206,0.4604651){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{thread}}}%
+    \put(0.42587206,0.44563952){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{single assignment}}}%
+    \put(0.22819748,0.46046511){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{by-need\\ synchronization}}}%
+    \put(0.12936018,0.46046512){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{unification\\ (equality)}}}%
+    \put(0.12936016,0.39127902){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{search}}}%
+    \put(0.12936015,0.33197664){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{solver}}}%
+    \put(0.12936015,0.27267425){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{thread}}}%
+    \put(0.12825011,0.20348816){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{by-need \\ synchronisation}}}%
+    \put(0.52454915,0.20852878){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\textsl{nondetermined State}}}}%
+    \put(0.03052289,0.77180258){\color[rgb]{0.50196078,0.50196078,0}\rotatebox{90}{\makebox(0,0)[b]{\smash{Markup languages\\ (only Datastructures)}}}}%
+    \put(0.03052289,0.42309696){\color[rgb]{0.50196078,0.50196078,0}\rotatebox{90}{\makebox(0,0)[b]{\smash{Turing complete \\ Languages}}}}%
+    \put(0.47529067,0.74709328){\color[rgb]{1,0.4,0}\makebox(0,0)[b]{\smash{Undeterministic \\ state}}}%
+    \put(0.81516931,0.20843003){\color[rgb]{0,0,0}\makebox(0,0)[b]{\smash{\textsl{Observable }\textsl{\\ }\textsl{Nondeterminism}}}}%
+    \put(0.08790662,0.88651194){\color[rgb]{0,0,0}\makebox(0,0)[lt]{\begin{minipage}{0.18186061\unitlength}\raggedright \end{minipage}}}%
+    \put(0.03255774,0.01937945){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{}}}%
+    \put(0.0351934,0.01937945){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{}}}%
+    \put(0.00883679,0.01937945){\color[rgb]{0,0,0}\makebox(0,0)[lb]{\smash{Peter Van Roy, "Programming Paradigms for Dummies: What Every Programmer Should Know" (2009)}}}%
+  \end{picture}%
+\endgroup%
