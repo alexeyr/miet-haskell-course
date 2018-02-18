@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage{epstopdf}
 \usepackage{hyperref}
+\hypersetup{unicode,colorlinks}
 \usepackage{csquotes}
 \usepackage{upquote}
 \usepackage{cprotect}
@@ -104,18 +105,19 @@
     {Я}{{\selectfont\char223}}1
 }
 
+\author{Алексей Романов}
+\title{Функциональное программирование на Haskell}
+\subtitle{Лекция 1: введение}
+%\logo{}
+\institute{МИЭТ}
+\date{14 февраля 2018}
+\subject{Функциональное программирование на Haskell}
+%\setbeamercovered{transparent}
+%\setbeamertemplate{navigation symbols}{}
+
 \begin{document}
-	\author{Алексей Романов}
-	\title{Функциональное программирование на Haskell}
-	\subtitle{Лекция 1: введение}
-	%\logo{}
-	\institute{МИЭТ}
-	\date{14 февраля 2018}
-	\subject{Функциональное программирование на Haskell}
-	%\setbeamercovered{transparent}
-	%\setbeamertemplate{navigation symbols}{}
-	\begin{frame}[plain]
-	\maketitle
+\begin{frame}[plain]
+\maketitle
 \end{frame}
 
 \begin{frame}
@@ -129,11 +131,14 @@
 
 \begin{frame}
 \frametitle{Парадигмы программирования}
-Что такое парадигма? \\
+\begin{itemize}
+\item Что такое парадигма?
 \pause
-\hspace*{20pt} Совокупность идей и понятий, определяющих стиль написания компьютерных программ. \\
+\begin{quote}
+\enquote{Совокупность идей и понятий, определяющих стиль написания компьютерных программ.} (Wikipedia)
+\end{quote}
 \pause
-Основные парадигмы: \\
+\item Основные парадигмы:
 \pause
 \begin{itemize}
     \item Структурное программирование
@@ -143,9 +148,10 @@
     \item Объектно-ориентированное программирование
 \end{itemize}
 \pause
-В парадигме важно не только то, что используется, но то, использование чего не допускается или минимизируется.
+\item В парадигме важно не только то, что используется, но то, использование чего не допускается или минимизируется.
 \pause
-Например, \lstinline!goto! в структурном программировании, глобальные переменные в ООП.
+\item Например, \lstinline!goto! в структурном программировании, глобальные переменные в ООП.
+\end{itemize}
 \end{frame}
 
 \begin{frame}
@@ -213,9 +219,9 @@
 \begin{itemize}
     \item Установите Haskell Platform (\url{https://www.haskell.org/platform/})
     \item Запустите WinGHCi (или просто GHCi)
-    \item Это оболочка или REPL (Read-Eval-Print loop) для Haskell
+    \item Это оболочка или REPL (Read-Eval-Print loop)
     \begin{itemize}
-        \item Read: Вы вводите выражения (и команды GHCi)
+        \item Read: Вы вводите выражения Haskell (и команды GHCi)
         \item Eval: GHCi вычисляет результат
         \item Print: и выводит его на экран
     \end{itemize}
@@ -238,7 +244,7 @@ True :: Bool
     \item \lstinline|Bool|: тип
     \pause
     \item Значение: \enquote{вычисленное до конца} выражение
-    \item Тип (статический): множество значений и выражений, построенное по определённым законам таким образом, что компилятор может определить типы и проверить отсутствие ошибок в них без запуска программы.
+    \item Тип (статический): множество значений и выражений, построенное по таким правилам, что компилятор может определить типы и проверить отсутствие ошибок в них без запуска программы.
     \item От типа зависит то, какие операции допустимы:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
 Prelude> True + False
@@ -248,6 +254,7 @@ No instance for (Num Bool) arising from a use of '+'
 In the expression: True + False
 In an equation for 'it': it = True + False
 \end{lstlisting}
+\item Это ошибка компиляции, не выполнения.
 \end{itemize}
 \end{frame}
 
@@ -549,7 +556,7 @@ case foo x of
 \begin{frame}[fragile]
 \frametitle{Многоветвенные \lstinline[basicstyle=\ttfamily]|if|}
 \begin{itemize}
-    \item Цепочка \lstinline|if ... then ... else if ...|, соблюдающая правила отступа, всё время уходила бы направо:
+    \item Цепочка \lstinline|if ... else if ...|, оформленная по правилам отступа, напоминает лестницу:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
 if условие1
     then результат1
@@ -557,13 +564,13 @@ if условие1
         then результат2
         else результат3
 \end{lstlisting}
-    Вместо этого можно включить расширение \lstinline|MultiWayIf| \cprotect\footnote{Например, прагмой \lstinline|{-# LANGUAGE -XMultiWayIf #-}| в начале файла} и писать
+    \item С расширением \lstinline|MultiWayIf| \cprotect\footnote{Его можно включить прагмой \lstinline|{-# LANGUAGE -XMultiWayIf #-}| в начале файла} можем написать:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
 if | условие1 -> результат1
    | условие2 -> результат2
    | otherwise -> результат3
 \end{lstlisting}
-\item Это можно сделать и с \lstinline|case| без расширений: как? \pause \begin{lstlisting}[basicstyle=\ttfamily\small]
+\item Это можно сделать и с \lstinline|case| без расширений: \only<1>{как?} \pause \begin{lstlisting}[basicstyle=\ttfamily\small]
 case () of _ | условие1 -> ...
 \end{lstlisting}
 \end{itemize}
@@ -583,12 +590,12 @@ not x = case x of
 not True = False
 not False = True
 \end{lstlisting}
-\item Это работает и с охранными условиями (без повторения названия функции):
+\item Это работает и с охранными условиями:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
 not x | x = False
       | otherwise = True
 \end{lstlisting}
-\item и в случае нескольких параметров:
+\item и для нескольких параметров:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
 nand True True = False
 nand _    _ = True
@@ -671,7 +678,7 @@ import Модуль
 \begin{itemize}
     \item В GHCi можно скомпилировать и загрузить модуль (вместе с зависимостями) командой \lstinline|:load Модуль|. Подробности в документации:
     \begin{itemize}
-        \item \hyperlink{http://downloads.haskell.org/~ghc/latest/docs/html/users\_guide/ghci.html\#ghci-load-scope}{The effect of :load on what is in scope}
+        \item \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-load-scope}{The effect of :load on what is in scope}
     \end{itemize}
     \item Под Windows можно просто дважды щёлкнуть на файл или нажать Enter в Проводнике.
     \item Потом при изменениях файла повторить \lstinline|:load| или сделать \lstinline|:reload|.
