@@ -1,4 +1,4 @@
-\documentclass[12pt]{beamer}
+\documentclass[11pt]{beamer}
 \usepackage[utf8]{inputenc}
 \usepackage[T1,T2A]{fontenc}
 \usepackage[russian]{babel}
@@ -13,12 +13,12 @@
 \usepackage{cprotect}
 %\usetheme{hohenheim}
 \usetheme{Singapore} % Copenhagen, metropolis
-%\usepackage[mono,varqu]{zi4}
-\usepackage[defaultsans]{droidsans}
-\usepackage[defaultmono]{droidmono}
-\makeatletter
-\input droid/t1fdm.fd
-\makeatother
+\usepackage{dejavu}
+%\usepackage[defaultsans]{droidsans}
+%\usepackage[defaultmono]{droidmono}
+%\makeatletter
+%\input droid/t1fdm.fd
+%\makeatother
 \lstset{
     language=Haskell,
     inputencoding=utf8,
@@ -27,7 +27,12 @@
     escapeinside=!!,
     tabsize=4,
     breakatwhitespace=true,
-    keepspaces=true
+    keepspaces=true,
+    % upquote=true,
+    basicstyle=\ttfamily,
+    commentstyle=\color{green},
+    keywordstyle=
+    % keywordstyle=\color{blue} % TODO https://tex.stackexchange.com/questions/415777/avoid-highlighting-keywords-following-certain-words-in-listings
 }
 \lstset{
     literate={а}{{\selectfont\char224}}1
@@ -96,11 +101,6 @@
     {Э}{{\selectfont\char221}}1
     {Ю}{{\selectfont\char222}}1
     {Я}{{\selectfont\char223}}1
-}
-\lstset{
-    basicstyle=\ttfamily\footnotesize,
-    commentstyle=\color{green}\itshape,
-    % keywordstyle=\color{blue} % TODO https://tex.stackexchange.com/questions/415777/avoid-highlighting-keywords-following-certain-words-in-listings
 }
 
 \begin{document}
@@ -677,7 +677,7 @@ import Модуль
     \end{itemize}
     \item Под Windows можно просто дважды щёлкнуть на файл или нажать Enter в Проводнике.
     \item Потом при изменениях файла повторить \lstinline|:load| или сделать \lstinline|:reload|.
-    \item Многие редакторы позволяют автоматизировать процесс.
+    \item Многие редакторы позволяют это автоматизировать.
 \end{itemize}
 \end{frame}
 
