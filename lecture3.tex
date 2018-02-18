@@ -1,0 +1,171 @@
+\documentclass[10pt]{beamer}
+\input{lecture_preamble.tex}
+
+\title{Лекция 3: типы данных}
+\date{21 февраля 2018}
+
+\begin{document}
+\begin{frame}[plain]
+\maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Типы-\enquote{перечисления}}
+\begin{itemize}
+    \item Тип \lstinline|Bool| не встроен в язык, а определён в стандартной библиотеке:
+\begin{lstlisting}
+data Bool = False | True deriving (...)
+\end{lstlisting}
+    \item Ключевое слово \lstinline|data| начинает определение.
+    \item \lstinline|Bool| "--- название типа.
+    \item \lstinline|False| и \lstinline|True| называются конструкторами данных.
+    \item Читаем как \enquote{У типа \lstinline|Bool| есть ровно два значения: \lstinline|False| и \lstinline|True|.} 
+    \only<1> { \item О \lstinline|deriving| позже. }
+    \pause
+    \item Так определяется любой тип с фиксированным перечнем значений (как \lstinline|enum| в других языках):
+\begin{lstlisting}
+data Weekday = Monday | Tuesday | ...
+data FileMode = Read | Write | Append | ...
+\end{lstlisting}
+    \item Какие образцы у этих типов (кроме переменных и \lstinline|_|)? \pause
+    \item Каждое значение (конструктор) "--- образец.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Типы-\enquote{структуры}}
+\begin{itemize}
+    \item \lstinline|data| также используется для аналогов структур: типов с несколькими полями. Например,
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+data Point = Point Double Double
+\end{lstlisting}
+    \item Первое \lstinline|Point| "--- название типа.
+    \item Второе "--- конструктора.
+    \item Когда конструктор один, названия обычно совпадают. Всегда по контексту можно определить, что из них имеется в виду.
+    \item Образцы этого типа \pause это\\
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+Point образец_Double образец_Double
+\end{lstlisting}
+    \item Зададим значение типа \lstinline|Point| и функцию на них:
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+Prelude> let origin = Point 0 0
+
+Prelude> let xCoord (Point x _) = x
+Prelude> xCoord origin
+0.0
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Типы-\enquote{структуры}}
+\begin{itemize}
+    \item Конструктор является функцией
+\begin{lstlisting}
+Prelude> :t Point !\pause!
+Point :: Double -> Double -> Point
+\end{lstlisting}
+    \item Мы можем дать полям конструктора имена. Это:\hypertarget{rec1}{}
+    \begin{itemize}
+        \item Документирует их смысл.
+        \item Определяет функции, возвращающие их значения.
+    \end{itemize}
+\begin{lstlisting}
+Prelude> data Point = Point { xCoord :: Double, yCoord :: Double } deriving Show
+Prelude> :t yCoord
+yCoord2 :: Point -> Double
+Prelude> yCoord (Point 0 (-1))
+-1.0
+\end{lstlisting}
+\item Особенно полезно, когда полей много, и только по типу не понять, какое где.
+\item Если успеем, вернёмся к записям в конце лекции. \hyperlink{rec2}{\beamergotobutton{Синтаксис записей}}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Алгебраические типы: общий случай}
+\begin{itemize}
+    \item Может быть несколько конструкторов с полями:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+data IpAddress = IPv4 String | IPv6 String
+\end{lstlisting}
+\item Читаем \enquote{У типа \lstinline|IpAddress| есть два \emph{вида} значений: \lstinline|IPv4| и \lstinline|IPv6|.} Создание значения:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+Prelude> let googleDns = IPv4 "8.8.8.8"
+\end{lstlisting}
+\item Образцы: \lstinline|IPv4 образец_String| и \lstinline|IPv6 образец_String|.
+\item Пример функции:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+isLocalhost (IPv4 "127.0.0.1") = True
+isLocalhost (IPv6 "0:0:0:0:0:0:0:1") = True
+isLocalhost _ = False
+\end{lstlisting}
+\pause
+\item Ещё пример типа:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+data ImageFormat = JPG | PNG | Other String
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Типы с параметрами (полиморфные)}
+\begin{itemize}
+    \item Несколько полей одного конструктора соответствуют операции декартова произведения в теории множеств.
+    \only<3->{\item В логике конъюнкции, а в алгебре произведению.}
+    \item А несколько конструкторов\only<1>{?}\pause\ \enquote{помеченному объединению}.
+    \only<3->{\item В логике дизъюнкции, а в алгебре сумме.}
+    \item Сравните помеченное объединение с непомеченным \lstinline|union| в C/C++.
+    \item И с \lstinline|boost::variant| (\lstinline|std::variant| в C++17).
+    \only<3->{\item Тип функций "--- импликация в логике и возведение в степень в алгебре}
+    % TODO переделать в таблицу
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Алгебраические типы}
+\begin{itemize}
+    \item Несколько полей одного конструктора соответствуют операции декартова произведения в теории множеств.
+    \only<3->{\item В логике конъюнкции, а в алгебре произведению.}
+    \item А несколько конструкторов\only<1>{?}\pause\ \enquote{помеченному объединению}.
+    \only<3->{\item В логике дизъюнкции, а в алгебре сумме.}
+    \item Сравните помеченное объединение с непомеченным \lstinline|union| в C/C++.
+    \item И с \lstinline|boost::variant| (\lstinline|std::variant| в C++17).
+    \only<3->{\item Тип функций "--- импликация в логике и возведение в степень в алгебре}
+    % TODO переделать в таблицу
+\end{itemize}
+\end{frame}
+
+
+
+%\begin{frame}[fragile]
+%\frametitle{Алгебраические типы}
+%\begin{itemize}
+%    \item Почему эти типы называются алгебраическими? \pause
+%    \item Несколько полей одного конструктора соответствуют операции (декартова) произведения. \pause
+%    \item Несколько конструкторов типа "--- сумме.
+%\end{itemize}
+%\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Записи}\hypertarget{rec2}{}
+\hyperlink{rec1}{\beamerreturnbutton{К определению записей}}
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+Prelude> let aPoint = Point 0 (-1)
+Prelude> aPoint { xCoord = 1 } !\pause!
+Point {xCoord = 1.0, yCoord = -1.0}
+Prelude> let Point {xCoord = x'} = it
+Prelude> x' !\pause!
+1.0 !\pause!
+Prelude> :set -XNamedFieldPuns -XRecordWildCards
+Prelude> let f (Point { xCoord, yCoord }) = xCoord + yCoord
+Prelude> let g (Point { .. }) = x + y
+\end{lstlisting}
+Оба последних образца "--- сокращения\\ \lstinline[basicstyle=\ttfamily\small]|Point { xCoord = xCoord, yCoord = yCoord }|.
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+Prelude> Point { xCoord = 0 } !\pause!
+\end{lstlisting}
+Это компилируется только с предупреждением.
+\end{frame}
+
+\end{document}
