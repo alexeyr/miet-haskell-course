@@ -1,4 +1,4 @@
-\documentclass[11pt]{beamer}
+\documentclass[10pt]{beamer}
 \usepackage[utf8]{inputenc}
 \usepackage[T1,T2A]{fontenc}
 \usepackage[russian]{babel}
@@ -12,7 +12,8 @@
 \usepackage{upquote}
 \usepackage{cprotect}
 %\usetheme{hohenheim}
-\usetheme{Singapore} % Copenhagen, metropolis
+%\usetheme{Singapore} % Copenhagen, metropolis
+\usetheme[progressbar=foot,numbering=fraction,block=fill]{metropolis}
 \usepackage{dejavu}
 %\usepackage[defaultsans]{droidsans}
 %\usepackage[defaultmono]{droidmono}
@@ -229,8 +230,6 @@ True :: Bool
 \end{itemize}
 \end{frame}
 
-\begingroup
-\footnotesize
 \begin{frame}[fragile]
 \frametitle{Язык Haskell: начало}
 \begin{itemize}
@@ -241,7 +240,7 @@ True :: Bool
     \item Значение: \enquote{вычисленное до конца} выражение
     \item Тип (статический): множество значений и выражений, построенное по определённым законам таким образом, что компилятор может определить типы и проверить отсутствие ошибок в них без запуска программы.
     \item От типа зависит то, какие операции допустимы:
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 Prelude> True + False
 
 <interactive>:12:1: error:
@@ -251,7 +250,6 @@ In an equation for 'it': it = True + False
 \end{lstlisting}
 \end{itemize}
 \end{frame}
-\endgroup
 
 \begin{frame}[fragile]
 \frametitle{Вызов функций}
@@ -298,9 +296,9 @@ Prelude> square 2
     \item \lstinline|Bool|: логические значения \lstinline|True| и \lstinline|False|.
     \item Целые числа:
     \begin{itemize}
-        \item \footnotesize \lstinline|Integer|: неограниченные (кроме размера памяти);
-        \item \footnotesize \lstinline|Int|: машинные\footnote{по cтандарту минимум 30 бит, но в GHC именно 32 или 64 бита}, \lstinline|Word|: машинные без знака;
-        \item \footnotesize \lstinline|Data.{Int.Int/Word.Word}{8/16/32/64}|: фиксированного размера в битах, со знаком и без.
+        \item \lstinline|Integer|: неограниченные (кроме размера памяти);
+        \item \lstinline|Int|: машинные\footnote{по cтандарту минимум 30 бит, но в GHC именно 32 или 64 бита}, \lstinline|Word|: машинные без знака;
+        \item \lstinline|Data.{Int.Int/Word.Word}{8/16/32/64}|: фиксированного размера в битах, со знаком и без.
     \end{itemize}
     \item \lstinline|Float| и \lstinline|Double|: 32- и 64-битные числа с плавающей точкой, по стандарту IEEE-754.
     \item \lstinline|Character|: символы Unicode.
@@ -532,7 +530,7 @@ case условие of
 \frametitle{Охраняющие условия}
 \begin{itemize}
     \item У каждого образца могут быть дополнительные условия (зависящие от его переменных): 
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily]
 образец
     | условие1 -> выражение1 
     | условие2 -> выражение2
@@ -540,7 +538,7 @@ case условие of
 При удачном сопоставлении они проверяются по порядку. Если все оказались ложны, сопоставление переходит к следующему образцу.
 \item Последнее условие часто \lstinline|otherwise| (синоним \lstinline|True|), тогда хотя бы одно условие точно истинно.
 \item Чтобы сравнить переменную в образце с внешней, нужно использовать \lstinline|==| в условии:
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily]
 case foo x of
     y | y == x -> ... -- не то же, что x -> ...
     _ -> ...
@@ -552,7 +550,7 @@ case foo x of
 \frametitle{Многоветвенные \lstinline[basicstyle=\ttfamily]|if|}
 \begin{itemize}
     \item Цепочка \lstinline|if ... then ... else if ...|, соблюдающая правила отступа, всё время уходила бы направо:
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 if условие1
     then результат1
     else if условие2
@@ -560,12 +558,12 @@ if условие1
         else результат3
 \end{lstlisting}
     Вместо этого можно включить расширение \lstinline|MultiWayIf| \cprotect\footnote{Например, прагмой \lstinline|{-# LANGUAGE -XMultiWayIf #-}| в начале файла} и писать
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 if | условие1 -> результат1
    | условие2 -> результат2
    | otherwise -> результат3
 \end{lstlisting}
-\item Это можно сделать и с \lstinline|case| без расширений: как? \pause \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\item Это можно сделать и с \lstinline|case| без расширений: как? \pause \begin{lstlisting}[basicstyle=\ttfamily\small]
 case () of _ | условие1 -> ...
 \end{lstlisting}
 \end{itemize}
@@ -575,23 +573,23 @@ case () of _ | условие1 -> ...
 \frametitle{Определение функций по случаям}
 \begin{itemize}
     \item Часто тело функции -- \lstinline|case| по аргументу, например.
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 not x = case x of
     True -> False
     False -> True
 \end{lstlisting}
 \item Такие функции можно записать несколькими равенствами, по одному на ветвь \lstinline|case|:
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 not True = False
 not False = True
 \end{lstlisting}
 \item Это работает и с охранными условиями (без повторения названия функции):
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 not x | x = False
       | otherwise = True
 \end{lstlisting}
 \item и в случае нескольких параметров:
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 nand True True = False
 nand _    _ = True
 \end{lstlisting}
