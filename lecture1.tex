@@ -169,7 +169,7 @@
     \end{itemize}
     \item Выражения лучше инструкций.
     \begin{itemize}
-        \item Аналоги \lstinline|if|, \lstinline|try-catch| и т.д. -- выражения.
+        \item Аналоги \lstinline|if|, \lstinline|try-catch| и т.д. "--- выражения.
     \end{itemize}
     \item Функции как в математике (следующий слайд)
 \end{itemize}
@@ -239,12 +239,12 @@ True :: Bool
 \begin{frame}[fragile]
 \frametitle{Язык Haskell: начало}
 \begin{itemize}
-    \item \lstinline|2 + 2|, \lstinline|True|: выражения
-    \item \lstinline|4|, \lstinline|True|: значения
-    \item \lstinline|Bool|: тип
+    \item \lstinline|2 + 2|, \lstinline|True| "--- выражения
+    \item \lstinline|4|, \lstinline|True| "--- значения
+    \item \lstinline|Bool| "--- тип
     \pause
-    \item Значение: \enquote{вычисленное до конца} выражение
-    \item Тип (статический): множество значений и выражений, построенное по таким правилам, что компилятор может определить типы и проверить отсутствие ошибок в них без запуска программы.
+    \item Значение "--- \enquote{вычисленное до конца} выражение.
+    \item Тип (статический) "--- множество значений и выражений, построенное по таким правилам, что компилятор может определить типы и проверить отсутствие ошибок в них без запуска программы.
     \item От типа зависит то, какие операции допустимы:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
 Prelude> True + False
@@ -254,7 +254,7 @@ No instance for (Num Bool) arising from a use of '+'
 In the expression: True + False
 In an equation for 'it': it = True + False
 \end{lstlisting}
-\item Это ошибка компиляции, не выполнения.
+\item Это ошибка компиляции, а не выполнения.
 \end{itemize}
 \end{frame}
 
@@ -262,7 +262,7 @@ In an equation for 'it': it = True + False
 \frametitle{Вызов функций}
 \begin{itemize}
     \item Вызов (применение) функции пишется без скобок: \lstinline|f x|, \lstinline|foo x y|. 
-    \item Скобки используются, когда аргументы -- сложные выражения, а не переменные: \lstinline|f (g x)| (и внутри сложных выражений вообще).
+    \item Скобки используются, когда аргументы "--- сложные выражения, а не переменные: \lstinline|f (g x)| (и внутри сложных выражений вообще).
     \item Бинарные операторы (как \lstinline|+|) это просто функции.
     \begin{itemize}
         \item Можно писать их префиксно, заключив в скобки: \lstinline[breaklines=false]|(+) 2 2|
@@ -381,7 +381,7 @@ Prelude> fromInteger (2^64) :: Int
 0
 \end{lstlisting}
     \end{itemize}
-    \item \lstinline|toRational| и \lstinline|fromRational| -- аналогично для \lstinline|Rational| и дробных типов.
+    \item \lstinline|toRational| и \lstinline|fromRational| "--- аналогично для \lstinline|Rational| и дробных типов.
     \item \lstinline|ceiling|, \lstinline|floor|, \lstinline|truncate| и \lstinline|round| из дробных типов в целочисленные (по названиям должно быть понятно, как именно).
 \end{itemize}
 \end{frame}
@@ -389,19 +389,19 @@ Prelude> fromInteger (2^64) :: Int
 \begin{frame}[fragile]
 \frametitle{Арифметические операции}
 \begin{itemize}
-    \item Операции \lstinline|+|, \lstinline|-|, \lstinline|*| -- как в других языках (с учётом отсутствия приведения).
-    Унарный минус -- единственный унарный оператор.
-    \item \lstinline|/| -- деление \emph{дробных} чисел
+    \item Операции \lstinline|+|, \lstinline|-|, \lstinline|*| "--- как в других языках (с учётом отсутствия приведения).
+    Унарный минус "--- единственный унарный оператор.
+    \item \lstinline|/| "--- деление \emph{дробных} чисел
     \begin{itemize}
         \item Использование \lstinline|/| для целых чисел даст ошибку \lstinline|No instance... arising from a use of '/'|. Нужно сначала использовать \lstinline|fromIntegral|.
     \end{itemize}        
-    \item \lstinline|div| -- частное целых чисел, а \lstinline|mod| -- остаток
+    \item \lstinline|div| "--- частное целых чисел, а \lstinline|mod| "--- остаток
     \begin{itemize}
         \item
- \lstinline|quot| и \lstinline|rem| -- тоже, отличаются от них поведением на отрицательных числах.
+ \lstinline|quot| и \lstinline|rem| "--- тоже, отличаются от них поведением на отрицательных числах.
     \end{itemize}        
-   \item \lstinline|^| -- возведение любого числа в неотрицательную  целую степень. 
-       \item \lstinline|^^| -- дробного в любую целую. \item \lstinline|**| -- дробного в степень того же типа.
+   \item \lstinline|^| "--- возведение любого числа в неотрицательную  целую степень. 
+       \item \lstinline|^^| "--- дробного в любую целую. \item \lstinline|**| "--- дробного в степень того же типа.
 \end{itemize}
 \end{frame}
 
@@ -413,8 +413,8 @@ Prelude> fromInteger (2^64) :: Int
     \item Функция \lstinline|compare| возвращает \lstinline|Ordering|: тип с тремя значениями \lstinline|LT|, \lstinline|EQ| и \lstinline|GT|.
     \item Есть функции \lstinline|min| и \lstinline|max|.
     \item[]
-    \item \enquote{и} это \lstinline|&&|, а \enquote{или} -- \lstinline!||!, как обычно. 
-    \item \enquote{не} -- \lstinline|not|.
+    \item \enquote{и} это \lstinline|&&|, а \enquote{или} "--- \lstinline!||!, как обычно. 
+    \item \enquote{не} "--- \lstinline|not|.
 \end{itemize}
 \end{frame}
 
@@ -425,20 +425,21 @@ Prelude> fromInteger (2^64) :: Int
 \begin{lstlisting}
 let {x :: Integer; x = 2}
 \end{lstlisting}
-По правилам Haskell можно написать это же без фигурных скобок:
+По правилам Haskell можно написать это же без фигурных скобок и точки с запятой:
 \begin{lstlisting}
 let x :: Integer
     x = 2
 \end{lstlisting}
 \item Если два выражения (или других фрагмента кода) относятся к одному уровню одного блока, то они должны иметь одинаковый отступ (начинаться в одном и том же столбце).
-\item Фрагмент кода, являющийся частью другого, должен иметь отступ больше.
+\item Фрагмент кода, являющийся частью другого, должен иметь отступ больше той строки, где тот начинается.
+\item Но не обязательно больше начала его самого.
 \end{itemize}
 \end{frame}
 \begin{frame}[fragile]
 \frametitle{Правило преобразования отступов}
 \begin{itemize}
 \item Если после ключевых слов \lstinline|where|, \lstinline|let|, \lstinline|do|, \lstinline|of| нет открывающей фигурной скобки \lstinline|{|\footnote{Если она есть, то правило перестаёт действовать до соответствующей ей закрывающей.}, то такая скобка вставляется и начинается новый блок.
-\item Его базовый отступ -- столбец, содержащий следующий непробельный символ. 
+\item Его базовый отступ "--- столбец, содержащий следующий непробельный символ.
 \item После этого каждая строка, которая начинается:
 \begin{itemize}
     \item в том же столбце: относится к этому блоку и перед ней ставится \lstinline|;|
@@ -496,9 +497,9 @@ case выражение of
 \begin{itemize}
 %    \item 
 %    \begin{itemize}
-    \item \lstinline|True| и \lstinline|False| -- образцы для \lstinline|Bool|. Они подходят, только если значение совпадает с ними. 
+    \item \lstinline|True| и \lstinline|False| "--- образцы для \lstinline|Bool|. Они подходят, только если значение совпадает с ними.
     \item Аналогично \lstinline|LT|, \lstinline|EQ| и \lstinline|GT| для \lstinline|Ordering|, а числовые литералы для числовых типов.
-    \item Переменная -- образец для любого типа, который подходит для любого значения.
+    \item Переменная "--- образец для любого типа, который подходит для любого значения.
     \begin{itemize}
         \item В Haskell все переменные в образцах \enquote{свежие} и перекрывают видимые снаружи переменные с тем же названием.
     \end{itemize}
@@ -579,7 +580,7 @@ case () of _ | условие1 -> ...
 \begin{frame}[fragile]
 \frametitle{Определение функций по случаям}
 \begin{itemize}
-    \item Часто тело функции -- \lstinline|case| по аргументу, например.
+    \item Часто тело функции "--- \lstinline|case| по аргументу, например.
 \begin{lstlisting}[basicstyle=\ttfamily\small]
 not x = case x of
     True -> False
@@ -619,7 +620,7 @@ let переменная1 = выражение1
     ...
 in выражение3
 \end{lstlisting}
-    \item Всё \lstinline|let ... in ...| -- выражение.
+    \item Всё \lstinline|let ... in ...| "--- выражение.
     \item Первое проявление ленивости Haskell: будут вычислены только те переменные, которые понадобятся для вычисления \lstinline|выражения3|.
 \end{itemize}
 \end{frame}
@@ -652,7 +653,7 @@ import ...
 функция1 :: ...
 функция1 x = ...
 \end{lstlisting}
-\item \lstinline|функция1| экспортирована, она доступна другим модулям и GHCi. Все остальные -- нет.
+\item \lstinline|функция1| экспортирована, она доступна другим модулям и GHCi. Все остальные "--- нет.
 \item Можно экспортировать всё, опустив список экспортов (включая скобки).
 \item Модуль может иметь название вида \lstinline|A.B.C| и лежать в \lstinline|A/B/C.hs|.
 \end{itemize}
