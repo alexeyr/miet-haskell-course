@@ -212,7 +212,7 @@ let переменная1 = выражение1
 in выражение3
 \end{lstlisting}
     \item Всё \lstinline|let ... in ...| "--- выражение.
-    \item Первое проявление ленивости Haskell: будут вычислены только те переменные, которые понадобятся для вычисления \lstinline|выражения3|.
+    \item Первое проявление ленивости: будут вычислены только те переменные, которые понадобятся для вычисления \lstinline|выражения3|.
 \end{itemize}
 \end{frame}
 
@@ -227,7 +227,8 @@ in выражение3
           функция2 x = выражение2
 \end{lstlisting}
     \item Видимы в условиях и в правых частях (но не для других образцов).
-    \item Можно применить только к определениям (в том числе локальным).
+    \item Можно применить только к определениям.
+    \item В том числе к локальным.
 \end{itemize}
 \end{frame}
 
@@ -235,7 +236,10 @@ in выражение3
 \frametitle{Модули}
 \begin{itemize}
     \item Программа на Haskell состоит из модулей.
-    \item Модуль \lstinline|Модуль| (названия с заглавной буквы) определяется в файле \lstinline|Модуль.hs| такого вида:
+    \item Модуль \lstinline|Модуль| (названия с заглавной буквы) определяется в файле \lstinline|Модуль.hs|:
+    \begin{itemize}
+        \item Для названия вида \lstinline|A.B.C| будет файл \lstinline|A/B/C.hs|.
+    \end{itemize}
 \begin{lstlisting}
 module Модуль(функция1) where
 
@@ -246,7 +250,6 @@ import ...
 \end{lstlisting}
 \item \lstinline|функция1| экспортирована, она доступна другим модулям и GHCi. Все остальные "--- нет.
 \item Можно экспортировать всё, опустив список экспортов (включая скобки).
-\item Модуль может иметь название вида \lstinline|A.B.C| и лежать в \lstinline|A/B/C.hs|.
 \end{itemize}
 \end{frame}
 
@@ -254,14 +257,17 @@ import ...
 \frametitle{Импорт из другого модуля}
 \begin{itemize}
     \item У директивы \lstinline|import| есть много вариантов.
-    \begin{itemize}
-        \item По адресу \url{https://wiki.haskell.org/Import} есть полный перечень.
-    \end{itemize}
-    \item Нам пока достаточно простейшего из них
-\begin{lstlisting}
+    \item По адресу \url{https://wiki.haskell.org/Import} есть полный перечень.
+    \item Нам пока достаточно простейших:
+    \item \begin{lstlisting}
+import Модуль(функция1, функция2)
+\end{lstlisting}
+импортирует конкретные функции.
+    \item \begin{lstlisting}
 import Модуль
 \end{lstlisting}
-    который позволяет использовать в нашем модуле всё, что экспортирует \lstinline|Модуль| (как \lstinline|функция| и как \lstinline|Модуль.функция|).
+импортирует всё, что возможно.
+    \item Импортированные функции доступны как \lstinline|функция| и как \lstinline|Модуль.функция|.
 \end{itemize}
 \end{frame}
 

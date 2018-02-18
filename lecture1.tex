@@ -151,16 +151,17 @@ In an equation for 'it': it = True + False
 \frametitle{Вызов функций}
 \begin{itemize}
     \item Вызов (применение) функции пишется без скобок: \lstinline|f x|, \lstinline|foo x y|. 
-    \item Скобки используются, когда аргументы "--- сложные выражения, а не переменные: \lstinline|f (g x)| (и внутри сложных выражений вообще).
+    \item Скобки используются, когда аргументы "--- сложные выражения: \lstinline|f (g x)|
+    \item И внутри сложных выражений вообще.
     \item Бинарные операторы (как \lstinline|+|) это просто функции.
     \begin{itemize}
-        \item Можно писать их префиксно, заключив в скобки: \lstinline[breaklines=false]|(+) 2 2|
-        \item А любую функцию двух аргументов можно писать инфиксно, заключив в обратный апостроф: \lstinline|4 `div` 2|
+        \item Можно писать их префиксно, заключив в скобки: \lstinline[breaklines=false]|(+) 2 2|.
+        \item А любую функцию двух аргументов можно писать инфиксно, заключив в обратный апостроф: 
+        \lstinline[breaklines=false]|4 `div` 2| (его отсутствие это баг шрифта).
+        \item Единственный небинарный оператор "--- унарный \lstinline|-|.
     \end{itemize}
-    \item Названия переменных и функций начинаются со строчной буквы
-        \begin{itemize}
-            \item или состоят целиком из спец. символов.
-        \end{itemize}
+    \item Названия переменных и функций начинаются со строчной буквы.
+    \item Или состоят целиком из спец. символов и используются как бинарные операторы.
 \end{itemize}
 \end{frame}
 
@@ -173,7 +174,7 @@ In an equation for 'it': it = True + False
 название = значение -- переменная
 \end{lstlisting}
     \item Тело функции это не блок, а одно выражение (но сколь угодно сложное).
-    \item В GHCi перед определением нужен \lstinline|let|, в отличие от кода в файлах: 
+    \item В GHCi перед определением нужен \lstinline|let|, в отличие от кода в модулях:
 \begin{lstlisting}
 Prelude> let x = sin pi
 Prelude> x !\pause!
@@ -188,7 +189,7 @@ Prelude> square 2
 \begin{frame}[fragile]
 \frametitle{Базовые типы}
 \begin{itemize}
-    \item Названия типов всегда начинаются с заглавной буквы (или состоят целиком из спец. символов).
+    \item Названия типов всегда с заглавной буквы.
     \item \lstinline|Bool|: логические значения \lstinline|True| и \lstinline|False|.
     \item Целые числа:
     \begin{itemize}
@@ -198,7 +199,7 @@ Prelude> square 2
     \end{itemize}
     \item \lstinline|Float| и \lstinline|Double|: 32- и 64-битные числа с плавающей точкой, по стандарту IEEE-754.
     \item \lstinline|Character|: символы Unicode.
-    \item \lstinline|()|: Единичный тип (unit) с единственным значением \lstinline|()|.
+    \item \lstinline|()|: \enquote{Единичный тип} (unit) с единственным значением \lstinline|()|.
 \end{itemize}
 \end{frame}
 
@@ -209,24 +210,28 @@ Prelude> square 2
     
     \item Для нескольких аргументов это выглядит как \pause\lstinline|Bool -> Bool -> Bool|.
     
-    \item \lstinline|::| читается как \enquote{имеет тип}; запись \lstinline|выражение :: тип| называется \enquote{сигнатурой типа}.
+    \item \lstinline|::| читается как \enquote{имеет тип}.
+    
+    \item Запись \lstinline|выражение :: тип| "--- \enquote{сигнатура типа}.
     
     \item При объявлении экспортируемой функции или переменной  сигнатура обычно указывается явно:
 \begin{lstlisting}
 foo :: Int -> Char
 foo x = ...
 \end{lstlisting}
-    \item Компилятор обычно выведет типы и без этого, но явное указание защищает от \emph{непреднамеренного} изменения.
+    \item Компилятор обычно может вывести типы сам, но это защищает от \emph{непреднамеренного} изменения.
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Арифметика}
 \begin{itemize}
-    \item Это упрощённая версия, так как настоящее объяснение требует понятия класса типов, которое будет введено позже. 
-    \item Например, \lstinline|:type 1| или \lstinline|:type (+)| дадут тип, который понимать пока не требуется. 
-    \item То же относится к ошибкам вроде \lstinline[breaklines=false]|No instance for (Num Bool) arising from a use of '+'| на более раннем слайде.
-    \item Пока достаточно понимать, что есть понятие \enquote{числового типа}, которые делятся на целочисленные (\lstinline|Int|, \lstinline|Integer|) и дробные (\lstinline|Float|, \lstinline|Double|).
+    \item Это упрощённая версия.
+    \item Полное объяснение требует понятия, которое будет введено позже. 
+    \item Например, команды \lstinline|:type 1| или \lstinline|:type (+)| дадут тип, который понимать пока не требуется. 
+    \item То же относится к ошибкам вроде \lstinline[breaklines=false]|No instance for (Num Bool)...|\\ на более раннем слайде.
+    \item Пока достаточно понимать, что есть несколько числовых типов.
+    \item Они делятся на целочисленные (\lstinline|Int|, \lstinline|Integer|) и дробные (\lstinline|Float|, \lstinline|Double|).
 \end{itemize}
 \end{frame}
 
@@ -235,7 +240,8 @@ foo x = ...
 \begin{itemize}
     \item Числовые литералы выглядят, как в других языках: \lstinline|0|, \lstinline|1.5|, \lstinline|1.2E-1|, \lstinline|0xDEADBEEF|. 
     \item Целочисленные литералы могут иметь любой числовой тип, а дробные любой дробный.
-    \item Но это относится \emph{только} к литералам. Неявного приведения (например, \lstinline|Int| в \lstinline|Double|) в Haskell \emph{нет}. 
+    \item Но это относится \emph{только} к литералам. 
+    \item Неявного приведения (например, \lstinline|Int| в \lstinline|Double|) в Haskell \emph{нет}. 
 \end{itemize}
 \end{frame}
 
@@ -251,7 +257,7 @@ Couldn't match expected type 'Double' with actual type 'Integer' ...
 Prelude> fromIntegral x :: Double
 2.0
 \end{lstlisting}    
-    \item Или не указывать, если компилятор может его вывести из контекста:
+    \item А может выводиться из контекста:
 \begin{lstlisting}
 Prelude> :t fromIntegral 2 / (4 :: Double)
 fromIntegral 2 / (4 :: Double) :: Double
@@ -262,35 +268,32 @@ fromIntegral 2 / (4 :: Double) :: Double
 \begin{frame}[fragile]
 \frametitle{Приведение числовых типов}
 \begin{itemize}
-    \item \lstinline|toInteger| переводит любой целочисленный тип в \lstinline|Integer|, \lstinline|fromInteger| из \lstinline|Integer| в любой целочисленный.
-    \begin{itemize}
-        \item Если аргумент \lstinline|fromInteger| слишком велик для типа цели, берётся его значение по модулю:
-        \begin{lstlisting}
+    \item \lstinline|toInteger| переводит любой целочисленный тип \\в \lstinline|Integer|.
+    \item \lstinline|fromInteger| "--- наоборот. Если аргумент слишком велик, возвращает значение по модулю:
+    \begin{lstlisting}
 Prelude> fromInteger (2^64) :: Int
 0
 \end{lstlisting}
-    \end{itemize}
     \item \lstinline|toRational| и \lstinline|fromRational| "--- аналогично для \lstinline|Rational| и дробных типов.
-    \item \lstinline|ceiling|, \lstinline|floor|, \lstinline|truncate| и \lstinline|round| из дробных типов в целочисленные (по названиям должно быть понятно, как именно).
+    \item \lstinline|ceiling|, \lstinline|floor|, \lstinline|truncate| и \lstinline|round| "--- из дробных типов в целочисленные.
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Арифметические операции}
 \begin{itemize}
-    \item Операции \lstinline|+|, \lstinline|-|, \lstinline|*| "--- как в других языках (с учётом отсутствия приведения).
-    Унарный минус "--- единственный унарный оператор.
-    \item \lstinline|/| "--- деление \emph{дробных} чисел
+    \item Операции \lstinline|+|, \lstinline|-|, \lstinline|*| "--- как обычно (унарного \lstinline|+| нет).
+    \item \lstinline|/| "--- деление \emph{дробных} чисел.
     \begin{itemize}
-        \item Использование \lstinline|/| для целых чисел даст ошибку \lstinline|No instance... arising from a use of '/'|. Нужно сначала использовать \lstinline|fromIntegral|.
+        \item Использование \lstinline|/| для целых чисел даст ошибку \lstinline|No instance... arising from a use of '/'|. \\Нужно сначала использовать \lstinline|fromIntegral|.
     \end{itemize}        
-    \item \lstinline|div| "--- частное целых чисел, а \lstinline|mod| "--- остаток
-    \begin{itemize}
-        \item
- \lstinline|quot| и \lstinline|rem| "--- тоже, отличаются от них поведением на отрицательных числах.
-    \end{itemize}        
-   \item \lstinline|^| "--- возведение любого числа в неотрицательную  целую степень. 
-       \item \lstinline|^^| "--- дробного в любую целую. \item \lstinline|**| "--- дробного в степень того же типа.
+    \item \lstinline|div| "--- деление нацело
+    \item \lstinline|mod| "--- остаток
+    \item
+\lstinline|quot| и \lstinline|rem| тоже, но отличаются от них поведением на отрицательных числах.
+    \item \lstinline|^| "--- возведение любого числа в неотрицательную  целую степень. 
+   \item \lstinline|^^| "--- дробного в любую целую. 
+   \item \lstinline|**| "--- дробного в степень того же типа.
 \end{itemize}
 \end{frame}
 
@@ -307,7 +310,7 @@ Prelude> fromInteger (2^64) :: Int
 \end{itemize}
 \end{frame}
 
-\begin{frame}
-    \href{run:./lecture2.pdf}{\beamergotobutton{Следующая лекция}}
-\end{frame}
+%\begin{frame}
+%    \href{run:./lecture2.pdf}{\beamergotobutton{Следующая лекция}}
+%\end{frame}
 \end{document}
