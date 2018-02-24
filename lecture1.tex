@@ -168,18 +168,20 @@ In an equation for 'it': it = True + False
 \begin{frame}[fragile]
 \frametitle{Определение функций и переменных}
 \begin{itemize}
-    \item Определение функции выглядит так же как вызов:
-\begin{lstlisting}[breaklines]
+    \item Определение переменной выглядит как в математике, даже без ключевых слов:
+\begin{lstlisting}
+название = значение
+\end{lstlisting}
+    \item Определение функции почти такое же:
+\begin{lstlisting}
 название параметр1 параметр2 = значение
-название = значение -- переменная
 \end{lstlisting}
     \item Тело функции это не блок, а одно выражение (но сколь угодно сложное).
-    \item В GHCi перед определением нужен \lstinline|let|, в отличие от кода в модулях:
 \begin{lstlisting}
-Prelude> let x = sin pi
+Prelude> x = sin pi
 Prelude> x !\pause!
 1.2246063538223773e-16
-Prelude> let square x = x * x
+Prelude> square x = x * x
 Prelude> square 2
 4
 \end{lstlisting}
