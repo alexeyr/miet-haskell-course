@@ -1,0 +1,493 @@
+\documentclass[10pt]{beamer}
+\input{lecture_preamble.tex}
+
+\title{Лекция 4: классы типов}
+\date{7 марта 2018}
+
+\begin{document}
+\begin{frame}[plain]
+\maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Классы типов}
+\begin{itemize}
+    \item Полиморфные функции, которые мы видели в прошлый раз, имеют одно определение для любых параметров типов.
+    \item Часто нужно определить функции по-разному для разных типов.
+    \item Для этого используются классы типов.
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+class Eq a where
+    (==), (/=) :: a -> a -> Bool
+    x == y = not (x /= y)
+    x /= y = not (x == y)
+\end{lstlisting}
+    \item \lstinline|Eq| "--- название класса.
+    \item \lstinline|a| "--- тип, относящийся к этому классу.
+    \item \lstinline|(==)| и \lstinline|(/=)| "--- функции-члены класса, с определениями по умолчанию.
+    \item Их нужно определить для типа \lstinline|a| \pause(достаточно одну).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Экземпляры классов}
+\begin{itemize}
+    \item Чтобы объявить, что тип \lstinline|Bool| относится к классу \lstinline|Eq|:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+instance Eq Bool where
+    -- (==) :: Bool -> Bool -> Bool
+    True == True = True
+    False == False = True !\pause!
+    _ == _ = False
+\end{lstlisting}
+    \item При этом \lstinline|a| в сигнатуре членов заменяется на тип, для которого определяется экземпляр.
+    \item Ещё пример:\pause
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+instance Eq IpAddress where
+    -- (==) :: IpAddress -> IpAddress -> Bool
+    Ip4Address x == Ip4Address y = x == y
+    Ip6Address x == Ip6Address y = x == y
+    _ == _ = False
+\end{lstlisting}
+    \only<3>{\item Рекурсивно ли это определение?}
+    \item<4-> Это не рекурсия: \lstinline|==| в правой части относится к другому типу (\lstinline|String|).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ограниченный полиморфизм}
+\begin{itemize}
+    \item Если спросить GHCi про тип \lstinline|==|, получим
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+Prelude> :t (==)
+(==) :: Eq a => a -> a -> Bool
+\end{lstlisting}
+    \item Читается \enquote{\lstinline|a -> a -> Bool| для любого \lstinline|a| из \lstinline|Eq|}.
+    \item Часть перед \lstinline|=>| называется контекстом. 
+    \item Его элементы "--- ограничения. Когда их больше одного, они пишутся в скобках через запятую.\pause
+    \item Типы полиморфных функций, \emph{использующих} \lstinline|==| и \lstinline|/=|, пишутся аналогично. Определим:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+foo [] = True
+foo [x] = True
+foo (x : tail@(y : _)) = x == y && foo tail
+\end{lstlisting}
+    Какой у неё тип (и смысл)? \pause
+    \item \lstinline[basicstyle=\ttfamily\small]|foo :: Eq a => [a] -> Bool| \pause
+    \item Функция проверяет, равны ли все элементы списка.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Экземпляры для полиморфных типов}
+\begin{itemize}
+    \item Попробуем определить \lstinline|Eq| для \lstinline|Maybe a|:\pause
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+instance Eq (Maybe a) where
+    -- (==) :: Maybe a -> Maybe a -> Bool
+    Just x == Just y = x == y
+    Nothing == Nothing = True
+    _ == _ = False
+\end{lstlisting}
+    \only<2>{\item Верное ли это определение?} \pause
+    \item Здесь \lstinline|a| не обязательно \lstinline|Eq|, и поэтому \lstinline|x == y| \\не скомпилируется.
+    \item А можно ли так?
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+instance Eq (Maybe a) where
+    (==) :: Eq a => Maybe a -> Maybe a -> Bool
+    Just x == Just y = x == y
+    Nothing == Nothing = True
+    _ == _ = False
+\end{lstlisting} \pause
+    \item Нет: эта сигнатура для \lstinline|(==)| более ограничена, чем заданная классом.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Экземпляры для полиморфных типов \\с ограничениями}
+\begin{itemize}
+    \item Правильно так:
+\begin{lstlisting}
+instance Eq a => Eq (Maybe a) where
+    Just x == Just y = x == y
+    Nothing == Nothing = True
+    _ == _ = False
+\end{lstlisting} 
+    \item Читаем \enquote{\lstinline|Maybe a| относится к \lstinline|Eq| только тогда, когда \lstinline|a| относится к \lstinline|Eq|}.
+    \item Контексты экземпляров подчиняются тем же правилам, что контексты функций.
+    \item Ограничения могут упоминать другие классы, а не только тот, экземпляр которого определяется.
+    \item Не может быть много экземпляров одного класса для одного типа с разными условиями.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Аналоги в других языках}
+\begin{itemize}
+    \item Как перегрузка функций (или операторов), но глубже встроенная в систему типов.
+    \item Перегруженные функции "--- просто разные функции, связанные только общим именем.
+    \item Здесь обязательно близкие типы и общий смысл.
+    \item И функции могут быть использованы другими полиморфными функциями. \pause
+    \item Не путайте классы типов и классы в ООП, общее только название!
+    \item В C++ есть близкое понятие концепций. \pause
+    \item Пока только для документации\pause; в C++17 их хотели добавить в сам язык, но не получилось. \pause
+    \item Часто сравнивают с интерфейсами в Java/C\#, но это подходит хуже: \pause в классах типов есть \enquote{статические} и бинарные методы, совсем другой смысл возврата из функций.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Другие важные классы}
+\begin{itemize}
+\item 
+Линейно упорядоченные типы:
+\begin{lstlisting}
+class Eq a => Ord a where
+    compare :: a -> a -> Ordering
+    (<), (<=), (>), (>=) :: a -> a -> Bool 
+    max, min :: a -> a -> a
+\end{lstlisting}
+    \begin{itemize}
+    \item \lstinline|Eq a| "--- надкласс \lstinline|Ord|, то есть любой экземпляр \lstinline|Ord| должен быть и экземпляром \lstinline|Eq|. \pause
+    \item Логически стрелка скорее в другом направлении:\\ \lstinline|a| относится к \lstinline|Ord| $\implies$ \lstinline|a| относится к \lstinline|Eq|.
+    \end{itemize}
+\pause
+\item 
+Типы, ограниченные сверху и снизу:
+\begin{lstlisting}
+class Bounded a where
+    minBound, maxBound :: a 
+\end{lstlisting}
+    \begin{itemize}
+    \item Это не подкласс \lstinline|Ord| потому, что порядок, для которого эти значения "--- границы, может быть частичным.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Преобразования в строки и обратно}
+\begin{itemize}
+    \item 
+    Типы, значения которых можно превратить в строки:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+class Show a where
+    show :: a -> String 
+    ...
+\end{lstlisting}\pause
+\item Или прочитать из строк:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+class Read a where ...
+
+read :: Read a => String -> a
+\end{lstlisting}\pause
+    \item Для нас то, что за многоточиями, неважно, но подробности описаны \href{http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude.html#g:22}{в документации}.\pause
+    \item \lstinline|read| должна быть обратной к \lstinline|show|.
+    \item Заметьте полиморфизм \lstinline|read| по возвращаемому типу:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+Prelude> read "2" :: Integer
+2
+Prelude> read "2" :: Double
+2.0
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Опасность \lstinline|read|}
+\begin{itemize}
+    \item Что случится, если передать \lstinline|read| неподходящий аргумент?
+\begin{lstlisting}
+Prelude> read "1" :: [Bool] !\pause!
+*** Exception: Prelude.read: no parse
+\end{lstlisting}
+    \item Если вы не знаете \emph{точно}, что текст содержит значение, используйте безопасную
+\begin{lstlisting}
+readMaybe :: Read a => String -> Maybe a
+\end{lstlisting}
+    из модуля \lstinline|Text.Read|.
+    \pause
+    \item[]
+    \item Это не единственная функция в Prelude с такой проблемой.
+    \item Пакет \href{https://hackage.haskell.org/package/safe}{safe} содержит безопасные варианты для всех таких функций (посмотрите его документацию).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Класс перечислимых типов}
+\begin{itemize}
+    \item 
+    \lstinline|Enum| содержит типы, значения которых образуют последовательность.
+\begin{lstlisting}
+class Enum a where
+    succ, pred :: a -> a
+    toEnum   :: Int -> a
+    fromEnum :: a -> Int
+    enumFrom :: a -> [a] -- и ещё 3 вариации
+\end{lstlisting}
+    \pause
+    \item Для него есть специальный синтаксис: 
+    \begin{itemize}
+        \item \lstinline|[n..]| означает \lstinline|enumFrom n|;
+        \item \lstinline|[n..m]| "--- \lstinline|enumFromTo n m|;
+        \item \lstinline|[n,m..]| "--- \lstinline|enumFromThen n m|;
+        \item \lstinline|[n,m..l]| "--- \lstinline|enumFromThenTo n m l|.
+    \end{itemize}
+    \pause
+    \item Для \lstinline|Float| и \lstinline|Double| есть экземпляры \lstinline|Enum|, так что можно писать \lstinline|[1.0..]|\only<4->{, но они довольно странные}: 
+\begin{lstlisting}
+Prelude> [1.2..2.0] !\pause!
+[1.2,2.2]
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Иерархия числовых классов}
+\begin{itemize}
+    \item Вернёмся к \enquote{числовым типам} из первой лекции.
+    \item Это тоже классы типов, образующие довольно сложную иерархию.\pause
+\begin{lstlisting}
+class Num a where
+    (+), (-), (*), negate, abs, signum, fromInteger
+
+class (Num a, Ord a) => Real a where
+    toRational
+    
+class (Real a, Enum a) => Integral a where
+    quot, rem, div, mod, quotRem, divMod
+    toInteger
+    
+class Num a => Fractional a where
+    (/), recip, fromRational    
+\end{lstlisting}
+    
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Иерархия числовых классов: дробные типы}
+\begin{itemize}
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+class Fractional a => Floating a where 
+    exp, log, sqrt, (**), logBase, 
+    pi, sin, cos, ...
+
+class (Real a, Fractional a) => RealFrac a where 
+    properFraction :: Integral b => a -> (b, a)
+    truncate, round, ceiling, floor :: 
+        Integral b => a -> b
+
+class (RealFrac a, Floating a) => RealFloat a where
+    isNaN, isInfinite :: a -> Bool
+    ...
+    
+fromIntegral :: (Integral a, Num b) => a -> b
+realToFrac :: (Real a, Fractional b) => a -> b
+\end{lstlisting}
+\item \href{http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude.html#g:6}{Полная документация.}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Числовые литералы}
+\begin{itemize}
+    \item Литерал \lstinline|0| означает \lstinline|fromInteger (0 :: Integer)| и соответственно получает тип \pause\lstinline|Num a => a|.
+    \item Аналогично для дробных: \lstinline|1.1| представляется как рациональное и превращается в \lstinline|fromRational ((11 % 10) :: Rational)| типа \lstinline|Fractional a => a|.
+    \item Здесь:
+\begin{lstlisting}
+module Data.Ratio where
+data Ratio a -- экспортировано без конструктора
+type Rational = Ratio Integer
+(%) :: Integral a => a -> a -> Ratio a
+\end{lstlisting}
+    \pause
+    \item Использование рациональных чисел для дробных литералов позволяет избежать ошибок округления.\pause
+    \item Конечно, при преобразовании в \lstinline|Float| или \lstinline|Double| они вернутся.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Алгебраические классы}
+\begin{itemize}
+    \item Для разных структур из общей алгебры или линейной алгебры можно определить соответствующие им классы. В стандартной библиотеке есть
+    \item моноиды в \lstinline|Prelude|:
+\begin{lstlisting}
+class Monoid a where
+    mempty :: a
+    mappend :: a -> a -> a
+    mconcat :: [a] -> a
+    
+x <> y = mappend x y -- синоним для mappend
+\end{lstlisting}
+    \item и полугруппы в \href{https://hackage.haskell.org/package/base-4.10.1.0/docs/Data-Semigroup.html}{\lstinline|Data.Semigroup|}. \pause
+    \item Ещё несколько из теории категорий, но это предмет будущих лекций.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Определение функций внутри или вне класса}
+\begin{itemize}
+    \item При определении функций над классом часто приходится выбирать из двух вариантов: 
+    \begin{itemize}
+        \item член класса с определением по умолчанию;
+        \item функция, определённая вне класса.
+    \end{itemize}
+    \item Например, \lstinline|(/=)| можно было бы определить вне класса:
+\begin{lstlisting}
+(/=) :: Eq a => a -> a -> Bool
+x /= y = not (x == y)
+\end{lstlisting}\pause
+    \item Такую функцию нельзя реализовать по-разному для разных экземпляров.\pause
+    \item Если для каких-то типов есть реализация лучше той, что по умолчанию, лучше сделать функцию членом класса.
+    \pause
+    \begin{itemize}
+        \item Очевидная проблема: вы можете не знать (или не подумать) о таких типах.
+    \end{itemize}
+    \pause
+    \item Или если реализация по умолчанию не всегда верна \pause(но тогда почему это реализация по умолчанию?).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Определение функций внутри или вне класса:\\случай \lstinline|Ord|}
+\begin{itemize}
+    \item Ещё пример: в \lstinline|Ord| можно было бы оставить только \lstinline|(<=)| членом класса.
+    \item Или только \lstinline|compare|.
+    \item Но определение \lstinline|(<)| и других функций через них не всегда оптимально.
+    \item (Подумайте, почему!)
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Законы классов типов}
+\begin{itemize}
+    \item Рассмотрим такой экземпляр типа:
+\begin{lstlisting}
+data Weird = Weird Int
+
+instance Eq Weird where
+    Weird x == Weird y = x /= y
+\end{lstlisting}
+    \item Даже не зная смысла \lstinline|Weird| мы видим, что что-то здесь не так. \only<1>{Что?}\pause
+    \item Это определение нерефлексивно, то есть \lstinline|Weird 1 /= Weird 1|.
+    \item У всех классов типов (почти) есть законы.
+    \item То есть наличия функций типов, указанных в определении, недостаточно;
+    \item для корректных экземпляров должны выполняться определённые законы.    
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Законы классов типов}
+\begin{itemize}
+    \item Например, для \lstinline|Eq| законы такие:\pause
+\begin{lstlisting}
+!$\forall$! x :: a. x == x
+!$\forall$! x, y :: a. x == y !$\implies$! y == x
+!$\forall$! x, y, z :: a. x == y !$\wedge$! y == z !$\implies$! x == z !\pause!
+
+!$\forall$! x, y :: a; Eq b; f :: a -> b. x == y !$\implies$\pause! 
+    f x == f y
+\end{lstlisting}\pause
+    \item Законы могут говорить и о связи между классами. Например, если тип одновременно \lstinline|Ord| и \lstinline|Bounded|, то естественно требовать
+\begin{lstlisting}
+!$\forall$! x :: a. x <= maxBound
+!$\forall$! x :: a. x >= minBound
+\end{lstlisting}
+    \pause
+    \item Компилятор не может проверить законы.
+    \item Поэтому ответственность за их соблюдение лежит на программисте.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Автоматический вывод экземпляров}
+\begin{itemize}
+    \item Почти все определения \lstinline|(==)| устроены одинаково:\pause
+    \begin{itemize}
+        \item Типы всех полей всех конструкторов должны быть \lstinline|Eq|;
+        \item Значения с одинаковым конструктором равны, если равны все их поля (или полей нет);
+        \item Значения с разными конструкторами не равны;
+    \end{itemize}
+    \item Почти, но не все: \pause для рациональных чисел не так.\pause
+    \item Чтобы не писать такие определения каждый раз, после \lstinline|data| или \lstinline|newtype| ставят \lstinline|deriving (Eq)|.
+    \item \lstinline|deriving| также работает для \lstinline|Ord|, \lstinline|Show|, \lstinline|Read|, \lstinline|Enum| и \lstinline|Bounded|.
+    \item Порядок на значениях для \lstinline|Ord|, \lstinline|Enum| и \lstinline|Bounded| задаётся порядком конструкторов в определении.\pause
+    \item Разные расширения GHC позволяют \lstinline|deriving| для других классов.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Классы типов и \lstinline|newtype|}
+\begin{itemize}
+    \item Для каждой пары класса и типа можно определить только один экземпляр.
+    \item А что делать, если осмысленных экземпляров больше одного?
+    \item Например, числа "--- моноиды по операциям \lstinline|+| и \lstinline|*|.\pause
+    \item В таком случае мы можем завернуть существующий тип в \lstinline|newtype| и определить для нового:
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+newtype Sum a = Sum { getSum :: a }
+    deriving (Eq, Ord, Read, Show, Bounded, Num)
+
+instance Num a => Monoid (Sum a) where
+    mempty = Sum 0
+    mappend (Sum x) (Sum y) = Sum (x + y) !\pause!
+
+newtype Product a = Product { getProduct :: a }
+    deriving (Eq, Ord, Read, Show, Bounded, Num)
+
+instance Num a => Monoid (Product a) where ...
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Классы типов и \lstinline|newtype|}
+\begin{itemize}
+    \item Если заметили, \lstinline|Num| не было в списке классов, для которых есть автоматический вывод экземпляров.
+    \item Для \lstinline|newtype| можно вывести любой класс с помощью расширения \lstinline|GeneralizedNewtypeDeriving|.\pause
+    \item Выведенное определение каждой функции вызывает ту же функцию завёрнутого типа с вставкой и разбором конструкторов где нужно:
+\begin{lstlisting}
+instance Num a => Num (Sum a) where
+    Sum x + Sum y = Sum (x + y)
+    Sum x * Sum y = Sum (x * y)
+    negate (Sum x) = Sum (negate x)
+    ...
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Классы типов и модули}
+\begin{itemize}
+    \item \lstinline|Класс(..)| в списке импорта/экспорта означает класс со всеми методами, как для типа.
+    \item Поскольку экземпляры не имеют имён, они экспортируются из модуля всегда.
+    \item И импортируются всегда, когда модуль упоминается в списке импорта.\pause
+    \item[]
+    \item Из-за этого существование экземпляров для пары класс-тип не в одном модуле "--- проблема.
+    \item Поэтому экземпляры обычно определяются либо в том модуле, где определён тип, либо в том, где определён класс.
+    \item Остальные называются сиротами и по возможности их создания следует избегать.
+    \item Это делается с помощью того же трюка с \lstinline|newtype|.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ограничения классов типов в стандартном Haskell и расширения GHC}
+\begin{itemize}
+    \item В стандартном Haskell есть несколько ограничений на объявления классов типов и экземпляров.
+    \item А в GHC расширений, которые их снимают. 
+    \item Все перечислять не будем, они есть в  \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#class-declarations}{User's Guide, раздел 10.8}.
+    \item Сейчас достаточно знать, что если что-то не компилируется из-за отсутствия \lstinline|-XFlexibleInstances|, \lstinline|-XFlexibleContexts| или \lstinline|-XInstanceSigs|, их спокойно можно включить.
+    \item \lstinline|-XUndecidableInstances|, \lstinline|-XOverlappingInstances|, \lstinline|-XIncoherentInstances| опаснее, но в этом курсе в любом случае не понадобятся.
+\end{itemize}
+\end{frame}
+
+%\begin{frame}[fragile]
+%\frametitle{Классы с несколькими параметрами}
+%\begin{itemize}
+%    \item TODO
+%\end{itemize}
+%\end{frame}
+%
+%\begin{frame}[fragile]
+%\frametitle{Типы как члены классов}
+%\begin{itemize}
+%    \item TODO
+%\end{itemize}
+%\end{frame}
+    
+\end{document}
