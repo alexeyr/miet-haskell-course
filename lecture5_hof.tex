@@ -1,0 +1,104 @@
+\documentclass[10pt]{beamer}
+\input{lecture_preamble.tex}
+
+\title{Лекция 5: функции как значения}
+\date{7 марта 2018}
+
+\begin{document}
+\begin{frame}[plain]
+\maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Функции как значения}
+\begin{itemize}
+    \item Как упоминалось в начале курса, одно из оснований ФП состоит в том, что функции могут использоваться как значения.
+    \item В Haskell можно выразиться сильнее:\pause
+    \item Функции это и есть просто значения, тип которых имеет форму \lstinline|ТипПараметра -> ТипРезультата| для каких-то \lstinline|ТипПараметра| и \lstinline|ТипРезультата|.\pause
+    \item Мы уже видели примеры этого в равноправии функций и \only<4>{\textbf{других} }переменных.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Функции высших порядков}
+\begin{itemize}
+    \item В частности, функции могут принимать на вход функции.
+    \item То есть тип параметра сам может быть функциональным типом. 
+    \item Тривиальный пример:
+\begin{lstlisting}
+foo :: (Char -> Bool) -> Bool
+foo f = f 'a'
+
+Prelude Data.Char> foo isLetter !\pause!
+True
+\end{lstlisting} 
+    \item Скобки вокруг типа параметра здесь необходимы.\pause
+    \item Функции, параметры которых "--- функции, называются \emph{функциями высших порядков (ФВП)}.\pause
+    \item Часто ими также считают функции, возвращающие функции, но в Haskell нет (скоро увидим почему).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Лямбда-выражения}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Функции применения и композиции функций}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Избавление от скобок}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Частичное применение}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{$\eta$-редукция (сокращение аргументов)}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Сечения операторов}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ограничение мономорфизмом}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Основные функции 2-го порядка над списками}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Бесточечный стиль}
+\begin{itemize}
+    \item TODO (нужно ли?)
+\end{itemize}
+\end{frame}
+
+\end{document}
