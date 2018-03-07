@@ -344,15 +344,17 @@ x /= y = not (x == y)
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{Определение функций внутри или вне класса:\\случай \lstinline|Ord|}
-\begin{itemize}
-    \item Ещё пример: в \lstinline|Ord| можно было бы оставить только \lstinline|(<=)| членом класса.
-    \item Или только \lstinline|compare|.
-    \item Но определение \lstinline|(<)| и других функций через них не всегда оптимально.
-    \item (Подумайте, почему!)
-\end{itemize}
-\end{frame}
+% TODO Похоже, неверно: compare оптимально? Поискать пример лучше
+
+%\begin{frame}[fragile]
+%\frametitle{Определение функций внутри или вне класса:\\случай \lstinline|Ord|}
+%\begin{itemize}
+%    \item Ещё пример: в \lstinline|Ord| можно было бы оставить только \lstinline|(<=)| членом класса.
+%    \item Или только \lstinline|compare|.
+%    \item Но определение \lstinline|(<)| и других функций через них не всегда оптимально.
+%    \item (Подумайте, почему!)
+%\end{itemize}
+%\end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Законы классов типов}

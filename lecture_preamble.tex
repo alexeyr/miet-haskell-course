@@ -13,11 +13,28 @@
 \usepackage{cprotect}
 \usetheme[progressbar=head,numbering=fraction,block=fill]{metropolis}
 \usepackage{dejavu}
+\usepackage{etoolbox}
 %\usepackage[defaultsans]{droidsans}
 %\usepackage[defaultmono]{droidmono}
 %\makeatletter
 %\input droid/t1fdm.fd
 %\makeatother
+
+\makeatletter
+\chardef\straightquote@code=\catcode`'
+\chardef\backquote@code=\catcode``
+\catcode`'=\active \catcode``=\active
+\patchcmd{\@noligs}
+{\textasciigrave}
+{\fixedtextasciigrave}
+{}{}
+\newcommand{\fixedtextasciigrave}{%
+    \makebox[.5em]{\fontencoding{TS1}\fontfamily{fvs}\selectfont\textasciigrave}% Vera Sans
+}
+\catcode\lq\'=\straightquote@code
+\catcode\lq\`=\backquote@code
+\makeatletter
+
 \lstset{
     language=Haskell,
     inputencoding=utf8,
@@ -28,7 +45,7 @@
     breakatwhitespace=true,
     keepspaces=true,
     basicstyle=\ttfamily,
-    commentstyle=\color{green}\itshape,
+    commentstyle=\color{gray}\itshape,
     keywordstyle=
     % keywordstyle=\color{blue} % TODO https://tex.stackexchange.com/questions/415777/avoid-highlighting-keywords-following-certain-words-in-listings
 }
@@ -99,7 +116,7 @@
     {Э}{{\selectfont\char221}}1
     {Ю}{{\selectfont\char222}}1
     {Я}{{\selectfont\char223}}1
-    {`}{\`{}}1
+    {`}{{{\fixedtextasciigrave}}}1
 }
 
 \author{Алексей Романов}
