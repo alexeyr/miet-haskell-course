@@ -1,0 +1,292 @@
+\documentclass[11pt]{beamer}
+\input{lecture_preamble.tex}
+\usepackage{syntax}
+
+\title{Лекция 7: вывод типов и ленивость}
+\date{4 апреля 2018}
+
+\begin{document}
+\begin{frame}[plain]
+\maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Вывод типов в других языках}
+\begin{itemize}
+    \item Во многих ООП-языках сейчас есть вывод типов:
+    \hspace{-1em}
+    \pause
+    \begin{itemize}
+        \item \lstinline!auto! в C++11
+        \item \lstinline!var! в C\# 3.0 и Java 10
+        \item Отсутствие явного типа в Kotlin, Scala
+    \end{itemize}
+    \pause
+    \item Устроен в них всех похоже:
+    \begin{itemize}
+        \pause
+        \item Тип аргументов функций задаётся явно.
+        \pause
+        \item Дальше типы протягиваются сверху вниз.
+        \pause
+        \item Тип локальных переменных/полей $=$ тип инициализатора (если нет явного).
+        \pause
+        \item Возвращаемый тип $=$ общий тип для всех \lstinline!return!.
+    \end{itemize}
+    \pause
+    \item Отдельный вопрос: вывод параметров шаблонов (в C++)/генериков (в других языках).
+    \pause
+    \item Он сложнее, но появился раньше.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Вывод типов в системе Хиндли-Милнера}
+\begin{itemize}
+    \item В основе системы типов языка Haskell лежит система Хиндли-Милнера.
+    \item Она изначально создана для вывода типов.
+    \pause
+    \item Даже без указания типов параметров.
+    \pause
+    \item Плюсы: 
+    \begin{itemize}
+        \pause
+        \item Для любого данного выражения есть наиболее общий тип (если есть хоть какой-то).
+        \pause
+        \item Есть эффективные (для реальных программ) алгоритмы их нахождения.
+    \end{itemize}
+    \pause
+    \item Не все расширения Haskell их сохраняют (но это один из критериев оценки расширений).
+    \pause
+    \item Минусы:
+    \begin{itemize}
+        \pause
+        \item Сложнее понять, как работает.
+        \pause
+        \item Больше \enquote{дальнодействия}.
+    \end{itemize}
+    \pause
+    \item Поэтому понимание работы иногда необходимо.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Постановка задачи}
+\begin{itemize}
+    \item Даны:
+    \begin{itemize}
+        \item Набор типов и конструкторов типов: \lstinline|Int|, \lstinline|Bool|, \lstinline|[]| и т.д.
+        \item Среди них особую роль играет конструктор функций \lstinline|->|.
+        \item Набор известных именованных констант с их типами (обычно функциями).
+        \item Выражение, все свободные переменные которого лежат в этом наборе (обычно определение функции).
+    \end{itemize}
+    \pause
+    \item Нужно: 
+    \begin{itemize}
+        \item Определить наиболее общий тип для этого выражения.
+        \pause
+        \item Или найти объяснение, почему ему нельзя дать никакой тип.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{\lstinline|let| и $\lambda$}
+\begin{itemize}
+    \item Сравните \lstinline[mathescape]|let x = e$_1$ in e$_2$| и \lstinline[mathescape]|(\x -> e$_2$) e$_1$|.
+    \pause
+    \item Значения всегда одинаковы (для любых \lstinline[mathescape]|e$_1$| и \lstinline[mathescape]|e$_2$|).
+    \pause
+    \item Но есть разница при типизации: \pause \lstinline|x| в лямбде всегда мономорфна, а в \lstinline|let| может быть полиморфной.
+    \pause
+    \item Поэтому в нетипизированном и просто типизированном $\lambda$-исчислении \lstinline|let| обычно не вводится.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Унификация}
+\begin{itemize}
+    \item Нам понадобятся понятия подстановки и унификации. В общем случае:
+    \pause 
+    \item Пусть даны два выражения (терма) какого-то формального языка (или несколько пар). 
+    \item Они могут содержать переменные.
+    \pause
+    \item Подстановка переменных сопоставляет некоторым переменным выражения (которые тоже могут содержать переменные).
+    \pause
+    \item Мы хотим знать, можно ли сделать такую подстановку, чтобы термы стали одинаковыми.
+    \pause
+    \item Это достаточно широко применимое понятие.
+    \pause
+    \item Разрешимость задачи унификации и свойства решений зависят от структуры языка. 
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Унификация типов}
+\begin{itemize}
+    \item Для вывода типов в системе Хиндли-Милнера случай один из самых простых: унификация первого порядка.
+    \item Подстановки $\sigma$ сопоставляют переменным типов $\alpha, \beta, \ldots$ \emph{мономорфные} типы. Например,
+    \[ \sigma=\{\alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{[}\gamma\mathtt{]} \} \]
+    \item Подстановку можно применить к типу:
+    \[ \sigma(\mathtt{Maybe}~\beta)=\mathtt{Maybe}~\mathtt{[}\gamma\mathtt{]} \]
+    \item Композиция подстановок "--- подстановка.
+    \item Мономорфные типы равны, если они совпадают синтаксически. 
+    \pause
+    \begin{itemize}
+        \item Т.е. синонимы типов должны быть уже раскрыты!
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Унификация типов}
+\begin{itemize}
+    \item Тип \lstinline[mathescape]|($\alpha$, $\alpha$)| более общий, чем \lstinline[mathescape]|(Int, Int)|, так как  \lstinline[mathescape]|$\exists \sigma~\sigma($($\alpha$, $\alpha$)$)=$(Int, Int)|.
+    \item Второй "--- частный случай первого.
+    \pause
+    \item Вопрос: когда два типа более общи друг друга?
+    \pause
+    \item Когда они отличаются только названиями переменных.
+    \pause
+    \item Можем рассмотреть задачу унификации \lstinline[mathescape]|($\alpha$, $\beta$)$=$($\beta$, Int)|.
+    \pause
+    \item $\{ \alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{Int} \}$ это одно из её решений.
+    \pause
+    \item Наиболее общее (все остальные "--- его частные случаи).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Алгоритм унификации}
+\begin{itemize}
+    \item Вообще, у каждой задачи унификации типов есть наиболее общее решение (или нет вообще). 
+    \item Оно находится следующим алгоритмом:
+    \pause
+    \item На каждом шаге есть система уравнений. Одно из них рассматривается (порядок не важен) и система преобразуется.
+    \item Закончим, когда в каждом уравнении слева переменная, среди них нет одинаковых, и справа нет ни одной переменной, которая есть слева (это подстановка).
+    \item Правило выбирается в зависимости от рассмотренного уравнения:
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Алгоритм унификации: правила}
+\begin{itemize}
+    \item $C~t_1~t_2~\ldots~t_k = C~s_1~s_2~\ldots~s_k$ (одинаковые конструкторы): \pause заменяется на $t_1 = s_1, t_2 = s_2, \ldots$
+    \pause
+    \item $C~\ldots = D~\ldots$ (разные конструкторы): \pause унификатора не существует.
+    \pause
+    \item $x=x$: \pause оно удаляется, переходим к следующему (можно обобщить и на $t=t$).
+    \pause
+    \item $x=t$ или $t=x$: два случая. \pause
+    \begin{itemize}
+        \item Если в $t$ нет переменной $x$: \pause во всех остальных уравнениях делаем замену $x \mapsto t$, переходим к следующему.
+        \item Если есть\pause, то унификатора не существует (иначе результат будет бесконечным)!
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\newcommand{\fresh}{\mathord{\mathit{fresh}}()}
+\newcommand{\J}{\mathcal{J}}
+\begin{frame}[fragile]
+\frametitle{Алгоритм $\J$ вывода типов}
+\begin{itemize}
+    \item $\Gamma$ "--- окружение типов (набор переменных с их типами).
+    \item $\J(\Gamma; e)$ возвращает наиболее общий тип для $e$ с окружением $\Gamma$ или выдаёт ошибку.
+    \pause
+    \vspace{1em}
+    \item $\phi$ "--- глобальная переменная (только для простоты объяснения), содержащая уже сделанные подстановки.
+    \item Функция $\fresh$ возвращает свежую переменную типа (т.е. такую, которой ещё нигде не было).
+    \item Функция $ftv$ возвращает свободные переменные типов в аргументе.
+    \item Функция $unify$ решает задачу унификации.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Алгоритм $\J$: приведение $e$ к стандартному виду}
+\begin{itemize}
+    \item Переименуем связанные переменные с одинаковыми именами.
+    \item Заменим \lstinline|where| на \lstinline|let|.
+    \item Все сопоставления с образцом в \lstinline|case|.
+    \item Заменим рекурсию на вызовы функции \lstinline|fix :: (a -> a) -> a| и добавим её как константу в $\Gamma$. 
+    \item \lstinline|fix f| возвращает неподвижную точку \lstinline|f| (т.е. \lstinline|fix f x == x|). Определение: \pause
+\begin{lstlisting}
+fix f = let x = f x in x
+\end{lstlisting}
+    \pause
+    \item Почему это не всегда бесконечный цикл, расскажу в лекции про ленивость. Для вывода типов это неважно.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Алгоритм $\J$: рекурсия по определению $e$}
+\begin{itemize}
+    \item 
+\begin{lstlisting}[mathescape]
+$\J(\Gamma; x)$ = do
+  $\forall \alpha_1\ldots\alpha_k t = \phi(\Gamma(x))$
+  return $t[\alpha_1 \mapsto \fresh,\ldots,\alpha_k \mapsto \fresh]$
+\end{lstlisting}
+    \item[] \pause
+    \item 
+\begin{lstlisting}[mathescape]
+$\J(\Gamma; e_1~e_2)$ = do
+  $t_1 = \J(\Gamma; e_1)$
+  $t_2 = \J(\Gamma; e_2)$
+  $\alpha = \fresh$
+  $\phi := \mathord{\mathit{unify}}(t_1 = t_2 \to \alpha) \circ \phi$
+  return $\phi(\alpha)$
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Алгоритм $\J$: рекурсия по определению $e$}
+\begin{itemize}
+\item 
+\begin{lstlisting}[mathescape]
+$\J(\Gamma; \lambda x.e_1)$ = do
+  $\alpha = \fresh$
+  $t = \J(\Gamma, x:\alpha; e_1)$
+  return $\phi(\alpha \to t)$
+\end{lstlisting}
+    \item[] \pause
+\item 
+\begin{lstlisting}[mathescape]
+$\J(\Gamma; \mathtt{let}~x=e_1~\mathtt{in}~e_2)$ = do
+  $t_1 = \J(\Gamma; e_1)$
+  $\Gamma_1 = \phi(\Gamma)$
+  $fv = ftv(t_1) \setminus ftv(\Gamma_1)$
+  $t_2 = \forall fv.t_1$
+  return $\J(\Gamma_1, x:t_2; e_2)$
+\end{lstlisting}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Примеры}
+\begin{itemize}
+    \item Разберём несколько примеров
+    \pause
+    \item Без \lstinline|let|:
+    \item[] \lstinline|f1 = (.) . (.)|
+    \pause
+    \item C \lstinline|let|-полиморфизмом:
+    \item[] \lstinline|f2 x = let pair x = (x,x) in pair (pair x)|
+    \pause
+    \item Пример ошибки типа:
+    \item[] \lstinline|f3 x = x x|
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Дополнительное чтение}
+\begin{itemize}
+    \item Более известна альтернатива $\J$, избегающая \enquote{глобальной} $\phi$ "--- алгоритм $\mathcal{W}$. Вы можете легко найти его описания и реализации в Интернете.
+    \item Реализации на Haskell обычно используют монады, но это не должно сильно осложнить понимание. Если не получится, ищите реализации на других языках.
+    \item \href{http://dev.stephendiehl.com/fun/006_hindley_milner.html}{Глава Hindley-Milner Inference в Write You a Haskell}
+    \item \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.65.7733}{Algorithm W Step by Step}
+    \item Реализация системы типов всего (!) стандарта Haskell 98 с выводом, основанная на $\J$, есть в \href{https://gist.github.com/chrisdone/0075a16b32bfd4f62b7b}{Typing Haskell in Haskell}.
+\end{itemize}
+\end{frame}
+
+\end{document}

@@ -14,11 +14,20 @@
 \usetheme[progressbar=head,numbering=fraction,block=fill]{metropolis}
 \usepackage{dejavu}
 \usepackage{etoolbox}
+\usepackage{bm}
 %\usepackage[defaultsans]{droidsans}
 %\usepackage[defaultmono]{droidmono}
 %\makeatletter
 %\input droid/t1fdm.fd
 %\makeatother
+
+\makeatletter
+\DeclareRobustCommand*{\bfseries}{%
+    \not@math@alphabet\bfseries\mathbf
+    \fontseries\bfdefault\selectfont
+    \boldmath
+}
+\makeatother
 
 \makeatletter
 \chardef\straightquote@code=\catcode`'
