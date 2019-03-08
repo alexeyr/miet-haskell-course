@@ -153,7 +153,7 @@ data Either a b = Left a | Right b
     \item Мы могли бы определить типы 
 \begin{lstlisting}
 data Pair a b = Pair a b
-data Triple a b = Triple a b
+data Triple a b c = Triple a b c
 ...
 \end{lstlisting}
 (заметьте разницу смыслов \lstinline|Pair|, \lstinline|a| и \lstinline|b| в левой и правой частях!)
@@ -367,7 +367,7 @@ Prelude> x' !\pause!
 
 Prelude> :set -XNamedFieldPuns -XRecordWildCards
 Prelude> let f (Point { xCoord, yCoord }) = xCoord + yCoord
-Prelude> let g (Point { .. }) = x + y
+Prelude> let g (Point { .. }) = xCoord + yCoord
 \end{lstlisting}
 \item Два последних образца "--- сокращения\\ \lstinline[basicstyle=\ttfamily\small]|Point { xCoord = xCoord, yCoord = yCoord }|.
 \end{itemize}
