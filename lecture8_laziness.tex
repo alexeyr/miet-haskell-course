@@ -232,7 +232,7 @@ Prelude> :sprint x
 x = (2,_)
 \end{lstlisting}
     \pause
-    \item Также посмотрите \href{http://felsin9.de/nnis/ghc-vis/} (для старых GHC).
+    \item Также посмотрите \href{http://felsin9.de/nnis/ghc-vis/}{ghc-vis} (для старых GHC).
 \end{itemize}
 \end{frame}
 
@@ -331,7 +331,7 @@ sum (x:xs) acc = let a1 = x + acc in
 \begin{lstlisting}[basicstyle=\ttfamily\small,mathescape]
 sum [1..100] 0 $\rightsquigarrow$ sum 1:[2..100] 0 $\pause \rightsquigarrow$
 let a1 = 1 + 0 in a1 `seq` sum [2..100] a1 $\pause \rightsquigarrow$
-sum [2..100] 1 $\rightsquigarrow$ sum 2:[3..100] 3 $\pause \rightsquigarrow$ 
+sum [2..100] 1 $\rightsquigarrow$ sum 2:[3..100] 1 $\pause \rightsquigarrow$ 
 let a1 = 2 + 1 in a1 `seq` sum [3..100] a1 $\pause \rightsquigarrow\ \ldots\ \rightsquigarrow\ $4950
 \end{lstlisting}
 \end{itemize}
