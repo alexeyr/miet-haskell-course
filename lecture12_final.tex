@@ -1,0 +1,169 @@
+\documentclass[11pt]{beamer}
+\input{lecture_preamble.tex}
+\usepackage{syntax}
+
+\title{Лекция 12: что дальше?}
+
+\begin{document}
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Нерассмотренные части Haskell: стандартные библиотеки}
+\begin{itemize}
+    \item В самом начале упоминалось, что тип \lstinline{String} очень плох для практического использования. Его замена "--- \lstinline{Data.Text} из пакета \lstinline|text|.
+    \item Коллекции: 
+    \begin{itemize}
+        \item \lstinline|containers|: \lstinline|Data.Map|, \lstinline|Data.Set|, \lstinline|Data.Sequence|.
+        \item \lstinline|unordered-containers|: \lstinline|Data.Hash{Map/Set}|.
+        \item Массивы: \lstinline|array| и \lstinline|vector|.
+    \end{itemize}
+    \item Комбинаторы парсеров: \lstinline|megaparsec|.
+    \item Сборка проектов и управление зависимостями: \lstinline|cabal + cabal-install| и \lstinline|stack|.
+    \item Линзы (\lstinline|lens|): обобщение геттеров и сеттеров.
+    \item Альтернативы \lstinline|show| для больших структур: \lstinline|pretty-show| и \lstinline|prettyprinter|.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Нерассмотренные части Haskell: язык}
+\begin{itemize}
+    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#type-families}{Семейства типов}.
+    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#arbitrary-rank-polymorphism}{Типы высших рангов} с \lstinline|forall| \emph{внутри} типа.
+    \begin{itemize}
+        \item Важный пример: монада \lstinline|ST|.
+    \end{itemize}
+    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#existentially-quantified-data-constructors}{Экзистенциальные типы} (выраженные всё равно через \lstinline|forall|).
+    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#pattern-synonyms}{Синонимы образцов}.
+    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#template-haskell}{Template Haskell}: генерация кода во время компиляции.
+        \begin{itemize}
+            \item Могли видеть использование в документации QuickCheck/Hedgehog.
+        \end{itemize}
+    \item Исключения.
+    \item Многозадачность.
+    \item Foreign Function Interface для интеграции с C.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Подходы к эффектам}
+\begin{itemize}
+    \item Многие монады (и аппликативные функторы) можно рассматривать как побочные эффекты.
+    \begin{itemize}
+        \item \lstinline|IO|: понятно.
+        \item \lstinline|State|: чтение и запись в память.
+        \item \lstinline|[]|: недетерминированность
+        \item \ldots
+    \end{itemize}
+    \pause
+    \item Как их комбинировать?
+    \item Композиция монад не обязательно монада.
+    \pause
+    \item Трансформеры монад: \lstinline|transformers| и \lstinline|mtl|
+    \item Алгебраические эффекты
+    \item Свободные и \enquote{более свободные} (freer) монады
+    \item Небольшой обзор: \href{https://ocharles.org.uk/posts/2016-01-26-transformers-free-monads-mtl-laws.html}{Monad transformers, free monads, mtl, laws and a new approach}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Функциональные структуры данных}
+\begin{itemize}
+    \item Функциональные структуры данных очень отличаются от привычных!
+    \item Классическая книга: Okasaki, Purely functional data structures
+    \item \href{https://cstheory.stackexchange.com/questions/1539/whats-new-in-purely-functional-data-structures-since-okasaki}{Список \enquote{после Окасаки} (2010)}. И \href{https://www.reddit.com/r/haskell/comments/a4wk1i/seminal_works_after_purely_functional_data/ebm30ra/}{ещё немного}.
+    \pause
+    \item Функциональные структуры, позволяющие доступ к своим старым состояниям, полезны и в императивных языках.
+    \begin{itemize}
+        \item А изменяемые "--- в Haskell через \lstinline|IO| или \lstinline|ST|.
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Будущее Haskell}
+\begin{itemize}
+    \item \href{https://www.tweag.io/posts/2017-03-13-linear-types.html}{Линейные типы}: значения, которые могут быть использованы только один раз.
+    \begin{itemize}
+        \item Меньше сборки мусора.
+        \item Можно использовать изменяемые структуры данных.
+        \item Безопасное изменение состояния типа (например, тип файла может включать, открыт ли он).
+    \end{itemize}
+    \pause
+    \item \href{https://serokell.io/blog/2018/12/17/why-dependent-haskell}{Зависимые типы}: типы, параметризованные значениями
+        \begin{itemize}
+            \item В GHC уже объединены типы и роды.
+            \item Библиотека \lstinline|singletons| во многом эмулирует ЗТ.
+        \end{itemize}
+    \pause
+    \item Не совсем будущее: уточнённые типы (refinement types) в Liquid Haskell.
+        \begin{itemize}
+            \item \href{https://ruhaskell.org/posts/utils/2016/12/16/liquidhaskell-hello.html}{LiquidHaskell: знакомство} и \href{https://liquid.kosmikus.org/}{Liquid Haskell Tutorial}
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Альтернативы Haskell}
+\begin{itemize}
+    \item OCaml: похож на Haskell без ленивости и (пока) классов типов.
+    \item Erlang: динамический функциональный язык, ориентированный на многозадачность.
+    \item Варианты Lisp (можно посмотреть Racket).
+    \pause
+    \item Для JVM: Scala, Clojure.
+    \item Для .Net: F\# (почти тот же OCaml).
+    \pause
+    \item ФП без сборщика мусора: Rust.
+    \begin{itemize}
+        \item Мощная и интересная система типов, описывающая время жизни значений.
+        \item Очень быстрое развитие.
+        \item Реальная альтернатива C++.
+    \end{itemize}
+    \pause
+    \item Языки с зависимыми типами: Agda, Idris, Coq.
+    \pause
+    \item Языки спецификаций: TLA+, Alloy.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Области математики, связанные с ФП}
+\begin{itemize}
+    \item Лямбда-исчисление: то, с чего всё началось.
+    \begin{itemize}
+        \item И множество его обобщений.
+    \end{itemize}
+    \pause
+    \item Математическая логика в целом 
+    \begin{itemize}
+        \item Логики высших порядков.
+        \item Изоморфизм Карри-Ховарда.
+        \item Формализация математики.
+        \item И автоматический поиск доказательств.
+        \item Agda, Idris и Coq сюда же!
+    \end{itemize}
+    \pause
+    \item Теория категорий: источник понятий функтора, монады, естественного преобразования.
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+\frametitle{Дополнительное чтение}
+\begin{itemize}
+    \item \href{http://dev.stephendiehl.com/hask/}{ What I Wish I Knew When Learning Haskell}
+    \item \href{https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/}{An opinionated guide to Haskell in 2018}
+    \item \href{https://simonmar.github.io/pages/pcph.html}{Parallel and Concurrent Programming in Haskell} (книга)
+    \item \href{https://realworldocaml.org/}{Real World OCaml: Functional Programming for the Masses} (книга)
+    \item \href{https://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.Documentation}{Много ссылок по Agda}
+    \item \href{http://docs.idris-lang.org/en/latest/tutorial/index.html}{Введение в Idris}
+    \item \href{https://doc.rust-lang.org/1.30.0/book/2018-edition/index.html}{The Rust Programming Language} (книга)
+    \item \href{https://github.com/hmemcpy/milewski-ctfp-pdf}{Category Theory for Programmers} (книга)
+    \item \href{https://www.hillelwayne.com/post/theorem-prover-showdown/}{The Great Theorem Prover Showdown}
+    \item \href{https://blog.acolyer.org/2014/11/24/use-of-formal-methods-at-amazon-web-services/}{Use of Formal Methods at Amazon Web Services}
+    \item \href{https://blog.acolyer.org/2015/01/12/how-to-write-a-21st-century-proof/}{How to write a 21st Century Proof}
+\end{itemize}
+\end{frame}
+
+\end{document}
