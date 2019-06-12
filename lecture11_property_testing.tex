@@ -247,7 +247,7 @@ prop (Fn f) x = f x == f x
     \item Главная разница: в Hedgehog уменьшение интегрировано с генерацией значений, а не определяется типом.
     \item Нет \lstinline|Arbitrary|, генераторы контролируются полностью явно.
     \item Для улучшения воспроизводимости вместе с контрпримером выдаётся seed.
-    \item Улучшенный показ контпримеров с помощью пакета \href{https://hackage.haskell.org/package/pretty-show}{\lstinline|pretty-show|} и функции \href{http://hackage.haskell.org/package/hedgehog-1.0/docs/Hedgehog.html#v:diff}{\lstinline|diff|}.
+    \item Улучшенный показ контрпримеров с помощью пакета \href{https://hackage.haskell.org/package/pretty-show}{\lstinline|pretty-show|} и функции \href{http://hackage.haskell.org/package/hedgehog-1.0/docs/Hedgehog.html#v:diff}{\lstinline|diff|}.
     \item Проще работа с монадическими свойствами.
     \item Поддержка тестирования с состоянием.
     \item Для генерации функций нужна отдельная библиотека \href{https://hackage.haskell.org/package/hedgehog-fn}{\lstinline|hedgehog-fn|}.
@@ -261,10 +261,12 @@ prop (Fn f) x = f x == f x
     \item \href{https://hypothesis.works/articles/quickcheck-in-every-language/}{QuickCheck in Every Language} Список библиотек тестирования свойств на разных языках на апрель 2016 (от автора Hypothesis для Python).
     \item \href{https://begriffs.com/posts/2017-01-14-design-use-quickcheck.html}{The Design and Use of QuickCheck}
     \item \href{https://teh.id.au/posts/2017/04/23/property-testing-with-hedgehog/}{Property testing with Hedgehog}
+    \item \href{http://www.well-typed.com/blog/2019/05/integrated-shrinking/}{Integrated versus Manual Shrinking} Реализация и сравнение мини-версий QuickCheck и Hedgehog.
     \item \href{https://habr.com/ru/post/434008/}{Как перестать беспокоиться и начать писать тесты на основе свойств}
-    \item \href{https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html}{Property-Based Testing in a Screencast Editor} Тестирование свойств в графическом приложении (замечательный пример).
-    \item \href{https://blog.jrheard.com/hypothesis-and-pexpect}{Using Hypothesis and Pexpect to Test High School Programming Assignments}
+    \item \href{https://www.hillelwayne.com/post/contract-examples/}{Finding Property Tests}
+    \item \href{https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html}{Property-Based Testing in a Screencast Editor} 
     \item \href{https://austinrochford.com/posts/2014-05-27-quickcheck-laws.html}{Verifying Typeclass Laws in Haskell with QuickCheck}
+    \item \href{https://blog.jrheard.com/hypothesis-and-pexpect}{Using Hypothesis and Pexpect to Test High School Programming Assignments}
     \end{itemize}
 \end{frame}
 
