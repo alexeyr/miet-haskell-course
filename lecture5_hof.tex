@@ -2,7 +2,7 @@
 \input{lecture_preamble.tex}
 
 \title{Лекция 5: функции как значения}
-\date{7 марта 2018}
+\date{\today}
 
 \begin{document}
 \begin{frame}[plain]
@@ -34,7 +34,7 @@ True
 \end{lstlisting} 
     \item Скобки вокруг типа параметра здесь необходимы.\pause
     \item Функции, параметры которых "--- функции, называются \emph{функциями высших порядков (ФВП)}.\pause
-    \item Часто ими также считают функции, возвращающие функции, но в Haskell нет (скоро увидим почему).
+    \item Часто ими также считают функции, возвращающие функции, но не в Haskell (скоро увидим почему).
 \end{itemize}
 \end{frame}
 
@@ -44,9 +44,8 @@ True
     \item В \lstinline|foo| с прошлого слайда можем также передать свою новую функцию, определив её локально:
 \begin{lstlisting}
 foo isCyrillic where 
-    isCyrillic c = 
-        let lc = toLower c 
-        in 'а' <= lc && lc <= 'я'
+    isCyrillic c = let lc = toLower c
+                   in 'а' <= lc && lc <= 'я'
 \end{lstlisting}\pause
     \item Но имя этой функции на самом деле не нужно.
     \item Как и вообще функциям, которые создаются только как аргументы для других (или как результаты).\pause
@@ -54,10 +53,13 @@ foo isCyrillic where
 \begin{lstlisting}
 foo (\c -> let lc = toLower c 
            in 'а' <= lc && lc <= 'я')
-\end{lstlisting}\pause
+\end{lstlisting}
     \pause
     \item[]
-    \item Кто заметил ошибку в определении \lstinline|isCyrillic|?
+    \item Кстати, почему это определение неверно?
+    \pause
+    \item Как ни странно, в Юникоде \lstinline|'ё' > 'я'|.
+    \item И не все буквы кириллицы используются в русском.
 \end{itemize}
 \end{frame}
 
@@ -152,8 +154,7 @@ on :: (b -> b -> c) -> (a -> b) ->
 \begin{itemize}
     \item Настала пора раскрыть тайну функций многих переменных в Haskell:\pause
     \item Их не существует.\pause
-    \item \lstinline|->| "--- правоассоциативный оператор, так что
-    \item[] \lstinline|Тип1 -> Тип2 -> Тип3| это на самом деле \lstinline|Тип1 -> (Тип2 -> Тип3)|: функция, возвращающая функцию.\pause
+    \item \lstinline|->| "--- правоассоциативный оператор, так что \lstinline|Тип1 -> Тип2 -> Тип3| это на самом деле \lstinline|Тип1 -> (Тип2 -> Тип3)|: функция, возвращающая функцию.\pause
     \item \lstinline|\x y -> результат| это сокращение для \lstinline|\x -> \y -> результат|, а со скобками \lstinline|\x -> (\y -> результат)|.\pause
     \item Применение функций (не \lstinline|$|, а пробел), наоборот, левоассоциативно. То есть \lstinline|f x y| читается как \lstinline|(f x) y|.
 \end{itemize}
@@ -214,8 +215,8 @@ flip (/) 2
 \begin{lstlisting}
 Prelude> (1 `div`) 2 !\pause!
 0
-Prelude> (/ 2) 2 !\pause!
-1.0
+Prelude> (/ 2) 4 !\pause!
+2.0
 \end{lstlisting}
 \end{itemize}
 \end{frame}
@@ -226,7 +227,7 @@ Prelude> (/ 2) 2 !\pause!
     \item Расширение \lstinline|TupleSections| позволяет частично применять конструкторы кортежей:
 \begin{lstlisting}
 Prelude> :set -XTupleSections
-Prelude> (, "I", , "Love", True) 1 False
+Prelude> (, "I", , "Love", True) 1 False !\pause!
 (1,"I",False,"Love",True)
 Prelude> :t (, "I", , "Love", True) !\pause!
 (, "I", , "Love", True)
@@ -304,14 +305,41 @@ f $ x = f x
 \begin{frame}[fragile]
 \frametitle{Программирование, направляемое типами}
 \begin{itemize}
-    \item TODO
+    \item При реализации полиморфных функций очень часто их тип подсказывает реализацию. 
+    \item Пример:
+\begin{lstlisting}
+foo :: (a -> b, b -> Int) -> (a -> Int)
+\end{lstlisting}
+Какую часть реализации можно написать сразу?
+\begin{lstlisting}
+foo !\pause!(f, g) = !\pause!\x ->!\pause! ?
+\end{lstlisting}
+Типы переменных:\pause
+\begin{lstlisting}
+f :: a -> b, g :: b -> Int, !\pause!x :: a, ? :: Int
+\end{lstlisting}
+Можно увидеть, что \lstinline|?| может быть \lstinline|g ??|, где \lstinline|?? :: |\pause\lstinline|b = |\pause\lstinline|f x|.
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Типизированные дыры в коде}
 \begin{itemize}
-    \item TODO
+    \item Эти рассуждения не обязательно делать вручную.
+    \item Если в выражении (а не в образце) использовать дыру \lstinline|_| (или \lstinline|_название|), то увидим ожидаемый в этом месте тип.
+    \item
+\begin{lstlisting}
+foo :: (a -> b, b -> Int) -> (a -> Int)
+foo (f, g) = \x -> g _
+\end{lstlisting}
+    выдаст сообщение
+\begin{lstlisting}
+Found hole `_' with type: b
+Where: `b' is a rigid type variable bound by
+the type signature for foo :: (a -> b, b -> Int) -> (a -> Int)
+Relevant bindings include ...
+\end{lstlisting}
+    \item Дыр может быть несколько.
 \end{itemize}
 \end{frame}
 
