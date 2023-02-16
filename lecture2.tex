@@ -2,7 +2,6 @@
 \input{lecture_preamble.tex}
 
 \title{Лекция 2: основы синтаксиса (продолжение)}
-\date{14 февраля 2018}
 
 \begin{document}
 \begin{frame}[plain]
@@ -123,7 +122,6 @@ case условие of
 \end{lstlisting}
 \end{itemize}
 \end{frame}
-
 
 \begin{frame}[fragile]
 \frametitle{Охраняющие условия}
@@ -284,4 +282,18 @@ import Модуль
 \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+\frametitle{Stack}
+    \begin{itemize}
+        \item Для сборки лабораторных мы используем \href{https://docs.haskellstack.org/en/stable/#quick-start-guide}{Stack}.
+        \item Ещё одна распространённая система сборки: \href{https://cabal.readthedocs.io/}{Cabal}.
+        \item Обе ставятся вместе с Haskell через ghcup.
+        \item Основные команды можно посмотреть в документации, но нам пока достаточно
+        \begin{itemize}
+            \item \lstinline|stack repl| для запуска GHCi с загруженными файлами проекта.
+            \item \lstinline|stack test| для запуска тестов.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+    
 \end{document}
