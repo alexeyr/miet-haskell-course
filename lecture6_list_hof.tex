@@ -14,38 +14,120 @@
     \item Поговорим о списках подробнее.
     \item Это структура данных, которая постоянно встречается в программах.
     \item Но по поведению и характеристикам \emph{очень сильно} отличается от списков в Java и C\# (или \lstinline|std::vector| в C++).
+    \pause
+    \item Списки в Haskell и множестве других языков, начиная с Lisp "--- односвязные.
+    \pause
+    \item То есть вместе с каждым элементом хранится ссылка на остальную часть списка.
+    \item Вспомним определение:
+\begin{lstlisting}
+data [a] = [] | a : [a]
+\end{lstlisting}
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Некоторые функции для работы со списками}
+\frametitle{Некоторые функции первого порядка над\\ списками}
 \begin{itemize}
-    \item Первого порядка:
-    \item TODO
-    \item Второго порядка:
-    \item TODO
+    \item \lstinline|(++) :: [a] -> [a] -> [a]| \pause"--- объединение.
+    \item \lstinline|(!!) :: [a] -> Int -> a| \pause"--- элемент по индексу.
+    \item \lstinline|null :: a -> Bool| \pause"--- проверка на пустоту (лучше, чем \lstinline|length xs == 0|! Но сопоставление ещё лучше).
+    \item \lstinline|elem :: Eq a => a -> [a] -> Bool| \pause"--- проверка на вхождение элемента.
+    \item \lstinline|and, or :: [Bool] -> Bool| \pause"--- все ли элементы \lstinline|True| (или есть ли такой).
+    \pause
+    \item У части из них тип на самом деле более общий, но пока нам не нужен.
+    \pause
+    \item Все основные в \href{https://hackage.haskell.org/package/base-4.12.0.0/docs/Data-List.html}{Data.List}. \pause И ещё пакет \href{http://hackage.haskell.org/package/safe}{safe}.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Некоторые функции второго порядка над\\ списками}
+\begin{itemize}
+    \item \lstinline|map :: (a -> b) -> [a] -> [b]| \pause"--- применяет функцию ко всем элементам.
+    \item \lstinline|filter :: (a -> Bool) -> [a] -> [a]| \pause"--- выбирает элементы, удовлетворяющие условию.
+    \item \lstinline|concatMap :: (a -> [b]) -> [a] -> [b]| \pause"--- применяет функцию ко всем элементам и объединяет результаты.
+    \item \lstinline|all, any :: (a -> Bool) -> [a] -> Bool| \pause"--- все ли элементы удовлетворяют условию (или есть ли такой).
+    \pause
+    \item[]
+    \item Упражнение: реализуем какие-нибудь из них (рекурсивно и друг через друга).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Сложность функций над списками}
+\begin{itemize}
+    \item Базовые операции "--- конструирование списков и их разбор через \lstinline|:|.
+    \pause
+    \item Поэтому \lstinline|length| (а значит, и \lstinline|length xs == 0|) проходит весь список целиком, а \lstinline|null| нет.
+    \pause
+    \item \lstinline|xs !! n| "--- цена пропорциональна \pause\lstinline|n|.
+    \pause
+    \item Чем определяется цена \lstinline|xs ++ ys|? \pause Длиной \lstinline|xs|.
+    \pause
+    \item Добавление в конец списка \lstinline|xs ++ [y]| получается дорогим.
+    \item В цикле может сделать линейный алгоритм квадратичным.
+    \pause 
+    \item Вместо добавления в конец часто лучше добавлять в начало, а потом развернуть.
+    \pause
+    \item Всё это осложняется ленивостью, о ней позже.
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Выделения списков (list comprehensions)}
 \begin{itemize}
-    \item К сожалению, \href{https://ru.wikipedia.org/wiki/Списковое_включение}{устоявшегося перевода этого термина нет}.
+    \item Есть удобный способ записи списков, похожий на выражения для множеств.
+    \item[] \lstinline![x*x | x <- [1..5], even x] == !\pause \lstinline|[4, 16]|.
+    \item Как \(\left\{x^2\,\middle|\,x \in \{1, \ldots, 5\},\,even(x)\right\}\).
+    \item \lstinline!x <- [1..5]! "--- \emph{генератор}, \lstinline|even x| "--- \emph{фильтр}.
+    \pause
+    \item Тех и других может быть много.
+    \item Генераторы могут использовать переменные, введённые в предыдущих. Пример:
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+[(x, y) | x <- [1..5], y <- [1..x], odd (x - y)] == !\pause![(3, 2), (5, 2), (5, 4)]
+\end{lstlisting}
+    \item Эти выражения преобразуются в комбинации \lstinline|concatMap|, \lstinline|map| и \lstinline|filter|:
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+[x*x | x <- [1..5], even x] == !\pause!
+    map (\x -> x*x) (filter even [1..5])
+\end{lstlisting}
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Свёртки списков}
 \begin{itemize}
-    \item TODO
+    \item 
+\begin{lstlisting}
+foldr(') :: (a -> b -> b) -> b -> [a] -> b
+foldr f z [x1, x2, ..., xn] == 
+  x1 `f` (x2 `f` ... (xn `f` z)...)
+foldl(') :: (b -> a -> b) -> b -> [a] -> b
+foldl f z [x1, x2, ..., xn] == 
+  (...((z `f` x1) `f` x2) `f`...) `f` xn
+\end{lstlisting}
+    \item Функции \lstinline|sum|, \lstinline|length| и т.д. можно реализовать через них (TODO)
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
 \frametitle{Свёртки других типов данных}
 \begin{itemize}
+    \item Сравним объявление списка с типом \lstinline|foldr|:
+\begin{lstlisting}
+data [a] = a : [a]       | []
+foldr ::  (a -> b -> b) -> b -> [a] -> b
+\end{lstlisting}
+    \item Видим, что у нас по одному аргументу для каждого конструктора: каждый принимает аргументы типов полей этого конструктора (а если там \lstinline|[a]|, то \lstinline|b|) и возвращает \lstinline|b|. 
+    \item Последний аргумент "--- разбираемый список.
     \item Для \lstinline|Maybe|:
-    \item TODO
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+data Maybe a = Nothing | Just a
+foldMaybe ::   ?      -> ?        -> ?       -> b !\pause!
+foldMaybe ::   b      -> (a -> b) -> Maybe b -> b
+\end{lstlisting}
+    \pause
+    \item Это \lstinline|Data.Maybe.maybe| с обратным порядком аргументов. (TODO Bool и деревья)
 \end{itemize}
 \end{frame}
 

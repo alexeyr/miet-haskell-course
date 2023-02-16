@@ -308,7 +308,7 @@
     \item[]
     \begin{itemize}
         \item Используем функцию \lstinline|fix|.
-        \item \lstinline|fix f| возвращает неподвижную точку \lstinline|f| (т.е. \lstinline|fix f x == x|). 
+        \item \lstinline|fix f| возвращает неподвижную точку \lstinline|f| (т.е. \lstinline|f (fix f) == fix f|). 
         \pause
         \item Соотвественно, её тип \pause \lstinline|fix :: forall a. (a -> a) -> a|.
         \pause

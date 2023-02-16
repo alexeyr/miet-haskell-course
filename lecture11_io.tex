@@ -1,0 +1,243 @@
+% !TeX document-id = {40e7f911-37dd-4856-a048-b5b803f1756a}
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+
+\documentclass[11pt]{beamer}
+\input{lecture_preamble.tex}
+
+\title{Лекция 11: монада IO и взаимодействие с внешним миром}
+
+\begin{document}
+
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Монада IO}
+\begin{itemize}
+    \item Среди многих монад стандартной библиотеки, \haskinline|IO| играет особую роль.
+    \item Значение типа \haskinline|IO a| описывает вычисление с результатом типа \lstinline|a| и побочными эффектами.
+    \item В первую очередь имеются в виду ввод-вывод, как видно из названия, но также изменяемые переменные и т.д.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Программы командной строки}
+\begin{itemize}
+    \item Исполняемая программа в Haskell задаётся значением
+    \haskinline|main :: IO a| (почти всегда \haskinline|IO ()|).
+    \item Это аналог \mintinline{c}|int main(int argc, char** argv)| в C, \mintinline{java}|public static void main(char[] args)| в Java и т.д.
+    \item Соответственно, есть доступ к аргументам командной строки и возможность указать код выхода:
+    \item \haskinline|System.Environment.getArgs :: IO [String]|. Там же есть функции для чтения переменных окружения.
+    \item \haskinline|System.Exit.exitWith :: ExitCode -> IO a|.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Интерактивные программы}
+\begin{itemize}
+    \item Из консоли можно читать текст, вводимый пользователем:
+    \begin{haskell}
+    getLine ::`\pause` IO String
+    \end{haskell}
+    \item И писать в неё:    
+    \begin{haskell}
+    putStr, putStrLn ::`\pause` String -> IO ()
+    print :: Show a => a -> IO () 
+    \end{haskell}
+    \pause
+    \item Простой пример: читаем любую строку, выводим её длину и повторяем (а на \haskinline|"quit"| выходим):
+    \pause
+    \begin{haskell}
+    main = do
+      line <- getLine
+      if line != "quit"
+        then do
+          print (length line)
+          main
+        else
+          pure ()  -- или exitSuccess
+    \end{haskell}    
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Работа с файлами}
+\begin{itemize}
+    \item Модуль \href{http://hackage.haskell.org/package/base-4.12.0.0/docs/System-IO.html}{\haskinline|System.IO|}.
+    \item Напомню, \haskinline|type FilePath = String|.
+    \item Простейшие операции это чтение и запись в файл:
+    \begin{haskell}
+    readFile :: FilePath -> IO String
+    writeFile, appendFile :: 
+      FilePath -> String -> IO ()
+    \end{haskell}
+    \item
+    Или можно открыть файл один раз, получить \haskinline|Handle| (дескриптор файла) и работать с ним:
+    \begin{haskell}
+    openFile, openBinaryFile :: 
+      FilePath -> IOMode -> IO Handle 
+    hPutStrLn :: Handle -> String -> IO ()
+    hGetStr...
+    \end{haskell}
+    \pause
+    \item
+    Функции работы с консолью сводятся к этим:
+    \begin{haskell}
+    getLine = hGetLine stdin
+    \end{haskell}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Работа с файлами (2)}
+\begin{itemize}
+    \item В чём проблема с кодом вроде
+    \begin{haskell}
+    do
+      file <- openFile path ReadWriteMode
+      ...
+      hClose file
+    \end{haskell}
+    \pause
+    \item Что, если на каком-то из шагов случится исключение? Мы остаёмся с открытым файлом.
+    \item Если это случится много раз, программа вылетит.
+    \pause
+    \item Чтобы закрыть файл и при исключении:
+    \begin{haskell}
+    withFile path ReadWriteMode $ \file -> do
+      ...
+    \end{haskell}
+    \item Это частный случай функции \haskinline|bracket|.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ленивый ввод-вывод}
+\begin{itemize}
+    \item Функция \haskinline|hGetContents| не читает содержимое файла, а сразу возвращает строку, по мере доступа к которой читается файл.
+    \item С одной стороны, это хорошо: не нужно явно указывать, сколько читать.
+    \item Но если закрыть файл до того, как он реально прочитан, строка закончится как если бы она дошла до конца файла:
+    \begin{haskell*}{fontsize=\footnotesize}
+    wrong = do
+      fileData <- withFile "test.txt" ReadMode hGetContents
+      putStr fileData
+    \end{haskell*}
+    \item Нужно использовать данные внутри \haskinline|withFile|:
+    \begin{haskell*}{fontsize=\footnotesize}
+    right = withFile "test.txt" ReadMode $ \file -> do
+      fileData <- hGetContents file
+      putStr fileData
+    \end{haskell*}
+\end{itemize}
+\end{frame}
+    
+\begin{frame}[fragile]
+\frametitle{\haskinline|ByteString| и \haskinline|Text|}
+\begin{itemize}
+    \item Мы знаем, что \haskinline|String| занимает очень много места в памяти, что ухудшает и время работы.
+    \item Вместо него есть \haskinline|Data.ByteString.ByteString|, по сути представляющий собой массив байтов, и \haskinline|Data.ByteString.Lazy.ByteString| как ленивый список таких массивов.
+    \item Многие функции для работы с ними называются так же, как для \haskinline|String|, но живут в соответствующих модулях (поэтому используется \haskinline|import qualified|).
+    \item Они годятся для бинарных данных (или ASCII, с помощью \haskinline|Data.ByteString[.Lazy].Char8|).
+    \item Для текста аналогичный пакет \haskinline|text| и типы в модулях \haskinline|Data.Text[.Lazy]|.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Случайные значения}
+\begin{itemize}
+    \item Модуль \haskinline|System.Random| содержит класс
+    \item
+    \begin{haskell*}{fontsize=\footnotesize}
+    class RandomGen g where 
+      next :: g -> (Int, g)
+      split :: g -> (g, g)
+      genRange :: g -> (Int, Int) 
+      genRange _ = (minBound, maxBound)
+    \end{haskell*}
+    описывающий генераторы случайных \haskinline|Int|. 
+    \item Есть тип \haskinline|StdGen| и \haskinline|instance RandomGen StdGen|.
+    \item Глобальный генератор живёт в \haskinline|IORef|:
+    \begin{haskell*}{fontsize=\footnotesize}
+    getStdGen :: IO StdGen 
+    setStdGen :: StdGen -> IO () 
+    newStdGen :: IO StdGen  -- применяет split к getStdGen
+    getStdRandom :: (StdGen -> (a, StdGen)) -> IO a 
+    \end{haskell*}
+    \item Типы \haskinline|next| и \haskinline|getStdRandom| могут напомнить про \haskinline|State| и не зря!
+    \item Реализуем \haskinline|newStdGen| и \haskinline|getStdRandom|.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Случайные значения (ответ)}
+\begin{itemize}
+    \item
+    \begin{haskell}
+    newStdGen = do 
+      currGen <- getStdGen
+      let (newGen1, newGen2) = split currGen
+      setStdGen newGen2
+      pure newGen1
+    \end{haskell}
+    \pause
+    \item
+    \begin{haskell}
+    getStdRandom f = do 
+      currGen <- getStdGen
+      (result, newGen) = f currGen
+      setStdGen newGen
+      pure result
+    \end{haskell}
+    \pause
+    \item Можем выразить одно через другое?
+    \pause
+    \begin{haskell}
+    newStdGen = getStdRandom split
+    \end{haskell}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Случайные значения (2)}
+\begin{itemize}
+    \item Ещё один класс в \haskinline|System.Random| описывает типы, для которых можно получить случайные значения, если есть ГСЧ:
+    \item
+    \begin{haskell}
+    class Random a where 
+      randomR :: RandomGen g => (a, a) -> g -> (a, g) 
+      random :: RandomGen g => g -> (a, g) 
+    \end{haskell}
+    Первый аргумент \haskinline|randomR|: диапазон, в котором берутся значения.
+    \item Опять видим тип, похожий на \haskinline|State|.
+    \item
+    \begin{haskell}
+    randomRIO :: Random a => (a, a) -> IO a
+    \end{haskell}
+    использует глобальный генератор.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Побег из \haskinline|IO|}
+\begin{itemize}
+    \item Если у нас есть значение типа \haskinline|IO a|, можно ли превратить его просто в \haskinline|a|?
+    \pause
+    \item На самом деле есть функция \haskinline|unsafePerformIO :: IO a -> a|.
+    \item Но само название говорит о её небезопасности.
+    \item Конкретное использование может быть и безопасным, но для этого надо знать довольно много о внутренностях Haskell.
+    \pause
+    \item Поэтому в рамках этого курса мы её использовать не будем, как и другие \haskinline|unsafe*IO|.
+    \item А есть ещё \haskinline|accursedUnutterablePerformIO|\ldots
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Дополнительное чтение}
+\begin{itemize}
+    \item TODO
+\end{itemize}
+\end{frame}
+
+
+\end{document}

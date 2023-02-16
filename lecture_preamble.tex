@@ -15,6 +15,7 @@
 \usepackage{dejavu}
 \usepackage{etoolbox}
 \usepackage{bm}
+\usepackage{minted}
 %\usepackage[defaultsans]{droidsans}
 %\usepackage[defaultmono]{droidmono}
 %\makeatletter
@@ -56,7 +57,10 @@
     basicstyle=\ttfamily,
     commentstyle=\color{gray}\itshape,
     keywordstyle=
-    % keywordstyle=\color{blue} % TODO https://tex.stackexchange.com/questions/415777/avoid-highlighting-keywords-following-certain-words-in-listings
+    % keywordstyle=\color{blue}, % TODO https://tex.stackexchange.com/questions/415777/avoid-highlighting-keywords-following-certain-words-in-listings
+    % addkeywords={Type}
+    % deletekeywords={Monad, String, return, array, show},
+    % otherkeywords={::, ->}
 }
 \lstset{
     literate={а}{{\selectfont\char224}}1
@@ -126,6 +130,20 @@
     {Ю}{{\selectfont\char222}}1
     {Я}{{\selectfont\char223}}1
     {`}{{{\fixedtextasciigrave}}}1
+}
+
+% \usemintedstyle{solarized-light}
+\newminted[haskell]{haskell}{
+    escapeinside=``,
+    beameroverlays=true,
+    texcomments=true,
+    autogobble=true,
+    fontsize=\small
+}
+\newmintinline[haskinline]{haskell}{
+    escapeinside=``,
+    beameroverlays=true,
+    texcomments=true
 }
 
 \author{Алексей Романов}

@@ -1,0 +1,282 @@
+% !TeX document-id = {0c096819-60cf-4d9a-a18e-64c3d748af84}
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+
+\documentclass[11pt]{beamer}
+\input{lecture_preamble.tex}
+
+\title{Лекция 10: монады}
+
+\begin{document}
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Монады}
+\begin{itemize}
+    \item Монады расширяют возможности аппликативных функторов так же, как те расширяют возможности функторов.
+    \item А именно, там добавляется
+    \begin{haskell}
+    class Applicative m => Monad m where
+      (>>=) :: m a -> (a -> m b) -> m b
+      (>>) :: m a -> m b -> m b
+      mx >> my =`\pause` mx >>=`\pause` \_ -> my
+    \end{haskell}
+    \pause
+    \item По историческим причинам есть ещё \haskinline|return = pure| и \haskinline|fail :: String -> m a|.
+    \pause
+    \item Больше похоже на знакомые типы, если поменять аргументы местами:
+    \begin{haskell}
+    fmap  ::   (a -> b) -> f a -> f b
+    (<*>) :: f (a -> b) -> f a -> f b
+    (=<<) :: (a -> m b) -> m a -> m b
+    \end{haskell}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Что можно сделать с монадами}
+\begin{itemize}
+    \item В прошлой лекции: 
+    \begin{displayquote}
+        Структура результата аппликативного вычисления зависит только от структуры аргументов, а не от значений внутри них
+    \end{displayquote}
+    \item Монады снимают это ограничение. Теперь можно написать 
+    \begin{haskell}
+    ifM :: Monad m => m Bool -> m a -> m a -> m a
+    ifM mCond mThen mElse = mCond >>=`\pause` \cond ->`\pause` 
+      if cond then mThen else mElse
+    \end{haskell}
+    и проверить:
+    \begin{haskell}
+    Prelude> ifM [True] [1] [2,3]
+    [1]
+    Prelude> ifM [False] [1] [2,3]
+    [2,3]
+    \end{haskell}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Законы монад}
+\begin{itemize}
+    \item \haskinline|pure x >>= f `$\equiv$` f x| 
+    \item \haskinline|mx >>= pure `$\equiv$` mx| 
+    \item \haskinline[fontsize=\small]|(mx >>= f) >>= g `$\equiv$` mx >>= (\x -> f x >>= g)| 
+    \item Может быть, они не совсем интуитивны.
+    \pause
+    \item С помощью монадической композиции \haskinline|(>=>) :: (a -> m b) -> (b -> m c) -> (a -> m c)| они записываются естественнее: 
+    \item \haskinline|pure >=> f `$\equiv$` f| 
+    \item \haskinline|f >=> pure `$\equiv$` f| 
+    \item \haskinline|(f >=> g) >=> h `$\equiv$` f >=> (g >=> h)| \pause
+    \item Кроме этого, должно быть согласование с \haskinline|<*>|: \\
+    \haskinline|mf <*> mx| $\equiv$ \haskinline|  mf >>= (\f -> mx >>= (\x -> pure (f x)))| 
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Примеры монад}
+\begin{itemize}[<+->]
+    \item \haskinline|Maybe| "--- монада. Определим:
+    \begin{haskell}
+    instance Monad Maybe where
+      -- (>{}>=) ::\pause Maybe a -> (a -> Maybe b) -> Maybe b
+      Nothing >>= _ =`\pause` Nothing
+      Just x  >>= f =`\pause` f x
+    \end{haskell}
+    \item Списки тоже монада:
+    \begin{haskell}
+    -- (>{}>=) ::\pause [a] -> (a -> [b]) -> [b]
+    []     >>= _ =`\pause` []
+    (x:xs) >>= f =`\pause` f x ++ (xs >>= f)
+    \end{haskell}
+    Или проще:
+    \begin{haskell}
+    xs >>= f = [y |`\pause` x <- xs, y <- f x]
+    \end{haskell}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Ещё примеры монад}
+\begin{itemize}
+    \item \haskinline|instance Monad Identity|, где \haskinline|newtype Identity a = Identity a|.
+    \item \haskinline|instance Monad (Either c)|.
+    \item \haskinline|instance Monad ((->) c)|: функции с фиксированным типом аргумента.
+    \item \haskinline|instance Monoid c => Monad ((,) c)|: пары с фиксированным типом первого элемента, если этот тип "--- моноид.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{\ldots и не монад}
+\begin{itemize}
+    \item Есть и примеры аппликативных функторов, для которых нельзя определить экземпляр монады:
+    \item 
+    \begin{haskell}
+    newtype ConstInt a = ConstInt Int
+    fmap f (ConstInt x) = ConstInt x
+    pure _ = 0
+    ConstInt x <*> ConstInt y = ConstInt (x + y)
+    \end{haskell}
+    \item Легко увидеть, что \haskinline|pure x >>= f `$\equiv$` f x| не может выполняться ни для какого определения \haskinline|>>=|: правая часть зависит от \haskinline|x|, а левая нет.
+    \pause
+    \item Ещё пример "--- \haskinline|ZipList| (если не допускать \emph{только} бесконечные списки, как в домашнем задании, или активное использование $\bot$).
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{\haskinline|do|-нотация}
+\begin{itemize}
+    \item Для монад есть специальный синтаксис, которым часто удобнее пользоваться.
+    \item Скажем, у нас есть цепочка операций
+    \begin{haskell*}{fontsize=\footnotesize}
+    action1 >>= (\x1 -> action2 x1 >>= 
+      (\x2 -> action3 x1 x2 >> action4 x1))
+    \end{haskell*} 
+    \item
+    Сначала перепишем так:
+    \begin{haskell*}{fontsize=\footnotesize}
+    action1 >>= \x1 -> 
+      action2 x1 >>= \x2 -> 
+        action3 x1 x2 >>
+          action4 x1
+    \end{haskell*}
+    \item
+    В \haskinline|do|-блоке строки вида \haskinline|action1 >>= \x1 ->| превращаются в \haskinline|x1 <- action1|, а \haskinline|>>| пропадает:
+    \begin{haskell*}{fontsize=\footnotesize}
+    do x1 <- action1
+       x2 <- action2 x1
+       action3 x1 x2
+       action4 x1
+    \end{haskell*}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Законы монад в \haskinline|do|-нотации}
+\begin{itemize}[<+->]
+    \item Законы монад также можно записать через \haskinline|do|:
+    \item 
+    \begin{haskell}
+    do y <- pure x    `$\mathtt{\equiv}$`    f x
+       f y
+    \end{haskell} 
+    \item 
+    \begin{haskell}
+    do x <- mx        `$\mathtt{\equiv}$`    mx
+       pure x
+    \end{haskell}
+    \item 
+    \begin{haskell}
+    do x <- mx        `$\mathtt{\equiv}$`    do y <- do x <- mx
+       y <- f x       `\textcolor{white}{$\mathtt{\equiv}$}`               f x
+       g y            `\textcolor{white}{$\mathtt{\equiv}$}`       g y
+    \end{haskell}
+    \item 
+    \begin{haskell}
+    mf <*> mx         `$\mathtt{\equiv}$`    do f <- mf
+                      `\textcolor{white}{$\mathtt{\equiv}$}`       x <- mx
+                      `\textcolor{white}{$\mathtt{\equiv}$}`       pure (f x)
+    \end{haskell}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Общая форма \haskinline|do|-нотации}
+\begin{itemize}
+    \item Каждая строка \haskinline|do|-блока имеет вид \haskinline|образец <- м_выражение|, \haskinline|let образец = выражение| или просто \haskinline|м_выражение|.
+    \item Первые два вида не могут быть в конце.
+    \item \haskinline|м_выражение| должно иметь тип \haskinline|m a| для какой-то монады \haskinline|m| и типа \haskinline|a|.
+    \item \haskinline|m| одна для всех строк, \haskinline|a| могут различаться.
+    \item \haskinline|образец| в строке с \haskinline|<-| имеет тип \haskinline|a|.
+    \item \haskinline|образец| может не быть обязательным для всех значений типа \haskinline|a|, как в \haskinline|Just x <- pure Nothing|. В этом случае и нужна функция \haskinline|fail|. 
+    \item Но это не рекомендуется использовать.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Функции над произвольными монадами}
+\begin{itemize}[<+->]
+    \item Кроме уже виденных \haskinline|=<<| и \haskinline|>=>|, в \haskinline|Prelude| и \haskinline|Control.Monad| есть ещё функции, которые работают для любых монад (или аппликативов).
+    \item \haskinline|join :: Monad m => m (m a) -> m a|. Эту функцию можно было бы взять как базовую и выразить \haskinline|>>=| через неё.
+    \item \haskinline|sequence :: Monad m => [m a] -> m [a]|. На самом деле, в библиотеке более общий вариант.
+    \item \haskinline[fontsize=\small]|mapM :: Monad m => (a -> m b) -> [a] -> m [b]|
+    \item
+    \begin{haskell}
+    zipWithM :: Applicative m =>
+      (a -> b -> m c) -> [a] -> [b] -> m [c]
+    \end{haskell}
+    \item Подставьте конкретные монады (например, \haskinline|Maybe| и \haskinline|[]|) и подумайте, что функции будут делать для них.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Монада \haskinline|State|}
+\begin{itemize}
+    \item Рассмотрим ещё один, более сложный пример:
+    \item
+    \begin{haskell*}{fontsize=\footnotesize}
+    newtype State s a = State { runState :: s -> (a, s) }
+    \end{haskell*}
+    Это \enquote{вычисления с состоянием}, которые могут выдать результат, зависящий от состояния и изменить это состояние.
+    \item Как сделать их аппликативным функтором?
+    \begin{haskell*}{fontsize=\footnotesize}
+    instance Functor (State s) where
+      fmap f (State gx) = State (\s1 ->`\pause` 
+        let (x, s2) = gx s1
+        in`\pause` (f x, s2))
+ 
+    instance Applicative (State s) where
+      pure x = State (\s1 ->`\pause` (x, s1))
+      (State gf) <*> (State gx) = State (\s1 ->
+        let (f, s2) = gf s1`\pause`
+            (x, s3) = gx s2
+        in`\pause` (f x, s3))
+   \end{haskell*}    
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Монада \haskinline|State|}
+\begin{itemize}
+    \item А теперь монадой:
+    \begin{haskell*}{fontsize=\footnotesize}
+    instance Monad (State s) where
+      State gx >>= f = State (\s1 ->
+        let (x, s2) = gx s1`\pause`
+            State gy = f x
+        in`\pause` gy s2)
+    \end{haskell*} 
+    \pause
+    \item Определим вспомогательные функции:
+    \begin{haskell*}{fontsize=\footnotesize}
+    get :: State s s
+    get = State`\pause` (\s -> (s, s))
+
+    put :: s -> State s ()
+    put x = State`\pause` (\_ -> ((), x))
+    
+    modify :: (s -> s) -> State s ()
+    modify f = do x <- get
+                  put (f x)
+    \end{haskell*} 
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+\frametitle{Дополнительное чтение}
+\begin{itemize}
+    \item \href{https://www.snoyman.com/blog/2017/01/functors-applicatives-and-monads}{Functors, Applicatives, and Monads}
+    \item \href{https://wiki.haskell.org/Typeclassopedia}{Typeclassopedia} (ещё раз)
+    \item \href{http://dev.stephendiehl.com/hask/#monads}{What I Wish I Knew When Learning Haskell: Monads}
+    \item \href{https://wiki.haskell.org/All_About_Monads}{All About Monads}
+    \item И две более сложные монады:
+    \begin{itemize}
+        \item \href{http://blog.sigfpe.com/2008/12/mother-of-all-monads.html}{The Mother of all Monads}
+        \item \href{https://lukepalmer.wordpress.com/2008/08/10/mindfuck-the-reverse-state-monad/}{Mindfuck: The Reverse State Monad}
+        \item \href{https://tech-blog.capital-match.com/posts/5-the-reverse-state-monad.html}{The Curious Time-Traveling Reverse State Monad}
+    \end{itemize}
+\end{itemize}
+\end{frame}
+
+\end{document}
