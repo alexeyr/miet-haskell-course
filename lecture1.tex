@@ -2,7 +2,6 @@
 \input{lecture_preamble.tex}
 
 \title{Лекция 1: введение и основы синтаксиса}
-\date{14 февраля 2018}
 
 \begin{document}
 \begin{frame}[plain]
@@ -107,8 +106,8 @@
 \begin{frame}[fragile]
 \frametitle{Язык Haskell: начало}
 \begin{itemize}
-    \item Установите Haskell Platform (\url{https://www.haskell.org/platform/})
-    \item Запустите WinGHCi (или просто GHCi)
+    \item Установите ghcup (\url{https://www.haskell.org/ghcup/})
+    \item Запустите GHCi
     \item Это оболочка или REPL (Read-Eval-Print loop)
     \begin{itemize}
         \item Read: Вы вводите выражения Haskell (и команды GHCi)
@@ -117,7 +116,7 @@
     \end{itemize}
     \item Пример:
 \begin{lstlisting}[breaklines]
-GHCi, version 8.2.2: http://www.haskell.org/ghc/  :? for help
+GHCi, version 9.2.5: http://www.haskell.org/ghc/  :? for help
 Prelude> 2 + 2
 4
 Prelude> :t True -- команда GHCi
