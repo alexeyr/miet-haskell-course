@@ -2,7 +2,6 @@
 \input{lecture_preamble.tex}
 
 \title{Лекция 3: типы данных}
-\date{21 февраля 2018}
 
 \begin{document}
 \begin{frame}[plain]
@@ -48,9 +47,9 @@ Point образец_Double образец_Double
 \end{lstlisting}
     \item Зададим значение типа \lstinline|Point| и функцию на них:
 \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
-Prelude> let origin = Point 0 0
+Prelude> origin = Point 0 0
 
-Prelude> let xCoord (Point x _) = x
+Prelude> xCoord (Point x _) = x
 Prelude> xCoord origin
 0.0
 \end{lstlisting}
@@ -73,7 +72,7 @@ Point :: Double -> Double -> Point
 \begin{lstlisting}
 Prelude> data Point = Point { xCoord :: Double, yCoord :: Double } deriving Show
 Prelude> :t yCoord
-yCoord2 :: Point -> Double
+yCoord :: Point -> Double
 Prelude> yCoord (Point 0 (-1))
 -1.0
 \end{lstlisting}
@@ -91,7 +90,7 @@ data IpAddress = IPv4 String | IPv6 String
 \end{lstlisting}
 \item Создание значения:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> let googleDns = IPv4 "8.8.8.8"
+Prelude> googleDns = IPv4 "8.8.8.8"
 \end{lstlisting}
 \item Образцы: \lstinline[basicstyle=\ttfamily\small]|IPv4 образец_String| и \lstinline[basicstyle=\ttfamily\small]|IPv6 образец_String|.
 \item Функции часто определяются по уравнению на каждый конструктор:
@@ -229,23 +228,22 @@ newtype EMail = EMail String
 \end{itemize}
 \end{frame}
 
-
 \begin{frame}[fragile]
 \frametitle{Полиморфные функции и значения}
 \begin{itemize}
     \item Какой тип функции
 \begin{lstlisting}
-Prelude> let id x = x
+Prelude> id x = x
 Prelude> :t id !\pause!
 id :: a -> a
 \end{lstlisting}
 \item Более явно: \lstinline|id :: forall a. a -> a|.
 \begin{itemize}
-\item Чтобы написать это в коде, нужно \lstinline|ExplicitForAll|.
+\item Чтобы написать это в коде, нужно \lstinline|ExplicitForAll| (включено по умолчанию в Haskell2021).
 \end{itemize}
 \item Аналогично
 \begin{lstlisting}
-Prelude> let foo (_, x, y) = (y, x, x)
+Prelude> foo (_, x, y) = (y, x, x)
 Prelude> :t foo !\pause!
 id :: (a1, c, a2) -> (a2, c, c) 
 -- или (a, b, c) -> (c, b, b)
@@ -268,13 +266,13 @@ id @Int :: Int -> Int
     \item По умолчанию область видимости переменной типа "--- сигнатура, где она появилась. Например, в
 \begin{lstlisting}
 g :: [a] -> [a]
-g (x:xs) = xs ++ [ x :: a ]
+g (x:xs) = xs ++ [x :: a]
 \end{lstlisting}
     \pause
     две переменные \lstinline|a| "--- разные и читаются как
 \begin{lstlisting}
 g :: forall a. [a] -> [a]
-g (x:xs) = xs ++ [ x :: forall a. a ]
+g (x:xs) = xs ++ [x :: forall a. a]
 \end{lstlisting}
     \pause
     (так что функция не скомпилируется). 
@@ -288,7 +286,7 @@ g (x:xs) = xs ++ [ x :: forall a. a ]
     \item С ним пример с прошлого слайда можно записать как
 \begin{lstlisting}
 g :: forall a. [a] -> [a]
-g (x:xs) = xs ++ [ x :: a ]
+g (x:xs) = xs ++ [x :: a]
 \end{lstlisting}
     \item Можно также вводить новые переменные сигнатурой для выражения \emph{внутри} определения, они будут видимы в этом выражении.
     \item Точные правила можно найти в документации, в разделе \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#lexically-scoped-type-variables}{Lexically scoped type variables}.
@@ -356,22 +354,21 @@ replicate x n = x : replicate x (n - 1)
 \begin{itemize}
 \item 
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> let aPoint = Point 0 (-1)
+Prelude> aPoint = Point 0 (-1)
 Prelude> aPoint { xCoord = 1 } !\pause!
 Point {xCoord = 1.0, yCoord = -1.0}
 Prelude> aPoint !\pause!
 Point {xCoord = 0.0, yCoord = -1.0} !\pause!
-Prelude> let Point {xCoord = x'} = it
+Prelude> Point {xCoord = x'} = it
 Prelude> x' !\pause!
 0.0 !\pause!
 
 Prelude> :set -XNamedFieldPuns -XRecordWildCards
-Prelude> let f (Point { xCoord, yCoord }) = xCoord + yCoord
-Prelude> let g (Point { .. }) = xCoord + yCoord
+Prelude> f (Point { xCoord, yCoord }) = xCoord + yCoord
+Prelude> g (Point { .. }) = xCoord + yCoord
 \end{lstlisting}
 \item Два последних образца "--- сокращения\\ \lstinline[basicstyle=\ttfamily\small]|Point { xCoord = xCoord, yCoord = yCoord }|.
 \end{itemize}
-
 \end{frame}
 
 \begin{frame}[fragile]
