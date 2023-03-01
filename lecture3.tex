@@ -232,17 +232,14 @@ newtype EMail = EMail String
 \frametitle{Полиморфные функции и значения}
 \begin{itemize}
     \item Какой тип функции
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 Prelude> id x = x
 Prelude> :t id !\pause!
 id :: a -> a
 \end{lstlisting}
 \item Более явно: \lstinline|id :: forall a. a -> a|.
-\begin{itemize}
-\item Чтобы написать это в коде, нужно \lstinline|ExplicitForAll| (включено по умолчанию в Haskell2021).
-\end{itemize}
 \item Аналогично
-\begin{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\small]
 Prelude> foo (_, x, y) = (y, x, x)
 Prelude> :t foo !\pause!
 id :: (a1, c, a2) -> (a2, c, c) 
@@ -250,19 +247,17 @@ id :: (a1, c, a2) -> (a2, c, c)
 \end{lstlisting}
 \item \lstinline|Just :: a -> Maybe a|
 \item И \lstinline|[] :: [a]| "--- полиморфные значения не обязательно функции.
+\item Параметр типа можно передать явно:
+\begin{lstlisting}[basicstyle=\ttfamily\small]
+Prelude> :t id @Int
+id @Int :: Int -> Int
+\end{lstlisting}
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Полезные расширения для полиморфных функций}
+\frametitle{Область видимости переменных типа}
 \begin{itemize}
-    \item Параметр типа можно передать явно:
-\begin{lstlisting}
-Prelude> :set -XTypeApplications
-Prelude> :t id @Int
-id @Int :: Int -> Int
-\end{lstlisting}
-    \pause
     \item По умолчанию область видимости переменной типа "--- сигнатура, где она появилась. Например, в
 \begin{lstlisting}
 g :: [a] -> [a]
@@ -276,20 +271,13 @@ g (x:xs) = xs ++ [x :: forall a. a]
 \end{lstlisting}
     \pause
     (так что функция не скомпилируется). 
-\end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{Область видимости переменных типа}
-\begin{itemize}
-    \item Расширение \lstinline|ScopedTypeVariables| расширяет область видимости, но только для переменных с явным \lstinline|forall|.
-    \item С ним пример с прошлого слайда можно записать как
+    \pause
+    \item Но можно написать так:
 \begin{lstlisting}
 g :: forall a. [a] -> [a]
 g (x:xs) = xs ++ [x :: a]
 \end{lstlisting}
-    \item Можно также вводить новые переменные сигнатурой для выражения \emph{внутри} определения, они будут видимы в этом выражении.
-    \item Точные правила можно найти в документации, в разделе \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#lexically-scoped-type-variables}{Lexically scoped type variables}.
+    \item Точные правила можно найти в \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#lexically-scoped-type-variables}{Lexically scoped type variables}.
 \end{itemize}
 \end{frame}
 
@@ -329,7 +317,7 @@ replicate x n = x : replicate x (n - 1)
     }
     \onslide<2->{
     \item Сравните помеченное объединение с непомеченным \lstinline|union| в C/C++.
-    \item И с \lstinline|boost::variant| (\lstinline|std::variant| в C++17).
+    \item И с \lstinline|std::variant|.
     }
     \onslide<3->{\item Тип функций "--- множество функций в теории множеств, импликация в логике и возведение в степень в алгебре.}
     \onslide<4->{\item Обычные законы алгебры выполняются для типов с точностью до изоморфизма, как и для множеств.}
@@ -353,7 +341,7 @@ replicate x n = x : replicate x (n - 1)
 \hyperlink{rec1}{\beamerreturnbutton{К определению записей}}
 \begin{itemize}
 \item 
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
 Prelude> aPoint = Point 0 (-1)
 Prelude> aPoint { xCoord = 1 } !\pause!
 Point {xCoord = 1.0, yCoord = -1.0}
@@ -362,8 +350,10 @@ Point {xCoord = 0.0, yCoord = -1.0} !\pause!
 Prelude> Point {xCoord = x'} = it
 Prelude> x' !\pause!
 0.0 !\pause!
-
-Prelude> :set -XNamedFieldPuns -XRecordWildCards
+Prelude> :set -XOverloadedRecordDot -XNamedFieldPuns -XRecordWildCards
+Prelude> aPoint.xCoord
+0.0 !\pause!
+Prelude> :set 
 Prelude> f (Point { xCoord, yCoord }) = xCoord + yCoord
 Prelude> g (Point { .. }) = xCoord + yCoord
 \end{lstlisting}
