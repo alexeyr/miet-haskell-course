@@ -142,7 +142,7 @@ data Either a b = Left a | Right b
     \item Нет типов, у которых \lstinline|null| нет и с отсутствием значения приходится что-то придумывать.
     \item Есть \lstinline|Maybe (Maybe a)| (бывает полезно).
     \pause
-    \item \enquote{\itshape \lstinline|null| "--- моя ошибка ценой в миллиард долларов... Я планировал сделать любое использование ссылок [в Algol] абсолютно безопасным. Но не удержался от соблазна добавить \lstinline|null| просто потому, что его было так легко реализовать.} (\href{https://ru.wikipedia.org/wiki/%D0%A5%D0%BE%D0%B0%D1%80,_%D0%A7%D0%B0%D1%80%D0%BB%D1%8C%D0%B7_%D0%AD%D0%BD%D1%82%D0%BE%D0%BD%D0%B8_%D0%A0%D0%B8%D1%87%D0%B0%D1%80%D0%B4}{Тони Хоар}, \href{https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare}{QCon 2009})
+    \item \enquote{\itshape \lstinline|null| "--- моя ошибка ценой в миллиард долларов... Я планировал сделать любое использование ссылок [в Algol] абсолютно безопасным. Но не удержался от соблазна добавить \lstinline|null| просто потому, что его было так легко реализовать.} (\href{https://ru.wikipedia.org/wiki/Хоар,_Чарльз_Энтони_Ричард}{Тони Хоар}, \href{https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare}{QCon 2009})
 \end{itemize}
 \end{frame}
 
@@ -277,7 +277,7 @@ g (x:xs) = xs ++ [x :: forall a. a]
 g :: forall a. [a] -> [a]
 g (x:xs) = xs ++ [x :: a]
 \end{lstlisting}
-    \item Точные правила можно найти в \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#lexically-scoped-type-variables}{Lexically scoped type variables}.
+    \item Точные правила можно найти в \href{https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/scoped_type_variables.html}{Lexically scoped type variables}.
 \end{itemize}
 \end{frame}
 
