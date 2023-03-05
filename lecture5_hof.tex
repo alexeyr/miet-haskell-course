@@ -29,7 +29,7 @@
 foo :: (Char -> Bool) -> Bool
 foo f = f 'a'
 
-Prelude Data.Char> foo isLetter !\pause!
+ghci> foo isLetter !\pause!
 True
 \end{lstlisting} 
     \item Скобки вокруг типа параметра здесь необходимы.\pause
@@ -186,9 +186,9 @@ uncurry :: (a -> b -> c) -> (a, b) -> c
     \item Преимущество каррированных функций в том, что естественным образом появляется частичное применение.
     \item То есть мы можем применить функцию \enquote{двух аргументов} только к первому и останется функция одного аргумента:
 \begin{lstlisting}
-Prelude Data.List> :t sortBy
+ghci> :t sortBy
 sortBy :: (a -> a -> Ordering) -> [a] -> [a]
-Prelude Data.List> :t sortBy (flip compare) !\pause!
+ghci> :t sortBy (flip compare) !\pause!
 sortBy (flip compare) :: Ord a => [a] -> [a]
 \end{lstlisting}\pause
     \item Заметьте, что здесь частичное применение в двух местах: \pause\lstinline|flip| можно теперь рассматривать как функцию трёх аргументов!
@@ -200,7 +200,7 @@ sortBy (flip compare) :: Ord a => [a] -> [a]
 \begin{itemize}
     \item Для применения бинарного оператора только к первому аргументу можно использовать его префиксную форму:
 \begin{lstlisting}
-Prelude> :t (+) 1
+ghci> :t (+) 1
 (+) 1 :: Num a => a -> a
 \end{lstlisting}\pause
     \item А ко второму? Можно использовать лямбду
@@ -213,9 +213,9 @@ flip (/) 2
 \end{lstlisting}\pause
     \item Но есть специальный синтаксис \lstinline|(арг оп)| и \lstinline|(оп арг)|:
 \begin{lstlisting}
-Prelude> (1 `div`) 2 !\pause!
+ghci> (1 `div`) 2 !\pause!
 0
-Prelude> (/ 2) 4 !\pause!
+ghci> (/ 2) 4 !\pause!
 2.0
 \end{lstlisting}
 \end{itemize}
@@ -226,10 +226,10 @@ Prelude> (/ 2) 4 !\pause!
 \begin{itemize}
     \item Расширение \lstinline|TupleSections| позволяет частично применять конструкторы кортежей:
 \begin{lstlisting}
-Prelude> :set -XTupleSections
-Prelude> (, "I", , "Love", True) 1 False !\pause!
+ghci> :set -XTupleSections
+ghci> (, "I", , "Love", True) 1 False !\pause!
 (1,"I",False,"Love",True)
-Prelude> :t (, "I", , "Love", True) !\pause!
+ghci> :t (, "I", , "Love", True) !\pause!
 (, "I", , "Love", True)
   :: t1 -> t2 -> (t1, [Char], t2, [Char], Bool)
 \end{lstlisting}

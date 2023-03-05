@@ -47,10 +47,10 @@ Point образец_Double образец_Double
 \end{lstlisting}
     \item Зададим значение типа \lstinline|Point| и функцию на них:
 \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
-Prelude> origin = Point 0 0
+ghci> origin = Point 0 0
 
-Prelude> xCoord (Point x _) = x
-Prelude> xCoord origin
+ghci> xCoord (Point x _) = x
+ghci> xCoord origin
 0.0
 \end{lstlisting}
 \end{itemize}
@@ -61,7 +61,7 @@ Prelude> xCoord origin
 \begin{itemize}
     \item Конструктор является функцией
 \begin{lstlisting}
-Prelude> :t Point !\pause!
+ghci> :t Point !\pause!
 Point :: Double -> Double -> Point
 \end{lstlisting}
     \item Мы можем дать полям конструктора имена. Это:\hypertarget{rec1}{}
@@ -70,10 +70,10 @@ Point :: Double -> Double -> Point
         \item Определяет функции, возвращающие их значения.
     \end{itemize}
 \begin{lstlisting}
-Prelude> data Point = Point { xCoord :: Double, yCoord :: Double } deriving Show
-Prelude> :t yCoord
+ghci> data Point = Point { xCoord :: Double, yCoord :: Double } deriving Show
+ghci> :t yCoord
 yCoord :: Point -> Double
-Prelude> yCoord (Point 0 (-1))
+ghci> yCoord (Point 0 (-1))
 -1.0
 \end{lstlisting}
 \item Особенно полезно, когда полей много, и только по типу не понять, какое где.
@@ -90,7 +90,7 @@ data IpAddress = IPv4 String | IPv6 String
 \end{lstlisting}
 \item Создание значения:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> googleDns = IPv4 "8.8.8.8"
+ghci> googleDns = IPv4 "8.8.8.8"
 \end{lstlisting}
 \item Образцы: \lstinline[basicstyle=\ttfamily\small]|IPv4 образец_String| и \lstinline[basicstyle=\ttfamily\small]|IPv6 образец_String|.
 \item Функции часто определяются по уравнению на каждый конструктор:
@@ -202,7 +202,7 @@ type FilePath = String
     \pause 
     \item Для \lstinline|FilePath| дело в том, что осмысленные операции над путями не те, что над строками:
 \begin{lstlisting}
-Prelude Data.List> isPrefixOf 
+ghci> isPrefixOf 
     ("C:\\Program Files" :: FilePath) 
     ("C:\\Program Files (x86)" :: FilePath)
 True
@@ -233,15 +233,15 @@ newtype EMail = EMail String
 \begin{itemize}
     \item Какой тип функции
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> id x = x
-Prelude> :t id !\pause!
+ghci> id x = x
+ghci> :t id !\pause!
 id :: a -> a
 \end{lstlisting}
 \item Более явно: \lstinline|id :: forall a. a -> a|.
 \item Аналогично
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> foo (_, x, y) = (y, x, x)
-Prelude> :t foo !\pause!
+ghci> foo (_, x, y) = (y, x, x)
+ghci> :t foo !\pause!
 id :: (a1, c, a2) -> (a2, c, c) 
 -- или (a, b, c) -> (c, b, b)
 \end{lstlisting}
@@ -249,7 +249,7 @@ id :: (a1, c, a2) -> (a2, c, c)
 \item И \lstinline|[] :: [a]| "--- полиморфные значения не обязательно функции.
 \item Параметр типа можно передать явно:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> :t id @Int
+ghci> :t id @Int
 id @Int :: Int -> Int
 \end{lstlisting}
 \end{itemize}
@@ -342,20 +342,20 @@ replicate x n = x : replicate x (n - 1)
 \begin{itemize}
 \item 
 \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
-Prelude> aPoint = Point 0 (-1)
-Prelude> aPoint { xCoord = 1 } !\pause!
+ghci> aPoint = Point 0 (-1)
+ghci> aPoint { xCoord = 1 } !\pause!
 Point {xCoord = 1.0, yCoord = -1.0}
-Prelude> aPoint !\pause!
+ghci> aPoint !\pause!
 Point {xCoord = 0.0, yCoord = -1.0} !\pause!
-Prelude> Point {xCoord = x'} = it
-Prelude> x' !\pause!
+ghci> Point {xCoord = x'} = it
+ghci> x' !\pause!
 0.0 !\pause!
-Prelude> :set -XOverloadedRecordDot -XNamedFieldPuns -XRecordWildCards
-Prelude> aPoint.xCoord
+ghci> :set -XOverloadedRecordDot -XNamedFieldPuns -XRecordWildCards
+ghci> aPoint.xCoord
 0.0 !\pause!
-Prelude> :set 
-Prelude> f (Point { xCoord, yCoord }) = xCoord + yCoord
-Prelude> g (Point { .. }) = xCoord + yCoord
+ghci> :set 
+ghci> f (Point { xCoord, yCoord }) = xCoord + yCoord
+ghci> g (Point { .. }) = xCoord + yCoord
 \end{lstlisting}
 \item Два последних образца "--- сокращения\\ \lstinline[basicstyle=\ttfamily\small]|Point { xCoord = xCoord, yCoord = yCoord }|.
 \end{itemize}
@@ -367,7 +367,7 @@ Prelude> g (Point { .. }) = xCoord + yCoord
 \begin{itemize}
     \item
 \begin{lstlisting}
-Prelude> Point { xCoord = 0 }
+ghci> Point { xCoord = 0 }
 \end{lstlisting}
     \pause
     без \lstinline|yCoord| компилируется только с предупреждением (можно сделать ошибкой с помощью опций компилятора).

@@ -58,7 +58,7 @@ instance Eq IpAddress where
 \begin{itemize}
     \item Если спросить GHCi про тип \lstinline|==|, получим
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> :t (==)
+ghci> :t (==)
 (==) :: Eq a => a -> a -> Bool
 \end{lstlisting}
     \item Читается \enquote{\lstinline|a -> a -> Bool| для любого \lstinline|a| из \lstinline|Eq|}.
@@ -180,9 +180,9 @@ read :: Read a => String -> a
     \item \lstinline|read| должна быть обратной к \lstinline|show|.
     \item Заметьте полиморфизм \lstinline|read| по возвращаемому типу:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> read "2" :: Integer
+ghci> read "2" :: Integer
 2
-Prelude> read "2" :: Double
+ghci> read "2" :: Double
 2.0
 \end{lstlisting}
 \end{itemize}
@@ -193,7 +193,7 @@ Prelude> read "2" :: Double
 \begin{itemize}
     \item Что случится, если передать \lstinline|read| неподходящий аргумент?
 \begin{lstlisting}
-Prelude> read "1" :: [Bool] !\pause!
+ghci> read "1" :: [Bool] !\pause!
 *** Exception: Prelude.read: no parse
 \end{lstlisting}
     \item Если вы не знаете \emph{точно}, что текст содержит значение, используйте безопасную
@@ -231,7 +231,7 @@ class Enum a where
     \pause
     \item Для \lstinline|Float| и \lstinline|Double| есть экземпляры \lstinline|Enum|, так что можно писать \lstinline|[1.0..]|\only<4->{, но они довольно странные}: 
 \begin{lstlisting}
-Prelude> [1.2..2.0] !\pause!
+ghci> [1.2..2.0] !\pause!
 [1.2,2.2]
 \end{lstlisting}
 \end{itemize}

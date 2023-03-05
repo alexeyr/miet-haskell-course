@@ -117,9 +117,9 @@
     \item Пример:
 \begin{lstlisting}[breaklines]
 GHCi, version 9.2.5: http://www.haskell.org/ghc/  :? for help
-Prelude> 2 + 2
+ghci> 2 + 2
 4
-Prelude> :t True -- команда GHCi
+ghci> :t True -- команда GHCi
 True :: Bool
 \end{lstlisting}
 \end{itemize}
@@ -136,7 +136,7 @@ True :: Bool
     \item Тип (статический) "--- множество значений и выражений, построенное по таким правилам, что компилятор может определить типы и проверить отсутствие ошибок в них без запуска программы.
     \item От типа зависит то, какие операции допустимы:
 \begin{lstlisting}[basicstyle=\ttfamily\small]
-Prelude> True + False
+ghci> True + False
 
 <interactive>:12:1: error:
 No instance for (Num Bool) arising from a use of '+'
@@ -177,11 +177,11 @@ In an equation for 'it': it = True + False
 \end{lstlisting}
     \item Тело функции это не блок, а одно выражение (но сколь угодно сложное).
 \begin{lstlisting}
-Prelude> x = sin pi
-Prelude> x !\pause!
+ghci> x = sin pi
+ghci> x !\pause!
 1.2246063538223773e-16
-Prelude> square x = x * x
-Prelude> square 2
+ghci> square x = x * x
+ghci> square 2
 4
 \end{lstlisting}
 \end{itemize}
@@ -251,16 +251,16 @@ foo x = ...
 \begin{itemize}
     \item Используйте \lstinline|fromIntegral| для приведения из любого целочисленного типа в любой числовой. Тип-цель можно указать явно:
 \begin{lstlisting}
-Prelude> let {x :: Integer; x = 2}
-Prelude> x :: Double
+ghci> let {x :: Integer; x = 2}
+ghci> x :: Double
 <interactive>:22:1: error:
 Couldn't match expected type 'Double' with actual type 'Integer' ...
-Prelude> fromIntegral x :: Double
+ghci> fromIntegral x :: Double
 2.0
 \end{lstlisting}    
     \item А может выводиться из контекста:
 \begin{lstlisting}
-Prelude> :t fromIntegral 2 / (4 :: Double)
+ghci> :t fromIntegral 2 / (4 :: Double)
 fromIntegral 2 / (4 :: Double) :: Double
 \end{lstlisting}    
 \end{itemize}
@@ -272,7 +272,7 @@ fromIntegral 2 / (4 :: Double) :: Double
     \item \lstinline|toInteger| переводит любой целочисленный тип \\в \lstinline|Integer|.
     \item \lstinline|fromInteger| "--- наоборот. Если аргумент слишком велик, возвращает значение по модулю:
     \begin{lstlisting}
-Prelude> fromInteger (2^64) :: Int
+ghci> fromInteger (2^64) :: Int
 0
 \end{lstlisting}
     \item \lstinline|toRational| и \lstinline|fromRational| "--- аналогично для \lstinline|Rational| и дробных типов.
