@@ -15,7 +15,7 @@
 \usepackage{dejavu}
 \usepackage{etoolbox}
 \usepackage{bm}
-%\usepackage{minted}
+\usepackage{minted}
 %\usepackage[defaultsans]{droidsans}
 %\usepackage[defaultmono]{droidmono}
 %\makeatletter
@@ -132,19 +132,19 @@
     {`}{{{\fixedtextasciigrave}}}1
 }
 
-% \usemintedstyle{solarized-light}
-% \newminted[haskell]{haskell}{
-%     escapeinside=``,
-%     beameroverlays=true,
-%     texcomments=true,
-%     autogobble=true,
-%     fontsize=\small
-% }
-% \newmintinline[haskinline]{haskell}{
-%     escapeinside=``,
-%     beameroverlays=true,
-%     texcomments=true
-% }
+\usemintedstyle{solarized-light}
+\newminted[haskell]{haskell}{
+    escapeinside=``,
+    beameroverlays=true,
+    texcomments=true,
+    autogobble=true,
+    fontsize=\small
+}
+\newmintinline[haskinline]{haskell}{
+    escapeinside=``,
+    beameroverlays=true,
+    texcomments=true
+}
 
 \author{Алексей Романов}
 \subtitle{Функциональное программирование на Haskell}
