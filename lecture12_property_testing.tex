@@ -5,116 +5,116 @@
 \title{Лекция 12: тестирование свойств}
 
 \begin{document}
-    \begin{frame}[plain]
-    \maketitle
+\begin{frame}[plain]
+  \maketitle
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Привычный подход к тестированию}
-\begin{itemize}
+  \frametitle{Привычный подход к тестированию}
+  \begin{itemize}
     \item Как обычно мы тестируем написанные функции?
-    \pause
+          \pause
     \item Вычисляем функцию на каких-то конкретных аргументах и сравниваем результат с ожидаемым.
     \item Плюсы:
-    \pause
-    \begin{itemize}
-        \item Тесты легко понять.
-        \item Можно сделать даже без помощи библиотек.
-        \item Но при этом библиотеки для написания таких тестов есть практически для всех языков.
-        \item Для чистых функций (в Haskell почти для всех!) кроме аргументов и результата функции проверять и нечего.
-    \end{itemize}
-    \pause
+          \pause
+          \begin{itemize}
+            \item Тесты легко понять.
+            \item Можно сделать даже без помощи библиотек.
+            \item Но при этом библиотеки для написания таких тестов есть практически для всех языков.
+            \item Для чистых функций (в Haskell почти для всех!) кроме аргументов и результата функции проверять и нечего.
+          \end{itemize}
+          \pause
     \item TDD (Test Driven Development) \pause "--- сначала тесты, потом реализация.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Недостатки этого подхода}
-\begin{itemize}
+  \frametitle{Недостатки этого подхода}
+  \begin{itemize}
     \item А какие у этого подхода минусы?
-    \pause
+          \pause
     \item Сколько нужно тестов? Всегда можно добавить ещё.
-    \pause
-    Разве что если функция на \lstinline|Bool|...
-    \pause
+          \pause
+          Разве что если функция на \lstinline|Bool|...
+          \pause
     \item Нужно искать пограничные случаи (т.е. те, в которых ошибка более вероятна) самому. \\
-    Хотя есть часто встречающиеся: \pause \lstinline|0|, пустой список, \lstinline|INT_MIN|...
-    \pause
+          Хотя есть часто встречающиеся: \pause \lstinline|0|, пустой список, \lstinline|INT_MIN|...
+          \pause
     \item Для каких-то аргументов мы можем не знать правильного результата (и не иметь независимого от тестируемой функции способа его найти).
-    \pause
+          \pause
     \item Есть ситуации, когда программу или функцию в ней намеренно пытаются сломать. \pause Например, злобный преподаватель.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Свойства вместо примеров}
-\begin{itemize}
+  \frametitle{Свойства вместо примеров}
+  \begin{itemize}
     \item Тестирование свойств (property testing или property-based testing) позволяет избежать этих проблем (и создать новые, как обычно).
     \item Основная идея: вместо результата на конкретных аргументах мы описываем свойства, которые должны выполняться \emph{для всех аргументов} подходящего типа. \pause Или не совсем для всех, но об этом потом.
-    \pause
+          \pause
     \item Эти свойства проверяем на случайных аргументах (скажем, 100 за раз по умолчанию).
-    \pause
+          \pause
     \item В процессе разработки тесты запускаются далеко не один раз, так что каждое свойство будет проверено в сотнях или тысячах случаев.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 % TODO: 1. Перейти на Hedgehog; 
 % TODO: 2. Добавить примеры неверных свойств без исключений!
 
 \begin{frame}[fragile]
-\frametitle{Простейший пример}
-\begin{itemize}
+  \frametitle{Простейший пример}
+  \begin{itemize}
     \item Для Haskell две основных библиотеки: \href{http://hackage.haskell.org/package/QuickCheck}{QuickCheck} и \href{https://github.com/hedgehogqa/haskell-hedgehog/}{Hedgehog}. Мы используем первую для простоты кода.
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 > import Test.QuickCheck
 > quickCheck (\x -> (x :: Integer) * x >= 0)
 +++ OK, passed 100 tests.
 \end{lstlisting}
     \item Проверили, что квадраты \lstinline|Integer| неотрицательны.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Ещё один пример}
-\begin{itemize}
+  \frametitle{Ещё один пример}
+  \begin{itemize}
     \item Верно ли, что первый элемент списка всегда равен последнему элементу развёрнутого?
-\begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\small]
+          \begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\small]
 > quickCheck (\xs -> head xs === last (reverse xs)) |\pause|
 *** Failed! Exception: 'Prelude.head: empty list' (after 1 test):
 []
 \end{lstlisting}
     \item Как исправить? \pause Нужно добавить условие, что список непустой:
-\begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\small]
+          \begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\small]
 > quickCheck (\xs -> not (null xs) ==> head xs === last (reverse xs)) |\pause|
 +++ OK, passed 100 tests.
 \end{lstlisting}
 
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Основные типы и функции}
-\begin{itemize}
+  \frametitle{Основные типы и функции}
+  \begin{itemize}
     \item \lstinline|Gen a|: генератор случайных значений типа \lstinline|a|.
     \item \lstinline|forAll :: (Show a, Testable prop) => Gen a -> (a -> prop) -> Property|: создаёт свойство с использованием заданного генератора.
-    \item \lstinline|class Arbitrary a where arbitrary :: Gen a|: типы, у которых есть \enquote{стандартный генератор}. 
+    \item \lstinline|class Arbitrary a where arbitrary :: Gen a|: типы, у которых есть \enquote{стандартный генератор}.
     \item[]
-    \item \lstinline|class Testable a|: типы, которые можно протестировать (например \lstinline|Bool| и \lstinline|Property|). 
+    \item \lstinline|class Testable a|: типы, которые можно протестировать (например \lstinline|Bool| и \lstinline|Property|).
     \item Функции \lstinline|a -> prop|, где \lstinline|Arbitrary a|, \lstinline|Show a|, \lstinline|Testable prop| "--- тоже \lstinline|Testable|.
     \item \lstinline|quickCheck, verboseCheck :: Testable prop => prop -> IO ()|: проверяет свойство и выводит результат.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Генераторы значений}
-\begin{itemize}
+  \frametitle{Генераторы значений}
+  \begin{itemize}
     \item Примеры базовых генераторов:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 choose :: Random a => (a, a) -> Gen a
 elements :: [a] -> Gen a
 \end{lstlisting}
     \item Из простых генераторов можно строить более сложные, пользуясь тем, что \lstinline|Gen| "--- монада. Например:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 genPair :: Gen a -> Gen b -> Gen (a, b)
 genPair ga gb =!\pause! liftA2 (,) ga gb
 
@@ -124,23 +124,23 @@ genMaybe ga = do is_just <- arbitrary @Bool
                    then!\pause! fmap Just ga
                    else!\pause! pure Nothing
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Генераторы значений}
-\begin{itemize}
+  \frametitle{Генераторы значений}
+  \begin{itemize}
     \item С рекурсивными типами несколько сложнее. Можно попробовать привести пример
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+          \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 data Tree a = Empty | Node a (Tree a) (Tree a)
 
 treeOf :: Gen a -> Gen (Tree a)
 treeOf g = oneOf [pure Empty, 
                   liftA3 Node g (treeOf g) (treeOf g)]
 \end{lstlisting}
-    но это определение плохое: оно даёт очень маленькие деревья (почему?).
+          но это определение плохое: оно даёт очень маленькие деревья (почему?).
     \item Правильнее:
-\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+          \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
 treeOf g = do n <- getSize
               if n == 0
                 then pure Empty
@@ -149,46 +149,46 @@ treeOf g = do n <- getSize
                   liftA3 Node g (resize k $ treeOf g)
                                 (resize (n-k) $ treeOf g)
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Минимизация контрпримеров}
-\begin{itemize}
+  \frametitle{Минимизация контрпримеров}
+  \begin{itemize}
     \item Найденный сначала контрпример обычно будет довольно большим (хотя начинается генерация с примеров малого размера).
     \item Поэтому библиотека старается найти и выдать пользователю более простые значения аргументов, дающие ту же ошибку.
-    \item В случае QuickCheck за это уменьшение отвечает функция \lstinline|shrink :: a -> [a]| в классе \lstinline|Arbitrary|. 
+    \item В случае QuickCheck за это уменьшение отвечает функция \lstinline|shrink :: a -> [a]| в классе \lstinline|Arbitrary|.
     \item В Hedgehog, это уменьшение задаётся как часть \lstinline|Hedgehog.Gen|, что имеет преимущества:
-        \begin{itemize}
+          \begin{itemize}
             \item Если что-то сгенерировали, точно можно уменьшить.
             \item При уменьшении сохраняются инварианты.
             \item Подробнее: \href{https://hypothesis.works/articles/integrated-shrinking/}{Integrated vs type based shrinking}.
-        \end{itemize}
-\end{itemize}
+          \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Воспроизводимость}
-\begin{itemize}
+  \frametitle{Воспроизводимость}
+  \begin{itemize}
     \item Если мы нашли контрпример (например, с десятого запуска) и изменили реализацию, нужно проверить, что этот случай исправился.
     \item В QuickCheck для этого просто запускаем то же свойство с напечатанными аргументами. Можно также добавить обычный тест с ними.
     \item Конечно, это удобно делать только тогда, когда минимизация более-менее удалась.
     \item Кроме того, для некоторых типов результат \lstinline|show x| недостаточен для точного воспроизведения \lstinline|x| (придумаете пример?)
-    \item Поэтому в Hedgehog кроме аргументов выдаётся параметр для перезапуска генератора. 
-\end{itemize}
+    \item Поэтому в Hedgehog кроме аргументов выдаётся параметр для перезапуска генератора.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Реализация Arbitrary для своих типов}
-\begin{itemize}
+  \frametitle{Реализация Arbitrary для своих типов}
+  \begin{itemize}
     \item Для пар:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 instance (Arbitrary a, Arbitrary b) => Arbitrary (a, b) where
   arbitrary = genPair arbitrary arbitrary
   shrink (x, y) = [(x', y') | x' <- shrink x, y' <- shrink y]
 \end{lstlisting}
-    \item Для деревьев: 
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+    \item Для деревьев:
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 instance Arbitrary a => Arbitrary (Tree a) where
   arbitrary = treeOf arbitrary
   shrink Empty = []
@@ -197,53 +197,53 @@ instance Arbitrary a => Arbitrary (Tree a) where
     [Node x' l' r' | 
       (x', l', r') <- shrink (x, l, r)]
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Часто встречающиеся виды свойств}
-\begin{itemize}
+  \frametitle{Часто встречающиеся виды свойств}
+  \begin{itemize}
     \item Самое тривиальное свойство "--- функция даёт результат, а не выкидывает исключение.
     \item Сверка с другой реализацией той же функции.
     \item При наличии также обратной функции: \lstinline|encode (decode x) == x|.
     \item Алгебраические свойства: идемпотентность, коммутативность, ассоциативность и так далее.
     \item Законы классов типов.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Генераторы функций}
-\begin{itemize}
-    \item Для тестирования функций высшего порядка нужно уметь генерировать их аргументы, то есть случайные функции. Для этого в QuickCheck есть \href{http://hackage.haskell.org/package/QuickCheck-2.13.1/docs/Test-QuickCheck.html#g:14}{тип \lstinline|Fun| и класс \lstinline|Function|}. \lstinline|Fun a b| представляет функцию \lstinline|a -> b| как набор пар аргумент-значение и значение по умолчанию (например \lstinline|{"elephant"->1, "monkey"->1, _->0}|). Экземпляр \lstinline|Function a| нужен для генерации \lstinline|Fun a b|. 
-\end{itemize}
+  \frametitle{Генераторы функций}
+  \begin{itemize}
+    \item Для тестирования функций высшего порядка нужно уметь генерировать их аргументы, то есть случайные функции. Для этого в QuickCheck есть \href{http://hackage.haskell.org/package/QuickCheck-2.13.1/docs/Test-QuickCheck.html#g:14}{тип \lstinline|Fun| и класс \lstinline|Function|}. \lstinline|Fun a b| представляет функцию \lstinline|a -> b| как набор пар аргумент-значение и значение по умолчанию (например \lstinline|{"elephant"->1, "monkey"->1, _->0}|). Экземпляр \lstinline|Function a| нужен для генерации \lstinline|Fun a b|.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Свойства функций}
-\begin{itemize}
+  \frametitle{Свойства функций}
+  \begin{itemize}
     \item Как пример использования, покажем, что функции \lstinline|Int -> String| "--- чистые, то есть дают одинаковый результат при повторном вызове:
-\begin{lstlisting}
+          \begin{lstlisting}
 prop :: Fun Int String -> Int -> Bool
 prop (Fn f) x = f x == f x
 > quickCheck prop
 +++ OK, passed 100 tests.
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Тестирование законов классов}
-\begin{itemize}
+  \frametitle{Тестирование законов классов}
+  \begin{itemize}
     \item Библиотека \href{http://hackage.haskell.org/package/quickcheck-classes}{quickcheck-classes} содержит свойства, проверяющие законы для множества классов.
     \item Например, законы \lstinline|Eq| определяются функцией \lstinline|eqLaws :: (Eq a, Arbitrary a, Show a) => Proxy a -> Laws| и могут быть проверены для \lstinline|Rational| с помощью \lstinline|lawsCheck (eqLaws (Proxy @Rational)))|.
     \item Для проверки законов \lstinline|Functor/Applicative/Monad/...| вместо \lstinline|Proxy| нужно \lstinline|Proxy1|.
     \item Для Hedgehog совершенно аналогичная \href{https://hackage.haskell.org/package/hedgehog-classes}{hedgehog-classes} (только последняя версия у меня не поставилась).
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Ещё раз: Hedgehog и QuickCheck}
-\begin{itemize}
+  \frametitle{Ещё раз: Hedgehog и QuickCheck}
+  \begin{itemize}
     \item Главная разница: в Hedgehog уменьшение интегрировано с генерацией значений, а не определяется типом.
     \item Нет \lstinline|Arbitrary|, генераторы контролируются полностью явно.
     \item Для улучшения воспроизводимости вместе с контрпримером выдаётся seed.
@@ -252,22 +252,22 @@ prop (Fn f) x = f x == f x
     \item Поддержка тестирования с состоянием.
     \item Для генерации функций нужна отдельная библиотека \href{https://hackage.haskell.org/package/hedgehog-fn}{\lstinline|hedgehog-fn|}.
     \item Параллельная проверка (для ускорения).
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Дополнительное чтение}
-\begin{itemize}
+  \frametitle{Дополнительное чтение}
+  \begin{itemize}
     \item \href{https://hypothesis.works/articles/quickcheck-in-every-language/}{QuickCheck in Every Language} Список библиотек тестирования свойств на разных языках на апрель 2016 (от автора Hypothesis для Python).
     \item \href{https://begriffs.com/posts/2017-01-14-design-use-quickcheck.html}{The Design and Use of QuickCheck}
     \item \href{https://teh.id.au/posts/2017/04/23/property-testing-with-hedgehog/}{Property testing with Hedgehog}
     \item \href{http://www.well-typed.com/blog/2019/05/integrated-shrinking/}{Integrated versus Manual Shrinking} Реализация и сравнение мини-версий QuickCheck и Hedgehog.
     \item \href{https://habr.com/ru/post/434008/}{Как перестать беспокоиться и начать писать тесты на основе свойств}
     \item \href{https://www.hillelwayne.com/post/contract-examples/}{Finding Property Tests}
-    \item \href{https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html}{Property-Based Testing in a Screencast Editor} 
+    \item \href{https://wickstrom.tech/programming/2019/03/02/property-based-testing-in-a-screencast-editor-introduction.html}{Property-Based Testing in a Screencast Editor}
     \item \href{https://austinrochford.com/posts/2014-05-27-quickcheck-laws.html}{Verifying Typeclass Laws in Haskell with QuickCheck}
     \item \href{https://blog.jrheard.com/hypothesis-and-pexpect}{Using Hypothesis and Pexpect to Test High School Programming Assignments}
-    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \end{document}

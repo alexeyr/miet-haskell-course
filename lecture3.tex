@@ -5,117 +5,117 @@
 
 \begin{document}
 \begin{frame}[plain]
-\maketitle
+  \maketitle
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Типы-\enquote{перечисления}}
-\begin{itemize}
+  \frametitle{Типы-\enquote{перечисления}}
+  \begin{itemize}
     \item Тип \lstinline|Bool| не встроен в язык, а определён в стандартной библиотеке:
-\begin{lstlisting}
+          \begin{lstlisting}
 data Bool = False | True deriving (...)
 \end{lstlisting}
     \item Ключевое слово \lstinline|data| начинает определение.
     \item \lstinline|Bool| "--- название типа.
     \item \lstinline|False| и \lstinline|True| называются конструкторами данных.
-    \item Читаем как \enquote{У типа \lstinline|Bool| есть ровно два значения: \lstinline|False| и \lstinline|True|.} 
-    \only<1> { \item О \lstinline|deriving| позже. }
-    \pause
+    \item Читаем как \enquote{У типа \lstinline|Bool| есть ровно два значения: \lstinline|False| и \lstinline|True|.}
+          \only<1> { \item О \lstinline|deriving| позже. }
+          \pause
     \item Так определяется любой тип с фиксированным перечнем значений (как \lstinline|enum| в других языках):
-\begin{lstlisting}
+          \begin{lstlisting}
 data Weekday = Monday | Tuesday | ...
 data FileMode = Read | Write | Append | ...
 \end{lstlisting}
     \item Какие образцы у этих типов (кроме переменных и \lstinline|_|)? \pause
     \item Каждое значение (конструктор) "--- образец.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Типы-\enquote{структуры}}
-\begin{itemize}
+  \frametitle{Типы-\enquote{структуры}}
+  \begin{itemize}
     \item \lstinline|data| также используется для аналогов структур: типов с несколькими полями. Например,
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+          \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
 data Point = Point Double Double
 \end{lstlisting}
     \item Первое \lstinline|Point| "--- название типа.
     \item Второе "--- конструктора.
     \item Когда конструктор один, названия обычно совпадают. Всегда по контексту можно определить, что из них имеется в виду.
     \item Образцы этого типа \pause это\\
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+          \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
 Point образец_Double образец_Double
 \end{lstlisting}
     \item Зададим значение типа \lstinline|Point| и функцию на них:
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+          \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
 ghci> origin = Point 0 0
 
 ghci> xCoord (Point x _) = x
 ghci> xCoord origin
 0.0
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Типы-\enquote{структуры}}
-\begin{itemize}
+  \frametitle{Типы-\enquote{структуры}}
+  \begin{itemize}
     \item Конструктор является функцией
-\begin{lstlisting}
+          \begin{lstlisting}
 ghci> :t Point !\pause!
 Point :: Double -> Double -> Point
 \end{lstlisting}
     \item Мы можем дать полям конструктора имена. Это:\hypertarget{rec1}{}
-    \begin{itemize}
-        \item Документирует их смысл.
-        \item Определяет функции, возвращающие их значения.
-    \end{itemize}
-\begin{lstlisting}
+          \begin{itemize}
+            \item Документирует их смысл.
+            \item Определяет функции, возвращающие их значения.
+          \end{itemize}
+          \begin{lstlisting}
 ghci> data Point = Point { xCoord :: Double, yCoord :: Double } deriving Show
 ghci> :t yCoord
 yCoord :: Point -> Double
 ghci> yCoord (Point 0 (-1))
 -1.0
 \end{lstlisting}
-\item Особенно полезно, когда полей много, и только по типу не понять, какое где.
-\item Если успеем, вернёмся к записям в конце лекции. \hyperlink{rec2}{\beamergotobutton{Синтаксис записей}}
-\end{itemize}
+    \item Особенно полезно, когда полей много, и только по типу не понять, какое где.
+    \item Если успеем, вернёмся к записям в конце лекции. \hyperlink{rec2}{\beamergotobutton{Синтаксис записей}}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгебраические типы: общий случай}
-\begin{itemize}
+  \frametitle{Алгебраические типы: общий случай}
+  \begin{itemize}
     \item Может быть несколько конструкторов с полями:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 data IpAddress = IPv4 String | IPv6 String
 \end{lstlisting}
-\item Создание значения:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+    \item Создание значения:
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 ghci> googleDns = IPv4 "8.8.8.8"
 \end{lstlisting}
-\item Образцы: \lstinline[basicstyle=\ttfamily\small]|IPv4 образец_String| и \lstinline[basicstyle=\ttfamily\small]|IPv6 образец_String|.
-\item Функции часто определяются по уравнению на каждый конструктор:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+    \item Образцы: \lstinline[basicstyle=\ttfamily\small]|IPv4 образец_String| и \lstinline[basicstyle=\ttfamily\small]|IPv6 образец_String|.
+    \item Функции часто определяются по уравнению на каждый конструктор:
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 asString (IPv4 ip4) = ip4
 asString (IPv6 ip6) = ip6
 \end{lstlisting}
-\pause
-\item Но не обязательно:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \pause
+    \item Но не обязательно:
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 isLocalhost (IPv4 "127.0.0.1") = True
 isLocalhost (IPv6 "0:0:0:0:0:0:0:1") = True
 isLocalhost _ = False
 \end{lstlisting}
-\pause
-\item Ещё пример: \lstinline[basicstyle=\ttfamily\small]!data ImageFormat = JPG | PNG | IF String!
-\end{itemize}
+          \pause
+    \item Ещё пример: \lstinline[basicstyle=\ttfamily\small]!data ImageFormat = JPG | PNG | IF String!
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Типы с параметрами (полиморфные)}
-\begin{itemize}
+  \frametitle{Типы с параметрами (полиморфные)}
+  \begin{itemize}
     \item В определении типа могут быть параметры.
     \item Пример:
-\begin{lstlisting}
+          \begin{lstlisting}
 data Maybe a = Nothing | Just a
 \end{lstlisting}
     \item \lstinline|Maybe| "--- конструктор типа.
@@ -123,225 +123,225 @@ data Maybe a = Nothing | Just a
     \item Примеры их значений: \lstinline|Just 1|, \lstinline|Nothing|.
     \item В Haskell нет отношения \enquote{Надтип "--- подтип}, вместо него \enquote{Более общий "--- частный случай}.
     \item \lstinline|Maybe a| описывает необязательное значение типа \lstinline|a|.
-    \pause
+          \pause
     \item Ещё часто встречающийся тип:
-\begin{lstlisting}
+          \begin{lstlisting}
 data Either a b = Left a | Right b
 \end{lstlisting}
-    \item Могут быть сколь угодно сложные комбинации. 
+    \item Могут быть сколь угодно сложные комбинации.
     \item Например, \lstinline|Either (Either Int Char) (Maybe Bool)| со значением \lstinline|Right Nothing|.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{\lstinline|Maybe| и \lstinline|null|}
-\begin{itemize}
+  \frametitle{\lstinline|Maybe| и \lstinline|null|}
+  \begin{itemize}
     \item \lstinline|Nothing| похоже на \lstinline|null| в C-подобных языках, но явно прописано в типах.
     \item Не нужно для каждой функции документировать, как работает с \lstinline|null|, достаточно посмотрить на наличие \lstinline|Maybe| в сигнатуре.
     \item И поэтому нет возможного несовпадения реализации с документацией.
     \item Нет типов, у которых \lstinline|null| нет и с отсутствием значения приходится что-то придумывать.
     \item Есть \lstinline|Maybe (Maybe a)| (бывает полезно).
-    \pause
+          \pause
     \item \enquote{\itshape \lstinline|null| "--- моя ошибка ценой в миллиард долларов... Я планировал сделать любое использование ссылок [в Algol] абсолютно безопасным. Но не удержался от соблазна добавить \lstinline|null| просто потому, что его было так легко реализовать.} (\href{https://ru.wikipedia.org/wiki/Хоар,_Чарльз_Энтони_Ричард}{Тони Хоар}, \href{https://www.infoq.com/presentations/Null-References-The-Billion-Dollar-Mistake-Tony-Hoare}{QCon 2009})
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Кортежи}
-\begin{itemize}
-    \item Мы могли бы определить типы 
-\begin{lstlisting}
+  \frametitle{Кортежи}
+  \begin{itemize}
+    \item Мы могли бы определить типы
+          \begin{lstlisting}
 data Pair a b = Pair a b
 data Triple a b c = Triple a b c
 ...
 \end{lstlisting}
-(заметьте разницу смыслов \lstinline|Pair|, \lstinline|a| и \lstinline|b| в левой и правой частях!)
+          (заметьте разницу смыслов \lstinline|Pair|, \lstinline|a| и \lstinline|b| в левой и правой частях!)
     \item Это универсальные произведения.
-    \pause
+          \pause
     \item Но определять их не нужно, так как такие типы уже есть, со специальным синтаксисом:\\
-    \lstinline|(a, b)| (или \lstinline|(,) a b|),\\ \lstinline|(a, b, c)| (или \lstinline|(,,) a b c|) и т.д.
-    \item Синтаксис значений и образцов для них аналогичный: 
-    \lstinline|(True, Just 'a') :: |\pause\lstinline|(Bool, Maybe Char)|.
+          \lstinline|(a, b)| (или \lstinline|(,) a b|),\\ \lstinline|(a, b, c)| (или \lstinline|(,,) a b c|) и т.д.
+    \item Синтаксис значений и образцов для них аналогичный:
+          \lstinline|(True, Just 'a') :: |\pause\lstinline|(Bool, Maybe Char)|.
     \item Максимальный размер 62.
-    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Рекурсивные типы и списки}
-\begin{itemize}
+  \frametitle{Рекурсивные типы и списки}
+  \begin{itemize}
     \item Тип может быть рекурсивным, то есть в правой части используется тот тип, который мы определяем.
     \item Самый важный пример такого типа: списки.
-    Мы могли бы их определить как 
-\begin{lstlisting}
+          Мы могли бы их определить как
+          \begin{lstlisting}
 data List a = Nil | Cons a (List a)
 \end{lstlisting}
-Вместо этого они имеют специальный синтаксис, как и кортежи, как будто их определение
-\begin{lstlisting}
+          Вместо этого они имеют специальный синтаксис, как и кортежи, как будто их определение
+          \begin{lstlisting}
 data [a] = [] | a : [a]
 \end{lstlisting}
     \item Любой \lstinline|[a]| или пуст, или имеет \emph{голову} типа \lstinline|a| и \emph{хвост} типа \lstinline|[a]|.
     \item \lstinline|:| правоассоциативно: \lstinline|1 : 2 : 4 : []| читается \lstinline|1 : (2 : (4 : []))|.
     \item Сокращение (относится и к значениям и к образцам):\\
-    \lstinline|[x, y, z]| означает \lstinline|x : y : z : []|, а \lstinline|[x]| "--- \lstinline|x : []|.
-\end{itemize}
+          \lstinline|[x, y, z]| означает \lstinline|x : y : z : []|, а \lstinline|[x]| "--- \lstinline|x : []|.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Синонимы типов}
-\begin{itemize}
+  \frametitle{Синонимы типов}
+  \begin{itemize}
     \item На этом с \lstinline|data| разобрались (пока что).
-    \pause
+          \pause
     \item Есть ещё два вида определения типов.
-    \item \lstinline|type| объявляет синоним типа "--- другое имя для существующего типа. 
+    \item \lstinline|type| объявляет синоним типа "--- другое имя для существующего типа.
     \item В стандартной библиотеке:
-\begin{lstlisting}
+          \begin{lstlisting}
 type String = [Char]
 type FilePath = String
 \end{lstlisting}
     \item Оба определения теперь считаются плохими! Для \lstinline|String| подробности в будущих лекциях.
-    \pause 
+          \pause
     \item Для \lstinline|FilePath| дело в том, что осмысленные операции над путями не те, что над строками:
-\begin{lstlisting}
+          \begin{lstlisting}
 ghci> isPrefixOf 
     ("C:\\Program Files" :: FilePath) 
     ("C:\\Program Files (x86)" :: FilePath)
 True
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{\lstinline|newtype|}
-\begin{itemize}
-    \item \lstinline|newtype| как раз позволяет определить тип с тем же представлением, что существующий, но с другими операциями. Т.е. разумнее было бы 
-\begin{lstlisting}
+  \frametitle{\lstinline|newtype|}
+  \begin{itemize}
+    \item \lstinline|newtype| как раз позволяет определить тип с тем же представлением, что существующий, но с другими операциями. Т.е. разумнее было бы
+          \begin{lstlisting}
 newtype FilePath = FilePath String
 \end{lstlisting}
     \item Или \lstinline|FilePath [String]| со списком директорий.
     \item Ещё можно рассмотреть
-\begin{lstlisting}
+          \begin{lstlisting}
 newtype EMail = EMail String
 \end{lstlisting}
     \item У \lstinline|type| конструкторов значений нет, у \lstinline|newtype| "--- всегда один с одним полем.
     \item Между \lstinline|newtype| и \lstinline|data| с одним конструктором с одним полем есть разница из-за ленивости.
     \item Пока из них предпочитаем первое.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Полиморфные функции и значения}
-\begin{itemize}
+  \frametitle{Полиморфные функции и значения}
+  \begin{itemize}
     \item Какой тип функции
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 ghci> id x = x
 ghci> :t id !\pause!
 id :: a -> a
 \end{lstlisting}
-\item Более явно: \lstinline|id :: forall a. a -> a|.
-\item Аналогично
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+    \item Более явно: \lstinline|id :: forall a. a -> a|.
+    \item Аналогично
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 ghci> foo (_, x, y) = (y, x, x)
 ghci> :t foo !\pause!
 id :: (a1, c, a2) -> (a2, c, c) 
 -- или (a, b, c) -> (c, b, b)
 \end{lstlisting}
-\item \lstinline|Just :: a -> Maybe a|
-\item И \lstinline|[] :: [a]| "--- полиморфные значения не обязательно функции.
-\item Параметр типа можно передать явно:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+    \item \lstinline|Just :: a -> Maybe a|
+    \item И \lstinline|[] :: [a]| "--- полиморфные значения не обязательно функции.
+    \item Параметр типа можно передать явно:
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 ghci> :t id @Int
 id @Int :: Int -> Int
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Область видимости переменных типа}
-\begin{itemize}
+  \frametitle{Область видимости переменных типа}
+  \begin{itemize}
     \item По умолчанию область видимости переменной типа "--- сигнатура, где она появилась. Например, в
-\begin{lstlisting}
+          \begin{lstlisting}
 g :: [a] -> [a]
 g (x:xs) = xs ++ [x :: a]
 \end{lstlisting}
-    \pause
-    две переменные \lstinline|a| "--- разные и читаются как
-\begin{lstlisting}
+          \pause
+          две переменные \lstinline|a| "--- разные и читаются как
+          \begin{lstlisting}
 g :: forall a. [a] -> [a]
 g (x:xs) = xs ++ [x :: forall a. a]
 \end{lstlisting}
-    \pause
-    (так что функция не скомпилируется). 
-    \pause
+          \pause
+          (так что функция не скомпилируется).
+          \pause
     \item Но можно написать так:
-\begin{lstlisting}
+          \begin{lstlisting}
 g :: forall a. [a] -> [a]
 g (x:xs) = xs ++ [x :: a]
 \end{lstlisting}
     \item Точные правила можно найти в \href{https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/scoped_type_variables.html}{Lexically scoped type variables}.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Структурно-рекурсивные функции}
-\begin{itemize}
+  \frametitle{Структурно-рекурсивные функции}
+  \begin{itemize}
     \item Функции над рекурсивными типами часто тоже рекурсивны (или вызывают рекурсивные).
-\begin{lstlisting}
+          \begin{lstlisting}
 length :: [a] -> Int
 length [] = 0
 length (_ : xs) = length xs + 1
 \end{lstlisting}
     \item Натуральные числа "--- \enquote{почётный} рекурсивный тип.
-    \pause
+          \pause
     \item Натуральное число это либо $0$, либо $n + 1$, где $n$ "--- натуральное число.
     \item Соответственно, функции над ними тоже определяются рекурсивно:
-\begin{lstlisting}
+          \begin{lstlisting}
 replicate _ 0 = []
 replicate x n = x : replicate x (n - 1)
 \end{lstlisting}
-\item Раньше \lstinline|n + 1| (и вообще \lstinline|+ константа|) было образцом, в Haskell 2010 их исключили.
-\end{itemize}
+    \item Раньше \lstinline|n + 1| (и вообще \lstinline|+ константа|) было образцом, в Haskell 2010 их исключили.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгебраические типы}
-\begin{itemize}
+  \frametitle{Алгебраические типы}
+  \begin{itemize}
     \item Несколько полей у конструктора соответствуют операции декартова произведения в теории множеств.
-    \onslide<3->{\begin{itemize}
-            \item В логике конъюнкции, а в алгебре произведению.
-        \end{itemize}}
+          \onslide<3->{\begin{itemize}
+              \item В логике конъюнкции, а в алгебре произведению.
+            \end{itemize}}
     \item А несколько конструкторов\onslide<1>{?}\onslide<2->{операции дизъюнктного объединения $A_1 \sqcup A_2 \sqcup \ldots = \{1\} \times A_1 \cup \{2\} \times A_2 \cup \ldots$}
-    \onslide<3->{
-        \begin{itemize}
-        \item В логике дизъюнкции, а в алгебре сумме.
-        \end{itemize}
-    }
-    \onslide<2->{
+          \onslide<3->{
+            \begin{itemize}
+              \item В логике дизъюнкции, а в алгебре сумме.
+            \end{itemize}
+          }
+          \onslide<2->{
     \item Сравните помеченное объединение с непомеченным \lstinline|union| в C/C++.
     \item И с \lstinline|std::variant|.
-    }
-    \onslide<3->{\item Тип функций "--- множество функций в теории множеств, импликация в логике и возведение в степень в алгебре.}
-    \onslide<4->{\item Обычные законы алгебры выполняются для типов с точностью до изоморфизма, как и для множеств.}
-    % TODO переделать в таблицу
-\end{itemize}
+          }
+          \onslide<3->{\item Тип функций "--- множество функций в теории множеств, импликация в логике и возведение в степень в алгебре.}
+          \onslide<4->{\item Обычные законы алгебры выполняются для типов с точностью до изоморфизма, как и для множеств.}
+          % TODO переделать в таблицу
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Типы и модули}
-\begin{itemize}
+  \frametitle{Типы и модули}
+  \begin{itemize}
     \item Типы можно импортировать и экспортировать.
     \item \lstinline|НазваниеТипа(..)| в списке экспорта указывает, что конструкторы тоже включены в список.
     \item Просто \lstinline|НазваниеТипа| экспортирует только тип без конструкторов.
     \item Можно также перечислить явно, какие именно конструкторы экспортируются.
     \item Для импорта всё аналогично.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Записи}\hypertarget{rec2}{}
-\hyperlink{rec1}{\beamerreturnbutton{К определению записей}}
-\begin{itemize}
-\item 
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+  \frametitle{Записи}\hypertarget{rec2}{}
+  \hyperlink{rec1}{\beamerreturnbutton{К определению записей}}
+  \begin{itemize}
+    \item
+          \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
 ghci> aPoint = Point 0 (-1)
 ghci> aPoint { xCoord = 1 } !\pause!
 Point {xCoord = 1.0, yCoord = -1.0}
@@ -357,30 +357,30 @@ ghci> :set
 ghci> f (Point { xCoord, yCoord }) = xCoord + yCoord
 ghci> g (Point { .. }) = xCoord + yCoord
 \end{lstlisting}
-\item Два последних образца "--- сокращения\\ \lstinline[basicstyle=\ttfamily\small]|Point { xCoord = xCoord, yCoord = yCoord }|.
-\end{itemize}
+    \item Два последних образца "--- сокращения\\ \lstinline[basicstyle=\ttfamily\small]|Point { xCoord = xCoord, yCoord = yCoord }|.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Записи: минусы}\hypertarget{rec2}{}
-\hyperlink{rec1}{\beamerreturnbutton{К определению записей}}
-\begin{itemize}
+  \frametitle{Записи: минусы}\hypertarget{rec2}{}
+  \hyperlink{rec1}{\beamerreturnbutton{К определению записей}}
+  \begin{itemize}
     \item
-\begin{lstlisting}
+          \begin{lstlisting}
 ghci> Point { xCoord = 0 }
 \end{lstlisting}
-    \pause
-    без \lstinline|yCoord| компилируется только с предупреждением (можно сделать ошибкой с помощью опций компилятора).
-    \pause 
+          \pause
+          без \lstinline|yCoord| компилируется только с предупреждением (можно сделать ошибкой с помощью опций компилятора).
+          \pause
     \item Записи можно применять для типов с несколькими конструкторами, но это создаёт частичные (не всюду определённые) функции.
-    \pause
-    \item Одинаковые названия полей у двух записей ведут к проблемам. 
-    \pause
+          \pause
+    \item Одинаковые названия полей у двух записей ведут к проблемам.
+          \pause
     \item Получается две функции с одинаковыми названиями.
     \item \lstinline|DisambiguateRecordFields| и \lstinline|DuplicateRecordFields| улучшают ситуацию.
-    \pause
+          \pause
     \item Есть ещё решения на уровне библиотек.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \end{document}

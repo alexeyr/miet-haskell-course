@@ -2,47 +2,46 @@
 \input{lecture_preamble.tex}
 
 \title{Лекция 5: функции как значения}
-\date{\today}
 
 \begin{document}
 \begin{frame}[plain]
-\maketitle
+  \maketitle
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Функции как значения}
-\begin{itemize}
+  \frametitle{Функции как значения}
+  \begin{itemize}
     \item Как упоминалось в начале курса, одно из оснований ФП состоит в том, что функции могут использоваться как значения.
     \item В Haskell можно выразиться сильнее:\pause
     \item Функции это и есть просто значения, тип которых имеет форму \lstinline|ТипПараметра -> ТипРезультата| для каких-то \lstinline|ТипПараметра| и \lstinline|ТипРезультата|.\pause
     \item Мы уже видели примеры этого в равноправии функций и \only<4>{\textbf{других} }переменных.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Функции высших порядков}
-\begin{itemize}
+  \frametitle{Функции высших порядков}
+  \begin{itemize}
     \item В частности, функции могут принимать на вход функции.
-    \item То есть тип параметра сам может быть функциональным типом. 
+    \item То есть тип параметра сам может быть функциональным типом.
     \item Тривиальный пример:
-\begin{lstlisting}
+          \begin{lstlisting}
 foo :: (Char -> Bool) -> Bool
 foo f = f 'a'
 
 ghci> foo isLetter !\pause!
 True
-\end{lstlisting} 
+\end{lstlisting}
     \item Скобки вокруг типа параметра здесь необходимы.\pause
     \item Функции, параметры которых "--- функции, называются \emph{функциями высших порядков (ФВП)}.\pause
     \item Часто ими также считают функции, возвращающие функции, но не в Haskell (скоро увидим почему).
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Лямбда-выражения}
-\begin{itemize}
+  \frametitle{Лямбда-выражения}
+  \begin{itemize}
     \item В \lstinline|foo| с прошлого слайда можем также передать свою новую функцию, определив её локально:
-\begin{lstlisting}
+          \begin{lstlisting}
 foo isCyrillic where 
     isCyrillic c = let lc = toLower c
                    in 'а' <= lc && lc <= 'я'
@@ -50,71 +49,71 @@ foo isCyrillic where
     \item Но имя этой функции на самом деле не нужно.
     \item Как и вообще функциям, которые создаются только как аргументы для других (или как результаты).\pause
     \item Вместо этого зададим её через \emph{лямбда-выражение}
-\begin{lstlisting}
+          \begin{lstlisting}
 foo (\c -> let lc = toLower c 
            in 'а' <= lc && lc <= 'я')
 \end{lstlisting}
-    \pause
+          \pause
     \item[]
     \item Кстати, почему это определение неверно?
-    \pause
+          \pause
     \item Как ни странно, в Юникоде \lstinline|'ё' > 'я'|.
     \item И не все буквы кириллицы используются в русском.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Лямбда-выражения}
-\begin{itemize}
+  \frametitle{Лямбда-выражения}
+  \begin{itemize}
     \item Вообще, два определения
-\begin{lstlisting}
+          \begin{lstlisting}
 функция образец = результат
 
 функция = \образец -> результат
 \end{lstlisting}
-    эквивалентны.\pause
+          эквивалентны.\pause
     \item Одно исключение: \href{https://wiki.haskell.org/Monomorphism_restriction}{для второго может быть выведен менее общий тип}.\pause
     \item Лямбда-выражение для функции с несколькими параметрами пишется
-\begin{lstlisting}
+          \begin{lstlisting}
 \образец1 ... образецN -> результат
 \end{lstlisting}\pause
-    \item Например, 
-\begin{lstlisting}
+    \item Например,
+          \begin{lstlisting}
 Data.List.sortBy (\x y -> compare y x) list
 \end{lstlisting}
     \item Что делает это выражение?\pause
     \item Сортирует список по убыванию.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Лямбда-выражения и \lstinline|case|}
-\begin{itemize}
+  \frametitle{Лямбда-выражения и \lstinline|case|}
+  \begin{itemize}
     \item Если в обычном определении функции несколько уравнений, например
-\begin{lstlisting}
+          \begin{lstlisting}
 not True  = False
 not False = True
 \end{lstlisting}
-    то в лямбда-выражении придётся использовать \lstinline|case|:\pause
-\begin{lstlisting}
+          то в лямбда-выражении придётся использовать \lstinline|case|:\pause
+          \begin{lstlisting}
 not = \x -> case x of
     True  -> False
     False -> True
 \end{lstlisting}\pause
-    или с расширением \lstinline|LambdaCase|
-\begin{lstlisting}
+          или с расширением \lstinline|LambdaCase|
+          \begin{lstlisting}
 not = \case
     True  -> False
     False -> True
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Несколько стандартных ФВП}
-\begin{itemize}
+  \frametitle{Несколько стандартных ФВП}
+  \begin{itemize}
     \item В \lstinline|Prelude| есть три функции второго порядка, которые очень часто встречаются в коде Haskell:
-\begin{lstlisting}
+          \begin{lstlisting}
 ($) :: (a -> b) -> a -> b
 f $ x =!\pause! f x!\pause!
 
@@ -125,19 +124,19 @@ flip :: (a -> b -> c) -> (b -> a -> c)
 flip f = !\pause! \y x ->!\pause! f x y
 \end{lstlisting}
     \item И ещё две в \lstinline|Data.Function|:
-\begin{lstlisting}
+          \begin{lstlisting}
 (&) = flip (.)
 (&) ::!\pause! (a -> b) -> (b -> c) -> (a -> c)
 
 on :: (b -> b -> c) -> (a -> b) -> 
     (a -> a -> c)
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Избавление от скобок с помощью \lstinline|$| и \lstinline|.|}
-\begin{itemize}
+  \frametitle{Избавление от скобок с помощью \lstinline|$| и \lstinline|.|}
+  \begin{itemize}
     \item Казалось бы, в чём смысл \lstinline|$|: зачем писать \lstinline|f $ x| вместо \lstinline|f x|?\pause
     \item Этот оператор имеет минимальный возможный приоритет, так что \lstinline|f (x + y)| можно записать как \lstinline|f $ x + y|.\pause
     \item И он правоассоциативен, так что \lstinline|f (g (h x))| можно записать как \lstinline|f $ g $ h x|.\pause
@@ -146,86 +145,86 @@ on :: (b -> b -> c) -> (a -> b) ->
     \item[]
     \item Пока, наверное, проще читать и писать код со скобками, но стандартный стиль Haskell предпочитает их избегать.
     \item Только не перестарайтесь!
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Правда о функциях многих переменных}
-\begin{itemize}
+  \frametitle{Правда о функциях многих переменных}
+  \begin{itemize}
     \item Настала пора раскрыть тайну функций многих переменных в Haskell:\pause
     \item Их не существует.\pause
     \item \lstinline|->| "--- правоассоциативный оператор, так что \lstinline|Тип1 -> Тип2 -> Тип3| это на самом деле \lstinline|Тип1 -> (Тип2 -> Тип3)|: функция, возвращающая функцию.\pause
     \item \lstinline|\x y -> результат| это сокращение для \lstinline|\x -> \y -> результат|, а со скобками \lstinline|\x -> (\y -> результат)|.\pause
     \item Применение функций (не \lstinline|$|, а пробел), наоборот, левоассоциативно. То есть \lstinline|f x y| читается как \lstinline|(f x) y|.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Каррирование}
-\begin{itemize}
+  \frametitle{Каррирование}
+  \begin{itemize}
     \item Обычно в математике для сведения функций нескольких аргументов к функциям одного аргумента используется декартово произведение: $A \times B \to C$, а не $A \to (B \to C)$.\pause
     \item В Haskell тоже можно было бы писать
-\begin{lstlisting}
+          \begin{lstlisting}
 foo :: (Int, Int) -> Int
 foo (x, y) = x + y
 \end{lstlisting}
-для определения функций и \lstinline|foo (1, 2)| для вызова.\pause
+          для определения функций и \lstinline|foo (1, 2)| для вызова.\pause
     \item Но Haskell здесь следует традиции $\lambda$-исчисления.\pause
     \item Эти подходы эквивалентны, так как множества $A \times B \to C$ и $A \to (B \to C)$ всегда изоморфны \pause ($C^{A \cdot B} = C^{B^A}$).
     \item В Haskell этот изоморфизм реализуют функции\pause
-\begin{lstlisting}
+          \begin{lstlisting}
 curry :: ((a, b) -> c) -> a -> b -> c
 uncurry :: (a -> b -> c) -> (a, b) -> c
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Частичное применение}
-\begin{itemize}
+  \frametitle{Частичное применение}
+  \begin{itemize}
     \item Преимущество каррированных функций в том, что естественным образом появляется частичное применение.
     \item То есть мы можем применить функцию \enquote{двух аргументов} только к первому и останется функция одного аргумента:
-\begin{lstlisting}
+          \begin{lstlisting}
 ghci> :t sortBy
 sortBy :: (a -> a -> Ordering) -> [a] -> [a]
 ghci> :t sortBy (flip compare) !\pause!
 sortBy (flip compare) :: Ord a => [a] -> [a]
 \end{lstlisting}\pause
     \item Заметьте, что здесь частичное применение в двух местах: \pause\lstinline|flip| можно теперь рассматривать как функцию трёх аргументов!
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Сечения операторов}
-\begin{itemize}
+  \frametitle{Сечения операторов}
+  \begin{itemize}
     \item Для применения бинарного оператора только к первому аргументу можно использовать его префиксную форму:
-\begin{lstlisting}
+          \begin{lstlisting}
 ghci> :t (+) 1
 (+) 1 :: Num a => a -> a
 \end{lstlisting}\pause
     \item А ко второму? Можно использовать лямбду
-\begin{lstlisting}
+          \begin{lstlisting}
 \x -> x / 2
 \end{lstlisting}
-или \lstinline|flip|
-\begin{lstlisting}
+          или \lstinline|flip|
+          \begin{lstlisting}
 flip (/) 2
 \end{lstlisting}\pause
     \item Но есть специальный синтаксис \lstinline|(арг оп)| и \lstinline|(оп арг)|:
-\begin{lstlisting}
+          \begin{lstlisting}
 ghci> (1 `div`) 2 !\pause!
 0
 ghci> (/ 2) 4 !\pause!
 2.0
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Сечения кортежей}
-\begin{itemize}
+  \frametitle{Сечения кортежей}
+  \begin{itemize}
     \item Расширение \lstinline|TupleSections| позволяет частично применять конструкторы кортежей:
-\begin{lstlisting}
+          \begin{lstlisting}
 ghci> :set -XTupleSections
 ghci> (, "I", , "Love", True) 1 False !\pause!
 (1,"I",False,"Love",True)
@@ -233,48 +232,48 @@ ghci> :t (, "I", , "Love", True) !\pause!
 (, "I", , "Love", True)
   :: t1 -> t2 -> (t1, [Char], t2, [Char], Bool)
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{$\eta$-эквивалентность (сокращение аргументов)}
-\begin{itemize}
+  \frametitle{$\eta$-эквивалентность (сокращение аргументов)}
+  \begin{itemize}
     \item Рассмотрим два определения
-\begin{lstlisting}
+          \begin{lstlisting}
 foo' x = foo x
 -- или foo' = \x -> foo x 
 \end{lstlisting}
     \item \lstinline|foo' y == foo y|, какое бы \lstinline|y| (и \lstinline|foo|) мы не взяли.\pause
     \item Поэтому мы можем упростить определение:
-\begin{lstlisting}
+          \begin{lstlisting}
 foo' = foo
 \end{lstlisting}\pause
     \item Это также относится к случаям, когда совпадают часть аргументов в конце:
-\begin{lstlisting}
+          \begin{lstlisting}
 foo' x y z w = foo (y + x) z w
 \end{lstlisting}
-эквивалентно
-\begin{lstlisting}
+          эквивалентно
+          \begin{lstlisting}
 foo' x y = foo (y + x)
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{$\eta$-эквивалентность (сокращение аргументов)}
-\begin{itemize}
+  \frametitle{$\eta$-эквивалентность (сокращение аргументов)}
+  \begin{itemize}
     \item И когда само определение такой формы не имеет, но может быть к ней преобразовано
-\begin{lstlisting}
+          \begin{lstlisting}
 root4 x = sqrt (sqrt x)
 \end{lstlisting}
-можно переписать как
-\begin{lstlisting}
+          можно переписать как
+          \begin{lstlisting}
 root4 x = (sqrt . sqrt) x
 
 root4 = sqrt . sqrt
 \end{lstlisting}
     \item Ещё пример:
-\begin{lstlisting}
+          \begin{lstlisting}
 ($) :: (a -> b) -> a -> b
 f $ x = f x
 
@@ -283,64 +282,64 @@ f $ x = f x
 ($) f = id f !\pause!
 ($) = id
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Бесточечный стиль}
-\begin{itemize}
+  \frametitle{Бесточечный стиль}
+  \begin{itemize}
     \item Как видим, с помощью композиции и других операций можно дать определение некоторых функций без использования переменных.
     \item Это называется \emph{бесточечным стилем} (переменные рассматриваются как точки в пространстве значений).\pause
     \item Оказывается, что очень многие выражения в Haskell имеют бесточечный эквивалент.
     \item На \href{https://wiki.haskell.org/Pointfree}{Haskell Wiki} можно найти инструменты, позволяющие переводить между стилями.
     \item Опять же, не перестарайтесь:
-\begin{lstlisting}
+          \begin{lstlisting}
 > pl \x y -> compare (f x) (f y)
 ((. f) . compare .)
 \end{lstlisting}\pause
     \item В языках семейств Forth и APL бесточечный стиль является основным.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Программирование, направляемое типами}
-\begin{itemize}
-    \item При реализации полиморфных функций очень часто их тип подсказывает реализацию. 
+  \frametitle{Программирование, направляемое типами}
+  \begin{itemize}
+    \item При реализации полиморфных функций очень часто их тип подсказывает реализацию.
     \item Пример:
-\begin{lstlisting}
+          \begin{lstlisting}
 foo :: (a -> b, b -> Int) -> (a -> Int)
 \end{lstlisting}
-Какую часть реализации можно написать сразу?
-\begin{lstlisting}
+          Какую часть реализации можно написать сразу?
+          \begin{lstlisting}
 foo !\pause!(f, g) = !\pause!\x ->!\pause! ?
 \end{lstlisting}
-Типы переменных:\pause
-\begin{lstlisting}
+          Типы переменных:\pause
+          \begin{lstlisting}
 f :: a -> b, g :: b -> Int, !\pause!x :: a, ? :: Int
 \end{lstlisting}
-Можно увидеть, что \lstinline|?| может быть \lstinline|g ??|, где \lstinline|?? :: |\pause\lstinline|b = |\pause\lstinline|f x|.
-\end{itemize}
+          Можно увидеть, что \lstinline|?| может быть \lstinline|g ??|, где \lstinline|?? :: |\pause\lstinline|b = |\pause\lstinline|f x|.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Типизированные дыры в коде}
-\begin{itemize}
+  \frametitle{Типизированные дыры в коде}
+  \begin{itemize}
     \item Эти рассуждения не обязательно делать вручную.
     \item Если в выражении (а не в образце) использовать дыру \lstinline|_| (или \lstinline|_название|), то увидим ожидаемый в этом месте тип.
     \item
-\begin{lstlisting}
+          \begin{lstlisting}
 foo :: (a -> b, b -> Int) -> (a -> Int)
 foo (f, g) = \x -> g _
 \end{lstlisting}
-    выдаст сообщение
-\begin{lstlisting}
+          выдаст сообщение
+          \begin{lstlisting}
 Found hole `_' with type: b
 Where: `b' is a rigid type variable bound by
 the type signature for foo :: (a -> b, b -> Int) -> (a -> Int)
 Relevant bindings include ...
 \end{lstlisting}
     \item Дыр может быть несколько.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \end{document}

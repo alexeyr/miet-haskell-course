@@ -3,222 +3,221 @@
 \usepackage{syntax}
 
 \title{Лекция 8: ленивость}
-\date{4 апреля 2018}
 
 \begin{document}
 \begin{frame}[plain]
-\maketitle
+  \maketitle
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Передача по значению}
-\begin{itemize}
+  \frametitle{Передача по значению}
+  \begin{itemize}
     \item Как вычисляется выражение вида \lstinline|f(g(x, y), h(z))| в привычных языках?
-    \pause
+          \pause
     \item Сначала вычисляются аргументы \lstinline|g(x, y)| и \lstinline|h(z)| (гарантированно в этом порядке или нет), потом их значения передаются в \lstinline|f|.
     \item Это называется передачей аргументов по значению.
     \item Для вычисления выражения нужно вычислить все подвыражения.
     \item Исключения в C-подобных языках?
-    \pause
+          \pause
     \item \lstinline|&&|, \lstinline{||}, \lstinline|? :|.
-    \pause
+          \pause
     \item В них вычисляется первый операнд, а второй (и третий для \lstinline|? :|) "--- только если необходимо.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Передача по имени}
-\begin{itemize}
+  \frametitle{Передача по имени}
+  \begin{itemize}
     \item Как можно сделать по-другому?
-    \pause
+          \pause
     \item Макросы в C "--- каждое использование аргумента заменяется на переданное выражение (а не на его значение).
     \item И это рекурсивно: макросы в этом определении тоже будут заменены на своё определение.
     \item Это передача по имени (почти).
-    \pause
+          \pause
     \item У настоящей передачи по имени нет таких проблем со скобками, как в макросах C.
-    \pause
+          \pause
     \item Аналогичное поведение переменных в командной строке и скриптах Windows и Linux.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Сравнение на примерах 1}
-\begin{itemize}
+  \frametitle{Сравнение на примерах 1}
+  \begin{itemize}
     \item Если рассмотреть
-\begin{lstlisting}
+          \begin{lstlisting}
 x = 2 + 2
 y = x + x
 \end{lstlisting}
-    то при передаче по значению будет вычислено \pause
-\begin{lstlisting}
+          то при передаче по значению будет вычислено \pause
+          \begin{lstlisting}
 x = 4
 y = 4 + 4
 \end{lstlisting}
-    а при передаче по имени "--- \pause
-\begin{lstlisting}
+          а при передаче по имени "--- \pause
+          \begin{lstlisting}
 x = 2 + 2
 y = (2 + 2) + (2 + 2)
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Сравнение на примерах 2}
-\begin{itemize}
-    \item 
-\begin{lstlisting}
+  \frametitle{Сравнение на примерах 2}
+  \begin{itemize}
+    \item
+          \begin{lstlisting}
 if1(x, y, z) = if x then y else z
 
 if1(true, 1, 1 / 0)
 \end{lstlisting}
-    Что случится при передаче по значению? А по имени? 
-    \pause
+          Что случится при передаче по значению? А по имени?
+          \pause
     \item По значению: ошибка.
-    \pause
+          \pause
     \item По имени: \lstinline|1|.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Какой порядок лучше?}
-\begin{itemize}
+  \frametitle{Какой порядок лучше?}
+  \begin{itemize}
     \item Плюсы передачи по имени:
-    \pause
-    \begin{itemize}
-        \item Можно избежать ошибок.
-        \item Можно избежать лишних вычислений
-        \pause (представьте, что в предыдущем примере вместо \lstinline|1 / 0| вызов сложной функции).
-    \end{itemize}
-    \pause
+          \pause
+          \begin{itemize}
+            \item Можно избежать ошибок.
+            \item Можно избежать лишних вычислений
+                  \pause (представьте, что в предыдущем примере вместо \lstinline|1 / 0| вызов сложной функции).
+          \end{itemize}
+          \pause
     \item Главный минус:
-    \pause
-    \begin{itemize}
-        \item Можно сделать очень много лишних вычислений.
-        \pause 
-        \item Как только мы используем какую-то переменную более одного раза
-        \pause (если переменные в её определении не изменились).
-    \end{itemize}
-\end{itemize}
+          \pause
+          \begin{itemize}
+            \item Можно сделать очень много лишних вычислений.
+                  \pause
+            \item Как только мы используем какую-то переменную более одного раза
+                  \pause (если переменные в её определении не изменились).
+          \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Передача по необходимости}
-\begin{itemize}
+  \frametitle{Передача по необходимости}
+  \begin{itemize}
     \item В Haskell используется передача по необходимости:
     \item Как передача по имени, но значение каждой переменной вычисляется только один раз.
-    \pause
+          \pause
     \item Это имеет смысл потому, что все переменные неизменяемы.
-    \pause
-    \item При этом значения тоже не обязательно вычислять \enquote{до конца}: мы хотим, чтобы 
-\begin{lstlisting}
+          \pause
+    \item При этом значения тоже не обязательно вычислять \enquote{до конца}: мы хотим, чтобы
+          \begin{lstlisting}
 length [1/0, 1/0, 1/0]
 \end{lstlisting}
-    возвращало \lstinline|3|.
-    \pause
+          возвращало \lstinline|3|.
+          \pause
     \item Ленивость в том или ином виде есть во многих языках (пример: \lstinline|System.Lazy<T>| в .NET).
     \item Но в Haskell она встроена очень глубоко.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Нормальная форма}
-\begin{itemize}
-\item Выражение находится в нормальной форме, если там нет ничего, что можно вычислить (редуцировать).
-\item Примеры: \pause
-\begin{lstlisting}
+  \frametitle{Нормальная форма}
+  \begin{itemize}
+    \item Выражение находится в нормальной форме, если там нет ничего, что можно вычислить (редуцировать).
+    \item Примеры: \pause
+          \begin{lstlisting}
 42
 (2, "hello")
 \x -> (x + 1)
 \end{lstlisting}
-\item Примеры выражений не в нормальной форме: \pause
-\begin{lstlisting}
+    \item Примеры выражений не в нормальной форме: \pause
+          \begin{lstlisting}
 1 + 2                 
 (\x -> x + 1) 2       
 "he" ++ "llo"         
 (1 + 1, 2 + 2)
 let x = 1 in x
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Теоремы о нормальных формах в лямбда-исчислении}
-\begin{itemize}
+  \frametitle{Теоремы о нормальных формах в лямбда-исчислении}
+  \begin{itemize}
     \item В лямбда-исчислении можно доказать:
     \item Два порядка вычисления одного выражения не могут привести к разным значениям (нормальным формам).
     \item Но может случиться, что один из них даёт значение, а другой "--- нет.
     \item Если какой-то порядок приводит к значению, то передача по имени и по необходимости тоже к нему приведут.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Слабая заголовочная нормальная форма}
-\begin{itemize}
+  \frametitle{Слабая заголовочная нормальная форма}
+  \begin{itemize}
     \item Выражение находится в слабой заголовочной нормальной форме (WHNF), если это:
-    \begin{itemize}
-        \item Лямбда.
-        \item Литерал. 
-        \item Конструктор данных, возможно с аргументами.
-        \item Функция от $n$ аргументов c $m<n$ аргументами.
-    \end{itemize}
-    Аргументы здесь "--- любые выражения \pause
-    (а для НФ они тоже должны быть в НФ).
+          \begin{itemize}
+            \item Лямбда.
+            \item Литерал.
+            \item Конструктор данных, возможно с аргументами.
+            \item Функция от $n$ аргументов c $m<n$ аргументами.
+          \end{itemize}
+          Аргументы здесь "--- любые выражения \pause
+          (а для НФ они тоже должны быть в НФ).
     \item Примеры: \pause
-\begin{lstlisting}
+          \begin{lstlisting}
 (1 + 1, 2 + 2)       -- (,) (1 + 1) (2 + 2)
 \x -> 2 + 2 + x
 (1/0) : take 4 [1..]
 (+) 1
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Отложенные вычисления}
-\begin{itemize}
-\item В Haskell во время исполнения переменная может указывать не только на значение, а на невычисленное выражение (thunk).
-\item Если мы напишем
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+  \frametitle{Отложенные вычисления}
+  \begin{itemize}
+    \item В Haskell во время исполнения переменная может указывать не только на значение, а на невычисленное выражение (thunk).
+    \item Если мы напишем
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 x = (length [1,3], 1/0)
 \end{lstlisting}
-то \lstinline|x| вначале указывает именно на thunk.
-\item После этого 
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          то \lstinline|x| вначале указывает именно на thunk.
+    \item После этого
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 case x of
   (y, z) -> ...
 \end{lstlisting}
-требует вычислить внешний конструктор \lstinline|x| (привести к WHNF), и в памяти будет \pause
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          требует вычислить внешний конструктор \lstinline|x| (привести к WHNF), и в памяти будет \pause
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 x: (*thunk1*, *thunk2*)  *thunk1*: length [1,3]
 y: *thunk1*              *thunk2*: 1/0
 z: *thunk2*
 \end{lstlisting}
 
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Отложенные вычисления}
-\begin{itemize}
+  \frametitle{Отложенные вычисления}
+  \begin{itemize}
     \item Если это
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 case x of
   (y, z) -> print y
 \end{lstlisting}
-то \lstinline|y| тоже потребуется вычислить, и получим \pause
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          то \lstinline|y| тоже потребуется вычислить, и получим \pause
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 x: (2, *thunk2*)         *thunk1*: 2
 y: 2                     *thunk2*: 1/0
 z: *thunk2*
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{\lstinline|:print|}
-\begin{itemize}
+  \frametitle{\lstinline|:print|}
+  \begin{itemize}
     \item Мы можем увидеть частично вычисленные выражения в GHCi с помощью команд \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/ghci.html#ghci-cmd-:print}{\lstinline|:print|} и \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/ghci.html#ghci-cmd-:sprint}{\lstinline|:sprint|}:
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 ghci> x = (length [1,3], 1/0 :: Double)
 ghci> :sprint x
 x = _
@@ -231,43 +230,43 @@ ghci> case x of (y, z) -> y
 ghci> :sprint x
 x = (2,_)
 \end{lstlisting}
-    \pause
+          \pause
     \item Также посмотрите \href{http://felsin9.de/nnis/ghc-vis/}{ghc-vis} (для старых GHC).
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Примеры}
-\begin{itemize}
+  \frametitle{Примеры}
+  \begin{itemize}
     \item Ещё примеры:
-    \pause
+          \pause
     \item
-\begin{lstlisting}
+          \begin{lstlisting}
 square x = x*x
 square (square (1+1))
 \end{lstlisting}
     \item \lstinline|length (take 2 (filter even [1..]))|
-\pause
-    \item 
-\begin{lstlisting}
+          \pause
+    \item
+          \begin{lstlisting}
 (&&) :: Bool -> Bool -> Bool
 True  && x = x
 False && x = False
 \end{lstlisting}
-    ведёт себя как в C автоматически.
-    \pause
+          ведёт себя как в C автоматически.
+          \pause
     \item Как определить вариант, который начинает вычисление с правого операнда?
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Минусы ленивости}
-\begin{itemize}
+  \frametitle{Минусы ленивости}
+  \begin{itemize}
     \item Вроде бы можно гарантировать, что ленивые вычисления всегда делают не больше шагов, чем энергичные.
     \item Но каждый шаг занимает больше времени.
     \item Thunks могут занимать больше памяти, чем результат их вычисления (а могут и меньше).
     \item Классический пример:
-\begin{lstlisting}[basicstyle=\ttfamily\small,mathescape]
+          \begin{lstlisting}[basicstyle=\ttfamily\small,mathescape]
 sum [] acc = acc
 sum (x:xs) acc = sum xs (x + acc)
 
@@ -276,119 +275,119 @@ sum [2..100] (1 + 0)$\pause \rightsquigarrow$ sum 2:[3..100] (1 + 0)$\pause \rig
 sum [3..100] (2 + (1 + 0))$\pause \rightsquigarrow \ \ldots\ \rightsquigarrow$
 (100 + ... + (1 + 0))$\pause \rightsquigarrow $ 4950
 \end{lstlisting}
-    \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Минусы ленивости}
-\begin{itemize}
+  \frametitle{Минусы ленивости}
+  \begin{itemize}
     \item Из-за этого \lstinline|foldl| "--- ловушка, практически всегда нужно либо \lstinline|foldr|, либо \lstinline|foldl'| (будет позже).
-    \pause
+          \pause
     \item С другой стороны, заметьте, что в этом примере список \lstinline|[1..100]| никогда не появился целиком в памяти!
-    \pause
+          \pause
     \item Ещё один интересный пример: \lstinline|length (take 2 (filter (< 1) [1..]))|.
     \item[]
-    \pause
+      \pause
     \item Что же можно сделать?
-    \pause
+          \pause
     \item Часто компилятор может оптимизировать ленивые вычисления (если знает, что это не изменит результата).
     \item Или...
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Строгие вычисления в Haskell: \lstinline|seq|}
-\begin{itemize}
+  \frametitle{Строгие вычисления в Haskell: \lstinline|seq|}
+  \begin{itemize}
     \item Мы можем управлять ленивостью явно.
     \item Базовый инструмент для этого: \enquote{волшебная} (её нельзя реализовать на самом Haskell) функция \lstinline|seq :: a -> b -> b|.
-    \pause
+          \pause
     \item \lstinline[mathescape]|seq $e_1$ $e_2$| сначала приводит $e_1$ к WHNF, а после этого возвращает $e_2$.
-    \pause
+          \pause
     \item На практике всегда $e_1$ "--- переменная в $e_2$.
-    \item Пример использования: 
-\begin{lstlisting}[escapeinside=||]
+    \item Пример использования:
+          \begin{lstlisting}[escapeinside=||]
 f $! x = seq x (f x)
 \end{lstlisting}
-    \item Это аналог \lstinline|$|, только вычисляющий аргумент до WHNF перед вызовом функции.    
-\end{itemize}
+    \item Это аналог \lstinline|$|, только вычисляющий аргумент до WHNF перед вызовом функции.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{\lstinline|sum| через \lstinline|seq|}
-\begin{itemize}
+  \frametitle{\lstinline|sum| через \lstinline|seq|}
+  \begin{itemize}
     \item Теперь можем определить \lstinline|sum| так:\pause
-\begin{lstlisting}[escapeinside=||]
+          \begin{lstlisting}[escapeinside=||]
 sum [] acc = acc
 sum (x:xs) acc = sum xs $! x + acc
 \end{lstlisting}
     \item Или так:\pause
-\begin{lstlisting}
+          \begin{lstlisting}
 sum [] acc = acc
 sum (x:xs) acc = let a1 = x + acc in 
                  a1 `seq` sum xs a1
 \end{lstlisting}
     \item И процесс вычисления:
-\begin{lstlisting}[basicstyle=\ttfamily\small,mathescape]
+          \begin{lstlisting}[basicstyle=\ttfamily\small,mathescape]
 sum [1..100] 0 $\rightsquigarrow$ sum 1:[2..100] 0 $\pause \rightsquigarrow$
 let a1 = 1 + 0 in a1 `seq` sum [2..100] a1 $\pause \rightsquigarrow$
 sum [2..100] 1 $\rightsquigarrow$ sum 2:[3..100] 1 $\pause \rightsquigarrow$ 
 let a1 = 2 + 1 in a1 `seq` sum [3..100] a1 $\pause \rightsquigarrow\ \ldots\ \rightsquigarrow\ $4950
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{\lstinline|foldl'|}
-\begin{itemize}
+  \frametitle{\lstinline|foldl'|}
+  \begin{itemize}
     \item Мы знаем, что сумма списка "--- частный случай свёртки.
     \item Для функций \lstinline|product|, \lstinline|minimum|, \lstinline|maximum| имеем ровно те же проблемы!
     \item Можем определить вариант \lstinline|foldl| (более общая версия в \lstinline|Data.Foldable|):
-\begin{lstlisting}[basicstyle=\ttfamily\small]
+          \begin{lstlisting}[basicstyle=\ttfamily\small]
 foldl' :: (a -> b -> a) -> a -> [b] -> a
 foldl' f a []     = a
 foldl' f a (x:xs) = let a' = f a x
                     in a' `seq` foldl' f a' xs
 \end{lstlisting}
     \item \pause
-\begin{lstlisting}
+          \begin{lstlisting}
 sum xs = foldl' (+) 0 xs
 product xs = foldl' (*) 1 xs
 minimum xs = foldl1' min xs
 ...
 \end{lstlisting}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Строгие переменные в образцах}
-\begin{itemize}
+  \frametitle{Строгие переменные в образцах}
+  \begin{itemize}
     \item В \lstinline|foldl'| параметр \lstinline|acc| вычисляется только до WHNF. Если мы вычисляем среднее так
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+          \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
 mean :: [Double] -> Double
 mean xs = s' / fromIntegral l'
   where (s', l') = foldl' step (0, 0) xs
         step (s, l) a = (s + a, l + 1)
 \end{lstlisting}
-    то в \lstinline|s| и \lstinline|l| снова накапливаются вычисления!
-    \pause
+          то в \lstinline|s| и \lstinline|l| снова накапливаются вычисления!
+          \pause
     \item Включив \lstinline|BangPatterns|, сделаем их строгими:
-\begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\footnotesize]
+          \begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\footnotesize]
 step (!s, !l) a = (s + a, l + 1)
 \end{lstlisting}
-    \item Это превращается в 
-\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+    \item Это превращается в
+          \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
 step (s, l) a = let s' = s + a; l' = l + 1
                 in s' `seq` l' `seq` (s', l')
 \end{lstlisting}
     \item Правила перевода \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#recursive-and-polymorphic-let-bindings}{довольно сложные}.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Строгие поля в типах данных}
-\begin{itemize}
+  \frametitle{Строгие поля в типах данных}
+  \begin{itemize}
     \item Другой способ решить ту же проблему:
-\begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\footnotesize]
+          \begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\footnotesize]
 data SPair a b = SPair !a !b
 
 mean :: [Double] -> Double
@@ -396,24 +395,24 @@ mean xs = s' / fromIntegral l'
 where SPair s' l' = foldl' step (0, 0) xs
       step (SPair s l) a = SPair (s + a) (l + 1)
 \end{lstlisting}
-    \pause
+          \pause
     \item Восклицательный знак означает, что любое вычисление значения с этим конструктором вычислит и эти поля (до WHNF).
     \item То есть конструктор работает как
-\begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\footnotesize]
+          \begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\footnotesize]
 SPair a b = a `seq` b `seq` SPair' a b
 \end{lstlisting}
-где \lstinline|SPair'| "--- конструктор, который получится без строгих полей.
-\end{itemize}
+          где \lstinline|SPair'| "--- конструктор, который получится без строгих полей.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Дополнительное чтение}
-\begin{itemize}
+  \frametitle{Дополнительное чтение}
+  \begin{itemize}
     \item \href{https://blog.acolyer.org/2016/09/14/why-functional-programming-matters/}{Why Functional Programming Matters} (статья, написанная до появления собственно Haskell)
     \item \href{https://www.fpcomplete.com/blog/2017/09/all-about-strictness}{All About Strictness}
     \item \href{https://apfelmus.nfshost.com/articles/lazy-eval.html}{The Incomplete Guide to Lazy Evaluation}
     \item \href{https://en.wikibooks.org/wiki/Haskell/Laziness}{Laziness в Haskell Wikibook}
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \end{document}

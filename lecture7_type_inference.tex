@@ -3,286 +3,285 @@
 \usepackage{syntax}
 
 \title{Лекция 7: вывод типов}
-\date{4 апреля 2018}
 
 \begin{document}
 \begin{frame}[plain]
-\maketitle
+  \maketitle
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Вывод типов в других языках}
-\begin{itemize}
+  \frametitle{Вывод типов в других языках}
+  \begin{itemize}
     \item Во многих ООП-языках сейчас есть вывод типов локальных переменных (иногда и возвращаемого типа):
-    \hspace{-1em}
-    \pause
-    \begin{itemize}
-        \item \lstinline!auto! в C++11
-        \item \lstinline!var! в C\# 3.0 и Java 10
-        \item Отсутствие явного типа в Kotlin, Scala
-    \end{itemize}
-    \pause
+          \hspace{-1em}
+          \pause
+          \begin{itemize}
+            \item \lstinline!auto! в C++11
+            \item \lstinline!var! в C\# 3.0 и Java 10
+            \item Отсутствие явного типа в Kotlin, Scala
+          \end{itemize}
+          \pause
     \item Устроен в них всех похоже:
-    \begin{itemize}
-        \pause
-        \item Тип аргументов функций задаётся явно.
-        \pause
-        \item Дальше типы протягиваются сверху вниз.
-        \pause
-        \item Тип локальных переменных/полей $=$ тип инициализатора (если нет явного).
-        \pause
-        \item Возвращаемый тип $=$ общий тип для всех \lstinline!return!.
-    \end{itemize}
-    \pause
+          \begin{itemize}
+            \pause
+            \item Тип аргументов функций задаётся явно.
+                  \pause
+            \item Дальше типы протягиваются сверху вниз.
+                  \pause
+            \item Тип локальных переменных/полей $=$ тип инициализатора (если нет явного).
+                  \pause
+            \item Возвращаемый тип $=$ общий тип для всех \lstinline!return!.
+          \end{itemize}
+          \pause
     \item Отдельный вопрос: вывод параметров шаблонов (в C++)/генериков (в других языках).
-    \pause
+          \pause
     \item Он сложнее, но появился раньше.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Вывод типов в системе Хиндли-Милнера}
-\begin{itemize}
+  \frametitle{Вывод типов в системе Хиндли-Милнера}
+  \begin{itemize}
     \item В основе системы типов языка Haskell лежит система Хиндли-Милнера.
     \item Она изначально создана для вывода типов.
-    \pause
+          \pause
     \item Даже без указания типов параметров.
-    \pause
-    \item Плюсы: 
-    \begin{itemize}
-        \pause
-        \item Для любого данного выражения есть наиболее общий тип (если есть хоть какой-то).
-        \pause
-        \item Есть эффективные (для реальных программ) алгоритмы их нахождения.
-    \end{itemize}
-    \pause
+          \pause
+    \item Плюсы:
+          \begin{itemize}
+            \pause
+            \item Для любого данного выражения есть наиболее общий тип (если есть хоть какой-то).
+                  \pause
+            \item Есть эффективные (для реальных программ) алгоритмы их нахождения.
+          \end{itemize}
+          \pause
     \item Не все расширения Haskell их сохраняют (но это один из критериев оценки расширений).
-    \pause
+          \pause
     \item Минусы:
-    \begin{itemize}
-        \pause
-        \item Сложнее понять, как работает.
-        \pause
-        \item Больше \enquote{дальнодействия}.
-    \end{itemize}
-    \pause
+          \begin{itemize}
+            \pause
+            \item Сложнее понять, как работает.
+                  \pause
+            \item Больше \enquote{дальнодействия}.
+          \end{itemize}
+          \pause
     \item Поэтому понимание работы иногда необходимо.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Постановка задачи}
-\begin{itemize}
+  \frametitle{Постановка задачи}
+  \begin{itemize}
     \item Даны:
-    \begin{itemize}
-        \item Набор типов и конструкторов типов: \lstinline|Int|, \lstinline|Bool|, \lstinline|[]| и т.д.
-        \item Среди них особую роль играет конструктор функций \lstinline|->|.
-        \item Набор известных именованных функций (или констант) с их типами.
-        \item Выражение, тип которого мы хотим найти (обычно определение функции).
-    \end{itemize}
-    \pause
-    \item Нужно: 
-    \begin{itemize}
-        \item Определить наиболее общий тип для этого выражения.
-        \pause
-        \item Или найти объяснение, почему ему нельзя дать никакой тип.
-    \end{itemize}
-\end{itemize}
+          \begin{itemize}
+            \item Набор типов и конструкторов типов: \lstinline|Int|, \lstinline|Bool|, \lstinline|[]| и т.д.
+            \item Среди них особую роль играет конструктор функций \lstinline|->|.
+            \item Набор известных именованных функций (или констант) с их типами.
+            \item Выражение, тип которого мы хотим найти (обычно определение функции).
+          \end{itemize}
+          \pause
+    \item Нужно:
+          \begin{itemize}
+            \item Определить наиболее общий тип для этого выражения.
+                  \pause
+            \item Или найти объяснение, почему ему нельзя дать никакой тип.
+          \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{\lstinline|let| и $\lambda$}
-\begin{itemize}
+  \frametitle{\lstinline|let| и $\lambda$}
+  \begin{itemize}
     \item Сравните \lstinline[mathescape]|let x = e$_1$ in e$_2$| и \lstinline[mathescape]|(\x -> e$_2$) e$_1$|.
-    \pause
+          \pause
     \item Значения всегда одинаковы (для любых \lstinline[mathescape]|e$_1$| и \lstinline[mathescape]|e$_2$|).
-    \pause
+          \pause
     \item Но есть разница при типизации: \pause \lstinline|x| в лямбде всегда мономорфна, а в \lstinline|let| может быть полиморфной.
-    \pause
+          \pause
     \item Поэтому в нетипизированном и просто типизированном $\lambda$-исчислении \lstinline|let| обычно не вводится.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Виды выражений и типов}
-\begin{itemize}
+  \frametitle{Виды выражений и типов}
+  \begin{itemize}
     \item В нашей системе 5 видов выражений:
-    \pause
-    \item Названия переменных (в том числе функций) $x$ 
+          \pause
+    \item Названия переменных (в том числе функций) $x$
     \item Применение функции к аргументу
     \item Лямбда-выражения
-    \item \lstinline|let|-выражения    
-    \item \lstinline|case|-выражения    
+    \item \lstinline|let|-выражения
+    \item \lstinline|case|-выражения
     \item[]
-    \pause
+      \pause
     \item Типы $t$:
-    \pause
+          \pause
     \item Базовые типы \lstinline|Int|, \ldots
     \item Переменные типов (греческие буквы $\alpha, \beta, \ldots$)
     \item Тип функций $t_1 \to t_2$
     \item[]
-    \pause
+      \pause
     \item Полиморфные типы: $\forall \alpha_1 \ldots \alpha_k t$
-    \pause
+          \pause
     \item $\forall$ только на внешнем уровне, под $\to$ его быть не может!
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 
 \begin{frame}[fragile]
-\frametitle{Унификация}
-\begin{itemize}
+  \frametitle{Унификация}
+  \begin{itemize}
     \item Нам понадобятся понятия подстановки и унификации. В общем случае:
-    \pause 
-    \item Пусть даны два выражения (терма) какого-то формального языка (или несколько пар). 
+          \pause
+    \item Пусть даны два выражения (терма) какого-то формального языка (или несколько пар).
     \item Они могут содержать переменные.
-    \pause
+          \pause
     \item Подстановка переменных сопоставляет некоторым переменным выражения (которые тоже могут содержать переменные).
-    \pause
+          \pause
     \item Мы хотим знать, можно ли сделать такую подстановку, чтобы термы стали одинаковыми.
-    \pause
+          \pause
     \item Это достаточно широко применимое понятие.
-    \pause
-    \item Разрешимость задачи унификации и свойства решений зависят от структуры языка. 
-\end{itemize}
+          \pause
+    \item Разрешимость задачи унификации и свойства решений зависят от структуры языка.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Унификация типов}
-\begin{itemize}
+  \frametitle{Унификация типов}
+  \begin{itemize}
     \item Для вывода типов в системе Хиндли-Милнера случай один из самых простых: унификация первого порядка.
     \item Подстановки $\sigma$ сопоставляют переменным типов $\alpha, \beta, \ldots$ \emph{мономорфные} типы (без $\forall$). Например,
-    \[ \sigma=\{\alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{[}\gamma\mathtt{]} \} \]
+          \[ \sigma=\{\alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{[}\gamma\mathtt{]} \} \]
     \item Подстановку можно применить к типу:
-    \[ \sigma(\mathtt{Maybe}~\beta)=\mathtt{Maybe}~\mathtt{[}\gamma\mathtt{]} \]
+          \[ \sigma(\mathtt{Maybe}~\beta)=\mathtt{Maybe}~\mathtt{[}\gamma\mathtt{]} \]
     \item Композиция подстановок "--- подстановка.
-    \item Мономорфные типы равны, если они совпадают синтаксически. 
-    \pause
-    \begin{itemize}
-        \item Т.е. синонимы типов должны быть уже раскрыты!
-    \end{itemize}
-\end{itemize}
+    \item Мономорфные типы равны, если они совпадают синтаксически.
+          \pause
+          \begin{itemize}
+            \item Т.е. синонимы типов должны быть уже раскрыты!
+          \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Унификация типов}
-\begin{itemize}
+  \frametitle{Унификация типов}
+  \begin{itemize}
     \item Тип \lstinline[mathescape]|($\alpha$, $\alpha$)| более общий, чем \lstinline[mathescape]|(Int, Int)|, так как  \lstinline[mathescape]|$\exists \sigma~\sigma($($\alpha$, $\alpha$)$)=$(Int, Int)|.
     \item Второй "--- частный случай первого.
-    \pause
+          \pause
     \item \lstinline[mathescape]|($\alpha$, $\beta$)| более общий, чем \lstinline[mathescape]|($\alpha$, $\alpha$)|.
-    \pause
+          \pause
     \item Вопрос: когда два типа более общи друг друга?
-    \pause
+          \pause
     \item Когда они отличаются только названиями переменных.
-    \pause
+          \pause
     \item Можем рассмотреть задачу унификации \lstinline[mathescape]|($\alpha$, $\beta$)$=$($\beta$, Int)|.
-    \pause
+          \pause
     \item $\{ \alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{Int} \}$ это одно из её решений.
-    \pause
+          \pause
     \item Наиболее общее (все остальные "--- его частные случаи).
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгоритм унификации}
-\begin{itemize}
-    \item Вообще, у каждой задачи унификации типов есть наиболее общее решение (или нет вообще). 
+  \frametitle{Алгоритм унификации}
+  \begin{itemize}
+    \item Вообще, у каждой задачи унификации типов есть наиболее общее решение (или нет вообще).
     \item Оно находится следующим алгоритмом:
-    \pause
+          \pause
     \item На каждом шаге есть система уравнений. Выбираем любое из них и упрощаем.
     \item Закончим, когда не останется упрощаемых уравнений (оставшиеся опишут подстановку).
     \item Правило упрощения зависит от вида рассмотренного уравнения:
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгоритм унификации: правила}
-\begin{itemize}
+  \frametitle{Алгоритм унификации: правила}
+  \begin{itemize}
     \item $C~t_1~t_2~\ldots~t_k = C~s_1~s_2~\ldots~s_k$ (одинаковые конструкторы): \pause заменяется на $t_1 = s_1, t_2 = s_2, \ldots$
-    \pause
+          \pause
     \item $C~\ldots = D~\ldots$ (разные конструкторы): \pause унификатора не существует.
-    \pause
+          \pause
     \item $x=x$: \pause оно удаляется, переходим к следующему (можно обобщить и на $t=t$).
-    \pause
+          \pause
     \item $x=t$ или $t=x$: два случая. \pause
-    \begin{itemize}
-        \item Если в $t$ нет переменной $x$: \pause во всех остальных уравнениях делаем замену $x \mapsto t$, переходим к следующему.
-        \item Если есть\pause, то унификатора не существует (иначе результат будет бесконечным)!
-    \end{itemize}
-\end{itemize}
+          \begin{itemize}
+            \item Если в $t$ нет переменной $x$: \pause во всех остальных уравнениях делаем замену $x \mapsto t$, переходим к следующему.
+            \item Если есть\pause, то унификатора не существует (иначе результат будет бесконечным)!
+          \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \newcommand{\fresh}{\mathord{\mathit{fresh}}()}
 \newcommand{\J}{\mathcal{J}}
 \begin{frame}[fragile]
-\frametitle{Алгоритм $\J$ вывода типов}
-\begin{itemize}
+  \frametitle{Алгоритм $\J$ вывода типов}
+  \begin{itemize}
     \item $\Gamma$ "--- окружение типов (набор переменных с их типами).
     \item $\J(\Gamma; e)$ возвращает наиболее общий тип для $e$ с окружением $\Gamma$ или выдаёт ошибку.
-    \pause
-    \vspace{1em}
+          \pause
+          \vspace{1em}
     \item $\phi$ "--- глобальная переменная (только для простоты объяснения), содержащая уже сделанные подстановки.
     \item Функция $\fresh$ возвращает свежую переменную типа (т.е. такую, которой ещё нигде не было).
     \item Функция $ftv$ возвращает свободные переменные типов в аргументе.
     \item Функция $unify$ решает задачу унификации.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгоритм $\J$: приведение $e$ к стандартному виду}
-\begin{itemize}
+  \frametitle{Алгоритм $\J$: приведение $e$ к стандартному виду}
+  \begin{itemize}
     \item Переименуем связанные переменные с одинаковыми именами.
     \item Заменим \lstinline|where| на \lstinline|let|.
     \item \lstinline|if| и все сопоставления с образцом в \lstinline|case|.
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгоритм $\J$: рекурсия по определению $e$}
-\begin{itemize}
+  \frametitle{Алгоритм $\J$: рекурсия по определению $e$}
+  \begin{itemize}
     \item Переменная $x$.
-    \pause
-    \begin{itemize}
-        \item Тип берётся из окружения (он всегда там есть). 
-        \item Если он полиморфный, то переменные под кванторами заменяются на свежие (новые).
-    \end{itemize}
-    \pause
+          \pause
+          \begin{itemize}
+            \item Тип берётся из окружения (он всегда там есть).
+            \item Если он полиморфный, то переменные под кванторами заменяются на свежие (новые).
+          \end{itemize}
+          \pause
     \item[]
     \item Применение функции $e_1~e_2$.
-    \pause
-    \begin{itemize}
-        \item Выводим тип $t_1$ для $e_1$.
-        \item Выводим тип $t_2$ для $e_2$.
-        \item $t_1$ должен иметь вид $t_2 \to \alpha$ \\(где $\alpha$ "--- свежая переменная).
-        \\Унифицируем их.
-        \item Результат (тип $e_1~e_2$): \pause $\alpha$ (после подстановок).
-    \end{itemize}
-\end{itemize}
+          \pause
+          \begin{itemize}
+            \item Выводим тип $t_1$ для $e_1$.
+            \item Выводим тип $t_2$ для $e_2$.
+            \item $t_1$ должен иметь вид $t_2 \to \alpha$ \\(где $\alpha$ "--- свежая переменная).
+                  \\Унифицируем их.
+            \item Результат (тип $e_1~e_2$): \pause $\alpha$ (после подстановок).
+          \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгоритм $\J$: рекурсия по определению $e$}
-\begin{itemize}
+  \frametitle{Алгоритм $\J$: рекурсия по определению $e$}
+  \begin{itemize}
     \item Лямбда-выражение $\lambda x.e_1$.
-    \pause
-    \begin{itemize}
-        \item Тип $x$ "--- свежая переменная $\alpha$. \\ $x : \alpha$ добавляется в окружение (на время этого вывода).
-        \item Выводится тип $t_1$ для $e_1$.
-        \item Результат: \pause $\alpha \to t_1$.
-    \end{itemize}
-    \pause
+          \pause
+          \begin{itemize}
+            \item Тип $x$ "--- свежая переменная $\alpha$. \\ $x : \alpha$ добавляется в окружение (на время этого вывода).
+            \item Выводится тип $t_1$ для $e_1$.
+            \item Результат: \pause $\alpha \to t_1$.
+          \end{itemize}
+          \pause
     \item[]
     \item \lstinline|let|-выражение \lstinline[mathescape]|let $x$ = $e_1$ in $e_2$|
-    \pause
-    \begin{itemize}
-        \item Выводим тип $t_1$ для $e_1$.
-        \item Тип $x$ получается навешиванием $\forall$ на свободные переменные $t_1$, не входящие в окружение.
-        \\ Добавляем его в окружение \pause (тоже на время этого вывода).
-        \item Выводим тип $t_2$ для $e_2$.
-        \item Результат: \pause $t_2$.
-    \end{itemize}
-\end{itemize}
+          \pause
+          \begin{itemize}
+            \item Выводим тип $t_1$ для $e_1$.
+            \item Тип $x$ получается навешиванием $\forall$ на свободные переменные $t_1$, не входящие в окружение.
+                  \\ Добавляем его в окружение \pause (тоже на время этого вывода).
+            \item Выводим тип $t_2$ для $e_2$.
+            \item Результат: \pause $t_2$.
+          \end{itemize}
+  \end{itemize}
 \end{frame}
 
 % TODO неверно, но лучше понять и описать правильный вариант этого подхода, чем fix (см. https://cs.stackexchange.com/questions/101152/let-rec-recursive-expression-static-typing-rule)
@@ -301,53 +300,53 @@
 %\end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгоритм $\J$: рекурсия по определению $e$}
-\begin{itemize}
+  \frametitle{Алгоритм $\J$: рекурсия по определению $e$}
+  \begin{itemize}
     \item Особый случай: рекурсивный \lstinline|let| ($x$ входит в $e_1$).
-    \pause
+          \pause
     \item[]
-    \begin{itemize}
+      \begin{itemize}
         \item Используем функцию \lstinline|fix|.
-        \item \lstinline|fix f| возвращает неподвижную точку \lstinline|f| (т.е. \lstinline|f (fix f) == fix f|). 
-        \pause
+        \item \lstinline|fix f| возвращает неподвижную точку \lstinline|f| (т.е. \lstinline|f (fix f) == fix f|).
+              \pause
         \item Соотвественно, её тип \pause \lstinline|fix :: forall a. (a -> a) -> a|.
-        \pause
+              \pause
         \item \lstinline[mathescape]|let x = $e_1$ in $e_2$| превращается в \lstinline[mathescape]|let x = fix (\x -> $e_1$) in $e_2$|.
         \item Этот \lstinline|let| не рекурсивный, потому что
-        \pause 
-        \\ \lstinline|x| в \lstinline|let x = ...| и в \lstinline[mathescape]|\x -> $e_1$| "--- разные!
-    \end{itemize}
-\end{itemize}
+              \pause
+              \\ \lstinline|x| в \lstinline|let x = ...| и в \lstinline[mathescape]|\x -> $e_1$| "--- разные!
+      \end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Алгоритм $\J$: рекурсия по определению $e$}
-\begin{itemize}
+  \frametitle{Алгоритм $\J$: рекурсия по определению $e$}
+  \begin{itemize}
     \item \lstinline|case|-выражение
-\begin{lstlisting}[mathescape]
+          \begin{lstlisting}[mathescape]
 case $e$ of
   $pat_1$ -> $body_1$
   $pat_2$ -> $body_2$
   ...
 \end{lstlisting}
-    \pause
-    \begin{itemize}
-        \item Выводим тип $t$ для $e$.
-        \item Для $i$-той ветви:
-        \begin{itemize}
-            \pause
-            \item Вводим переменные типов для каждой переменной в $pat_i$.
-            \item Выводим тип для $pat_i$.
-            \pause
-            \item Унифицируем его с $t$.
-            \pause
-            \item Выводим тип $t_i$ для $body_i$.
-        \end{itemize}
-        \pause
-        \item Унифицируем все $t_i$.
-        \item Результат: \pause $t_1$ (или любой другой $t_i$).
-    \end{itemize}
-\end{itemize}
+          \pause
+          \begin{itemize}
+            \item Выводим тип $t$ для $e$.
+            \item Для $i$-той ветви:
+                  \begin{itemize}
+                    \pause
+                    \item Вводим переменные типов для каждой переменной в $pat_i$.
+                    \item Выводим тип для $pat_i$.
+                          \pause
+                    \item Унифицируем его с $t$.
+                          \pause
+                    \item Выводим тип $t_i$ для $body_i$.
+                  \end{itemize}
+                  \pause
+            \item Унифицируем все $t_i$.
+            \item Результат: \pause $t_1$ (или любой другой $t_i$).
+          \end{itemize}
+  \end{itemize}
 \end{frame}
 
 %\begin{frame}[fragile]
@@ -396,31 +395,31 @@ case $e$ of
 %\end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Примеры}
-\begin{itemize}
+  \frametitle{Примеры}
+  \begin{itemize}
     \item Разберём несколько примеров
-    \pause
+          \pause
     \item Без \lstinline|let|:
     \item[] \lstinline|f1 = (.) . (.)|
-    \pause
+      \pause
     \item C \lstinline|let|-полиморфизмом:
     \item[] \lstinline|f2 x = let pair x = (x,x) in pair (pair x)|
-    \pause
+      \pause
     \item Пример ошибки типа:
     \item[] \lstinline|f3 x = x x|
-\end{itemize}
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-\frametitle{Дополнительное чтение}
-\begin{itemize}
+  \frametitle{Дополнительное чтение}
+  \begin{itemize}
     \item Более известна альтернатива $\J$, избегающая \enquote{глобальной} $\phi$ "--- алгоритм $\mathcal{W}$. Вы можете легко найти его описания и реализации в Интернете.
     \item \href{http://dev.stephendiehl.com/fun/006_hindley_milner.html}{Глава Hindley-Milner Inference в Write You a Haskell}
     \item \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.65.7733}{Algorithm W Step by Step}
     \item Реализация системы типов всего (!) стандарта Haskell 98 с выводом, основанная на $\J$, есть в \href{https://gist.github.com/chrisdone/0075a16b32bfd4f62b7b}{Typing Haskell in Haskell}.
     \item \href{https://compsciclub.ru/courses/types/2019-spring/classes/}{Курс лекций В.~Н.~Брагилевского "Вывод типов от Хиндли — Милнера до GHC 8.8"  (есть видео)}
-    \item Реализации на Haskell обычно используют монады, но это не должно сильно осложнить понимание. 
-\end{itemize}
+    \item Реализации на Haskell обычно используют монады, но это не должно сильно осложнить понимание.
+  \end{itemize}
 \end{frame}
 
 \end{document}
