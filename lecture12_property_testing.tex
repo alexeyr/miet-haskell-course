@@ -1,6 +1,5 @@
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
-\usepackage{syntax}
 
 \title{Лекция 12: тестирование свойств}
 
@@ -35,10 +34,10 @@
           \pause
     \item Сколько нужно тестов? Всегда можно добавить ещё.
           \pause
-          Разве что если функция на \lstinline|Bool|...
+          Разве что если функция на \haskinline|Bool|...
           \pause
     \item Нужно искать пограничные случаи (т.е. те, в которых ошибка более вероятна) самому. \\
-          Хотя есть часто встречающиеся: \pause \lstinline|0|, пустой список, \lstinline|INT_MIN|...
+          Хотя есть часто встречающиеся: \pause \haskinline|0|, пустой список, \haskinline|INT_MIN|...
           \pause
     \item Для каких-то аргументов мы можем не знать правильного результата (и не иметь независимого от тестируемой функции способа его найти).
           \pause
@@ -65,12 +64,14 @@
   \frametitle{Простейший пример}
   \begin{itemize}
     \item Для Haskell две основных библиотеки: \href{http://hackage.haskell.org/package/QuickCheck}{QuickCheck} и \href{https://github.com/hedgehogqa/haskell-hedgehog/}{Hedgehog}. Мы используем первую для простоты кода.
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-> import Test.QuickCheck
-> quickCheck (\x -> (x :: Integer) * x >= 0)
-+++ OK, passed 100 tests.
-\end{lstlisting}
-    \item Проверили, что квадраты \lstinline|Integer| неотрицательны.
+          \begin{haskell}
+            ghci> import Test.QuickCheck
+            ghci> quickCheck (\x -> (x :: Integer) * x >= 0)
+          \end{haskell}
+          \begin{ghci}
+            +++ OK, passed 100 tests.
+          \end{ghci}
+    \item Проверили, что квадраты \haskinline|Integer| неотрицательны.
   \end{itemize}
 \end{frame}
 
@@ -78,16 +79,23 @@
   \frametitle{Ещё один пример}
   \begin{itemize}
     \item Верно ли, что первый элемент списка всегда равен последнему элементу развёрнутого?
-          \begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\small]
-> quickCheck (\xs -> head xs === last (reverse xs)) |\pause|
-*** Failed! Exception: 'Prelude.head: empty list' (after 1 test):
-[]
-\end{lstlisting}
+          \begin{haskellsmall}
+            ghci> quickCheck (\xs -> head xs === last (reverse xs))
+          \end{haskellsmall}
+          \pause
+          \begin{ghcitiny}
+            *** Failed! Exception: 'Prelude.head: empty list' (after 1 test):
+            []
+          \end{ghcitiny}
     \item Как исправить? \pause Нужно добавить условие, что список непустой:
-          \begin{lstlisting}[escapeinside=||,basicstyle=\ttfamily\small]
-> quickCheck (\xs -> not (null xs) ==> head xs === last (reverse xs)) |\pause|
-+++ OK, passed 100 tests.
-\end{lstlisting}
+          \begin{haskellsmall}
+            ghci> quickCheck (\xs -> not (null xs) ==>
+                    head xs === last (reverse xs))
+          \end{haskellsmall}
+          \pause
+          \begin{ghcismall}
+            +++ OK, passed 100 tests.
+          \end{ghcismall}
 
   \end{itemize}
 \end{frame}
@@ -95,13 +103,13 @@
 \begin{frame}[fragile]
   \frametitle{Основные типы и функции}
   \begin{itemize}
-    \item \lstinline|Gen a|: генератор случайных значений типа \lstinline|a|.
-    \item \lstinline|forAll :: (Show a, Testable prop) => Gen a -> (a -> prop) -> Property|: создаёт свойство с использованием заданного генератора.
-    \item \lstinline|class Arbitrary a where arbitrary :: Gen a|: типы, у которых есть \enquote{стандартный генератор}.
+    \item \haskinline|Gen a|: генератор случайных значений типа \haskinline|a|.
+    \item \haskinline|forAll :: (Show a, Testable prop) => Gen a -> (a -> prop) -> Property|: создаёт свойство с использованием заданного генератора.
+    \item \haskinline|class Arbitrary a where arbitrary :: Gen a|: типы, у которых есть \enquote{стандартный генератор}.
     \item[]
-    \item \lstinline|class Testable a|: типы, которые можно протестировать (например \lstinline|Bool| и \lstinline|Property|).
-    \item Функции \lstinline|a -> prop|, где \lstinline|Arbitrary a|, \lstinline|Show a|, \lstinline|Testable prop| "--- тоже \lstinline|Testable|.
-    \item \lstinline|quickCheck, verboseCheck :: Testable prop => prop -> IO ()|: проверяет свойство и выводит результат.
+    \item \haskinline|class Testable a|: типы, которые можно протестировать (например \haskinline|Bool| и \haskinline|Property|).
+    \item Функции \haskinline|a -> prop|, где \haskinline|Arbitrary a|, \haskinline|Show a|, \haskinline|Testable prop| "--- тоже \haskinline|Testable|.
+    \item \haskinline|quickCheck, verboseCheck :: Testable prop => prop -> IO ()|: проверяет свойство и выводит результат.
   \end{itemize}
 \end{frame}
 
@@ -109,21 +117,21 @@
   \frametitle{Генераторы значений}
   \begin{itemize}
     \item Примеры базовых генераторов:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-choose :: Random a => (a, a) -> Gen a
-elements :: [a] -> Gen a
-\end{lstlisting}
-    \item Из простых генераторов можно строить более сложные, пользуясь тем, что \lstinline|Gen| "--- монада. Например:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-genPair :: Gen a -> Gen b -> Gen (a, b)
-genPair ga gb =!\pause! liftA2 (,) ga gb
+          \begin{haskell}
+            choose :: Random a => (a, a) -> Gen a
+            elements :: [a] -> Gen a
+          \end{haskell}
+    \item Из простых генераторов можно строить более сложные, пользуясь тем, что \haskinline|Gen| "--- монада. Например:
+          \begin{haskell}
+            genPair :: Gen a -> Gen b -> Gen (a, b)
+            genPair ga gb =!\pause! liftA2 (,) ga gb
 
-genMaybe :: Gen a -> Gen (Maybe a)
-genMaybe ga = do is_just <- arbitrary @Bool
-                 if is_just 
-                   then!\pause! fmap Just ga
-                   else!\pause! pure Nothing
-\end{lstlisting}
+            genMaybe :: Gen a -> Gen (Maybe a)
+            genMaybe ga = do is_just <- arbitrary @Bool
+                            if is_just 
+                              then!\pause! fmap Just ga
+                              else!\pause! pure Nothing
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -131,24 +139,24 @@ genMaybe ga = do is_just <- arbitrary @Bool
   \frametitle{Генераторы значений}
   \begin{itemize}
     \item С рекурсивными типами несколько сложнее. Можно попробовать привести пример
-          \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-data Tree a = Empty | Node a (Tree a) (Tree a)
+          \begin{haskelltiny}
+            data Tree a = Empty | Node a (Tree a) (Tree a)
 
-treeOf :: Gen a -> Gen (Tree a)
-treeOf g = oneOf [pure Empty, 
-                  liftA3 Node g (treeOf g) (treeOf g)]
-\end{lstlisting}
+            treeOf :: Gen a -> Gen (Tree a)
+            treeOf g = oneOf [pure Empty, 
+                              liftA3 Node g (treeOf g) (treeOf g)]
+          \end{haskelltiny}
           но это определение плохое: оно даёт очень маленькие деревья (почему?).
     \item Правильнее:
-          \begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
-treeOf g = do n <- getSize
-              if n == 0
-                then pure Empty
-                else do
-                  k <- choose (0,n)
-                  liftA3 Node g (resize k $ treeOf g)
-                                (resize (n-k) $ treeOf g)
-\end{lstlisting}
+          \begin{haskelltiny}
+            treeOf g = do n <- getSize
+                          if n == 0
+                            then pure Empty
+                            else do
+                              k <- choose (0,n)
+                              liftA3 Node g (resize k $ treeOf g)
+                                            (resize (n-k) $ treeOf g)
+          \end{haskelltiny}
   \end{itemize}
 \end{frame}
 
@@ -157,8 +165,8 @@ treeOf g = do n <- getSize
   \begin{itemize}
     \item Найденный сначала контрпример обычно будет довольно большим (хотя начинается генерация с примеров малого размера).
     \item Поэтому библиотека старается найти и выдать пользователю более простые значения аргументов, дающие ту же ошибку.
-    \item В случае QuickCheck за это уменьшение отвечает функция \lstinline|shrink :: a -> [a]| в классе \lstinline|Arbitrary|.
-    \item В Hedgehog, это уменьшение задаётся как часть \lstinline|Hedgehog.Gen|, что имеет преимущества:
+    \item В случае QuickCheck за это уменьшение отвечает функция \haskinline|shrink :: a -> [a]| в классе \haskinline|Arbitrary|.
+    \item В Hedgehog, это уменьшение задаётся как часть \haskinline|Hedgehog.Gen|, что имеет преимущества:
           \begin{itemize}
             \item Если что-то сгенерировали, точно можно уменьшить.
             \item При уменьшении сохраняются инварианты.
@@ -173,7 +181,7 @@ treeOf g = do n <- getSize
     \item Если мы нашли контрпример (например, с десятого запуска) и изменили реализацию, нужно проверить, что этот случай исправился.
     \item В QuickCheck для этого просто запускаем то же свойство с напечатанными аргументами. Можно также добавить обычный тест с ними.
     \item Конечно, это удобно делать только тогда, когда минимизация более-менее удалась.
-    \item Кроме того, для некоторых типов результат \lstinline|show x| недостаточен для точного воспроизведения \lstinline|x| (придумаете пример?)
+    \item Кроме того, для некоторых типов результат \haskinline|show x| недостаточен для точного воспроизведения \haskinline|x| (придумаете пример?)
     \item Поэтому в Hedgehog кроме аргументов выдаётся параметр для перезапуска генератора.
   \end{itemize}
 \end{frame}
@@ -182,21 +190,21 @@ treeOf g = do n <- getSize
   \frametitle{Реализация Arbitrary для своих типов}
   \begin{itemize}
     \item Для пар:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance (Arbitrary a, Arbitrary b) => Arbitrary (a, b) where
-  arbitrary = genPair arbitrary arbitrary
-  shrink (x, y) = [(x', y') | x' <- shrink x, y' <- shrink y]
-\end{lstlisting}
+          \begin{haskell}
+            instance (Arbitrary a, Arbitrary b) => Arbitrary (a, b) where
+              arbitrary = genPair arbitrary arbitrary
+              shrink (x, y) = [(x', y') | x' <- shrink x, y' <- shrink y]
+          \end{haskell}
     \item Для деревьев:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Arbitrary a => Arbitrary (Tree a) where
-  arbitrary = treeOf arbitrary
-  shrink Empty = []
-  shrink (Node x l r) = 
-    [Empty, l, r] ++
-    [Node x' l' r' | 
-      (x', l', r') <- shrink (x, l, r)]
-\end{lstlisting}
+          \begin{haskell}
+            instance Arbitrary a => Arbitrary (Tree a) where
+              arbitrary = treeOf arbitrary
+              shrink Empty = []
+              shrink (Node x l r) = 
+                [Empty, l, r] ++
+                [Node x' l' r' | 
+                  (x', l', r') <- shrink (x, l, r)]
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -205,7 +213,7 @@ instance Arbitrary a => Arbitrary (Tree a) where
   \begin{itemize}
     \item Самое тривиальное свойство "--- функция даёт результат, а не выкидывает исключение.
     \item Сверка с другой реализацией той же функции.
-    \item При наличии также обратной функции: \lstinline|encode (decode x) == x|.
+    \item При наличии также обратной функции: \haskinline|encode (decode x) == x|.
     \item Алгебраические свойства: идемпотентность, коммутативность, ассоциативность и так далее.
     \item Законы классов типов.
   \end{itemize}
@@ -214,30 +222,32 @@ instance Arbitrary a => Arbitrary (Tree a) where
 \begin{frame}[fragile]
   \frametitle{Генераторы функций}
   \begin{itemize}
-    \item Для тестирования функций высшего порядка нужно уметь генерировать их аргументы, то есть случайные функции. Для этого в QuickCheck есть \href{http://hackage.haskell.org/package/QuickCheck-2.13.1/docs/Test-QuickCheck.html#g:14}{тип \lstinline|Fun| и класс \lstinline|Function|}. \lstinline|Fun a b| представляет функцию \lstinline|a -> b| как набор пар аргумент-значение и значение по умолчанию (например \lstinline|{"elephant"->1, "monkey"->1, _->0}|). Экземпляр \lstinline|Function a| нужен для генерации \lstinline|Fun a b|.
+    \item Для тестирования функций высшего порядка нужно уметь генерировать их аргументы, то есть случайные функции. Для этого в QuickCheck есть \href{http://hackage.haskell.org/package/QuickCheck-2.13.1/docs/Test-QuickCheck.html#g:14}{тип \haskinline|Fun| и класс \haskinline|Function|}. \haskinline|Fun a b| представляет функцию \haskinline|a -> b| как набор пар аргумент-значение и значение по умолчанию (например \haskinline|{"elephant"->1, "monkey"->1, _->0}|). Экземпляр \haskinline|Function a| нужен для генерации \haskinline|Fun a b|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Свойства функций}
   \begin{itemize}
-    \item Как пример использования, покажем, что функции \lstinline|Int -> String| "--- чистые, то есть дают одинаковый результат при повторном вызове:
-          \begin{lstlisting}
-prop :: Fun Int String -> Int -> Bool
-prop (Fn f) x = f x == f x
-> quickCheck prop
-+++ OK, passed 100 tests.
-\end{lstlisting}
+    \item Как пример использования, покажем, что функции \haskinline|Int -> String| "--- чистые, то есть дают одинаковый результат при повторном вызове:
+          \begin{haskell}
+            prop :: Fun Int String -> Int -> Bool
+            prop (Fn f) x = f x == f x
+            ghci> quickCheck prop
+          \end{haskell}
+          \begin{ghci}
+            +++ OK, passed 100 tests.
+          \end{ghci}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Тестирование законов классов}
   \begin{itemize}
-    \item Библиотека \href{http://hackage.haskell.org/package/quickcheck-classes}{quickcheck-classes} содержит свойства, проверяющие законы для множества классов.
-    \item Например, законы \lstinline|Eq| определяются функцией \lstinline|eqLaws :: (Eq a, Arbitrary a, Show a) => Proxy a -> Laws| и могут быть проверены для \lstinline|Rational| с помощью \lstinline|lawsCheck (eqLaws (Proxy @Rational)))|.
-    \item Для проверки законов \lstinline|Functor/Applicative/Monad/...| вместо \lstinline|Proxy| нужно \lstinline|Proxy1|.
-    \item Для Hedgehog совершенно аналогичная \href{https://hackage.haskell.org/package/hedgehog-classes}{hedgehog-classes} (только последняя версия у меня не поставилась).
+    \item Библиотека \hackage{quickcheck-classes} содержит свойства, проверяющие законы для множества классов.
+    \item Например, законы \haskinline|Eq| определяются функцией \haskinline|eqLaws :: (Eq a, Arbitrary a, Show a) => Proxy a -> Laws| и могут быть проверены для \haskinline|Rational| с помощью \haskinline|lawsCheck (eqLaws (Proxy @Rational)))|.
+    \item Для проверки законов \haskinline|Functor/Applicative/Monad/...| вместо \haskinline|Proxy| нужно \haskinline|Proxy1|.
+    \item Для Hedgehog совершенно аналогичная \hackage{hedgehog-classes} (только последняя версия у меня не поставилась).
   \end{itemize}
 \end{frame}
 
@@ -245,12 +255,12 @@ prop (Fn f) x = f x == f x
   \frametitle{Ещё раз: Hedgehog и QuickCheck}
   \begin{itemize}
     \item Главная разница: в Hedgehog уменьшение интегрировано с генерацией значений, а не определяется типом.
-    \item Нет \lstinline|Arbitrary|, генераторы контролируются полностью явно.
+    \item Нет \haskinline|Arbitrary|, генераторы контролируются полностью явно.
     \item Для улучшения воспроизводимости вместе с контрпримером выдаётся seed.
-    \item Улучшенный показ контрпримеров с помощью пакета \href{https://hackage.haskell.org/package/pretty-show}{\lstinline|pretty-show|} и функции \href{http://hackage.haskell.org/package/hedgehog-1.0/docs/Hedgehog.html#v:diff}{\lstinline|diff|}.
+    \item Улучшенный показ контрпримеров с помощью пакета \hackage{pretty-show} и функции \href{http://hackage.haskell.org/package/hedgehog-1.0/docs/Hedgehog.html#v:diff}{diff}.
     \item Проще работа с монадическими свойствами.
     \item Поддержка тестирования с состоянием.
-    \item Для генерации функций нужна отдельная библиотека \href{https://hackage.haskell.org/package/hedgehog-fn}{\lstinline|hedgehog-fn|}.
+    \item Для генерации функций нужна отдельная библиотека \hackage{hedgehog-fn}.
     \item Параллельная проверка (для ускорения).
   \end{itemize}
 \end{frame}

@@ -1,6 +1,5 @@
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
-\usepackage{syntax}
 
 \title{Лекция 7: вывод типов}
 
@@ -16,8 +15,8 @@
           \hspace{-1em}
           \pause
           \begin{itemize}
-            \item \lstinline!auto! в C++11
-            \item \lstinline!var! в C\# 3.0 и Java 10
+            \item \mintinline{cpp}!auto! в C++11
+            \item \mintinline{csharp}!var! в C\# 3.0 и Java 10
             \item Отсутствие явного типа в Kotlin, Scala
           \end{itemize}
           \pause
@@ -30,7 +29,7 @@
                   \pause
             \item Тип локальных переменных/полей $=$ тип инициализатора (если нет явного).
                   \pause
-            \item Возвращаемый тип $=$ общий тип для всех \lstinline!return!.
+            \item Возвращаемый тип $=$ общий тип для всех \mintinline{cpp}!return!.
           \end{itemize}
           \pause
     \item Отдельный вопрос: вывод параметров шаблонов (в C++)/генериков (в других языках).
@@ -74,8 +73,8 @@
   \begin{itemize}
     \item Даны:
           \begin{itemize}
-            \item Набор типов и конструкторов типов: \lstinline|Int|, \lstinline|Bool|, \lstinline|[]| и т.д.
-            \item Среди них особую роль играет конструктор функций \lstinline|->|.
+            \item Набор типов и конструкторов типов: \haskinline|Int|, \haskinline|Bool|, \haskinline|[]| и т.д.
+            \item Среди них особую роль играет конструктор функций \haskinline|->|.
             \item Набор известных именованных функций (или констант) с их типами.
             \item Выражение, тип которого мы хотим найти (обычно определение функции).
           \end{itemize}
@@ -90,15 +89,15 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\lstinline|let| и $\lambda$}
+  \frametitle{\haskinline|let| и $\lambda$}
   \begin{itemize}
-    \item Сравните \lstinline[mathescape]|let x = e$_1$ in e$_2$| и \lstinline[mathescape]|(\x -> e$_2$) e$_1$|.
+    \item Сравните \haskinline|let x = e!$_1$! in e!$_2$!| и \haskinline|(\x -> e!$_2$!) e!$_1$!|.
           \pause
-    \item Значения всегда одинаковы (для любых \lstinline[mathescape]|e$_1$| и \lstinline[mathescape]|e$_2$|).
+    \item Значения всегда одинаковы (для любых \haskinline|e!$_1$!| и \haskinline|e!$_2$!|).
           \pause
-    \item Но есть разница при типизации: \pause \lstinline|x| в лямбде всегда мономорфна, а в \lstinline|let| может быть полиморфной.
+    \item Но есть разница при типизации: \pause \haskinline|x| в лямбде всегда мономорфна, а в \haskinline|let| может быть полиморфной.
           \pause
-    \item Поэтому в нетипизированном и просто типизированном $\lambda$-исчислении \lstinline|let| обычно не вводится.
+    \item Поэтому в нетипизированном и просто типизированном $\lambda$-исчислении \haskinline|let| обычно не вводится.
   \end{itemize}
 \end{frame}
 
@@ -110,20 +109,20 @@
     \item Названия переменных (в том числе функций) $x$
     \item Применение функции к аргументу
     \item Лямбда-выражения
-    \item \lstinline|let|-выражения
-    \item \lstinline|case|-выражения
+    \item \haskinline|let|-выражения
+    \item \haskinline|case|-выражения
     \item[]
       \pause
     \item Типы $t$:
           \pause
-    \item Базовые типы \lstinline|Int|, \ldots
+    \item Базовые типы \haskinline|Int|, \ldots
     \item Переменные типов (греческие буквы $\alpha, \beta, \ldots$)
     \item Тип функций $t_1 \to t_2$
     \item[]
       \pause
-    \item Полиморфные типы: $\forall \alpha_1 \ldots \alpha_k t$
+    \item Полиморфные типы: $\forall \alpha_1 \ldots \alpha_k~t$
           \pause
-    \item $\forall$ только на внешнем уровне, под $\to$ его быть не может!
+    \item $\forall$ только на внешнем уровне, не под $\to$!
   \end{itemize}
 \end{frame}
 
@@ -166,16 +165,16 @@
 \begin{frame}[fragile]
   \frametitle{Унификация типов}
   \begin{itemize}
-    \item Тип \lstinline[mathescape]|($\alpha$, $\alpha$)| более общий, чем \lstinline[mathescape]|(Int, Int)|, так как  \lstinline[mathescape]|$\exists \sigma~\sigma($($\alpha$, $\alpha$)$)=$(Int, Int)|.
+    \item Тип \haskinline|(!$\alpha$!, !$\alpha$!)| более общий, чем \haskinline|(Int, Int)|, так как  \haskinline|!$\exists \sigma\ \sigma($!(!$\alpha$!, !$\alpha$!)!$)=$!(Int, Int)|.
     \item Второй "--- частный случай первого.
           \pause
-    \item \lstinline[mathescape]|($\alpha$, $\beta$)| более общий, чем \lstinline[mathescape]|($\alpha$, $\alpha$)|.
+    \item \haskinline|(!$\alpha$!, !$\beta$!)| более общий, чем \haskinline|(!$\alpha$!, !$\alpha$!)|.
           \pause
     \item Вопрос: когда два типа более общи друг друга?
           \pause
     \item Когда они отличаются только названиями переменных.
           \pause
-    \item Можем рассмотреть задачу унификации \lstinline[mathescape]|($\alpha$, $\beta$)$=$($\beta$, Int)|.
+    \item Можем рассмотреть задачу унификации \haskinline|(!$\alpha$!, !$\beta$!)!$=$!(!$\beta$!, Int)|.
           \pause
     \item $\{ \alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{Int} \}$ это одно из её решений.
           \pause
@@ -232,8 +231,8 @@
   \frametitle{Алгоритм $\J$: приведение $e$ к стандартному виду}
   \begin{itemize}
     \item Переименуем связанные переменные с одинаковыми именами.
-    \item Заменим \lstinline|where| на \lstinline|let|.
-    \item \lstinline|if| и все сопоставления с образцом в \lstinline|case|.
+    \item Заменим \haskinline|where| на \haskinline|let|.
+    \item \haskinline|if| и все сопоставления с образцом в \haskinline|case|.
   \end{itemize}
 \end{frame}
 
@@ -272,7 +271,7 @@
           \end{itemize}
           \pause
     \item[]
-    \item \lstinline|let|-выражение \lstinline[mathescape]|let $x$ = $e_1$ in $e_2$|
+    \item \haskinline|let|-выражение \haskinline|let !$x$! = !$e_1$! in !$e_2$!|
           \pause
           \begin{itemize}
             \item Выводим тип $t_1$ для $e_1$.
@@ -288,7 +287,7 @@
 %\begin{frame}[fragile]
 %\frametitle{Алгоритм $\J$: рекурсия по определению $e$}
 %\begin{itemize}
-%    \item Особый случай: рекурсивный \lstinline|let| ($x$ входит в $e_1$).
+%    \item Особый случай: рекурсивный \haskinline|let| ($x$ входит в $e_1$).
 %    \pause
 %    \begin{itemize}
 %        \item Тогда перед выводом $e_1$ мы добавляем для $x$ переменную типа $\alpha$, а потом унифицируем $t_1$ с $\alpha$.
@@ -302,19 +301,19 @@
 \begin{frame}[fragile]
   \frametitle{Алгоритм $\J$: рекурсия по определению $e$}
   \begin{itemize}
-    \item Особый случай: рекурсивный \lstinline|let| ($x$ входит в $e_1$).
+    \item Особый случай: рекурсивный \haskinline|let| ($x$ входит в $e_1$).
           \pause
     \item[]
       \begin{itemize}
-        \item Используем функцию \lstinline|fix|.
-        \item \lstinline|fix f| возвращает неподвижную точку \lstinline|f| (т.е. \lstinline|f (fix f) == fix f|).
+        \item Используем функцию \haskinline|fix|.
+        \item \haskinline|fix f| возвращает неподвижную точку \haskinline|f| (т.е. \haskinline|f (fix f) == fix f|).
               \pause
-        \item Соотвественно, её тип \pause \lstinline|fix :: forall a. (a -> a) -> a|.
+        \item Соотвественно, её тип \pause \haskinline|fix :: forall a. (a -> a) -> a|.
               \pause
-        \item \lstinline[mathescape]|let x = $e_1$ in $e_2$| превращается в \lstinline[mathescape]|let x = fix (\x -> $e_1$) in $e_2$|.
-        \item Этот \lstinline|let| не рекурсивный, потому что
+        \item \haskinline|let x = !$e_1$! in !$e_2$!| превращается в \haskinline|let x = fix (\x -> !$e_1$!) in !$e_2$!|.
+        \item Этот \haskinline|let| не рекурсивный, потому что
               \pause
-              \\ \lstinline|x| в \lstinline|let x = ...| и в \lstinline[mathescape]|\x -> $e_1$| "--- разные!
+              \\ \haskinline|x| в \haskinline|let x = ...| и в \haskinline|\x -> !$e_1$!| "--- разные!
       \end{itemize}
   \end{itemize}
 \end{frame}
@@ -322,13 +321,13 @@
 \begin{frame}[fragile]
   \frametitle{Алгоритм $\J$: рекурсия по определению $e$}
   \begin{itemize}
-    \item \lstinline|case|-выражение
-          \begin{lstlisting}[mathescape]
-case $e$ of
-  $pat_1$ -> $body_1$
-  $pat_2$ -> $body_2$
-  ...
-\end{lstlisting}
+    \item \haskinline|case|-выражение
+          \begin{haskell}
+            case !$e$! of
+              !$pat_1$! -> !$body_1$!
+              !$pat_2$! -> !$body_2$!
+              ...
+          \end{haskell}
           \pause
           \begin{itemize}
             \item Выводим тип $t$ для $e$.
@@ -353,21 +352,21 @@ case $e$ of
 %\frametitle{Алгоритм $\J$: рекурсия по определению $e$ (формально)}
 %\begin{itemize}
 %    \item 
-%\begin{lstlisting}[mathescape]
+%\begin{haskell}
 %$\J(\Gamma; x)$ = do
 %  $\forall \alpha_1\ldots\alpha_k t = \phi(\Gamma(x))$
 %  return $t[\alpha_1 \mapsto \fresh,\ldots,\alpha_k \mapsto \fresh]$
-%\end{lstlisting}
+%\end{haskell}
 %    \item[] \pause
 %    \item 
-%\begin{lstlisting}[mathescape]
+%\begin{haskell}
 %$\J(\Gamma; e_1~e_2)$ = do
 %  $t_1 = \J(\Gamma; e_1)$
 %  $t_2 = \J(\Gamma; e_2)$
 %  $\alpha = \fresh$
 %  $\phi := \mathord{\mathit{unify}}(t_1 = t_2 \to \alpha) \circ \phi$
 %  return $\phi(\alpha)$
-%\end{lstlisting}
+%\end{haskell}
 %\end{itemize}
 %\end{frame}
 %
@@ -375,22 +374,22 @@ case $e$ of
 %\frametitle{Алгоритм $\J$: рекурсия по определению $e$ (формально)}
 %\begin{itemize}
 %\item 
-%\begin{lstlisting}[mathescape]
+%\begin{haskell}
 %$\J(\Gamma; \lambda x.e_1)$ = do
 %  $\alpha = \fresh$
 %  $t = \J(\Gamma, x:\alpha; e_1)$
 %  return $\phi(\alpha \to t)$
-%\end{lstlisting}
+%\end{haskell}
 %    \item[] \pause
 %\item 
-%\begin{lstlisting}[mathescape]
+%\begin{haskell}
 %$\J(\Gamma; \mathtt{let}~x=e_1~\mathtt{in}~e_2)$ = do
 %  $t_1 = \J(\Gamma; e_1)$
 %  $\Gamma_1 = \phi(\Gamma)$
 %  $fv = ftv(t_1) \setminus ftv(\Gamma_1)$
 %  $t_2 = \forall fv.t_1$
 %  return $\J(\Gamma_1, x:t_2; e_2)$
-%\end{lstlisting}
+%\end{haskell}
 %\end{itemize}
 %\end{frame}
 
@@ -399,14 +398,14 @@ case $e$ of
   \begin{itemize}
     \item Разберём несколько примеров
           \pause
-    \item Без \lstinline|let|:
-    \item[] \lstinline|f1 = (.) . (.)|
+    \item Без \haskinline|let|:
+    \item[] \haskinline|f1 = (.) . (.)|
       \pause
-    \item C \lstinline|let|-полиморфизмом:
-    \item[] \lstinline|f2 x = let pair x = (x,x) in pair (pair x)|
+    \item C \haskinline|let|-полиморфизмом:
+    \item[] \haskinline|f2 x = let pair x = (x,x) in pair (pair x)|
       \pause
     \item Пример ошибки типа:
-    \item[] \lstinline|f3 x = x x|
+    \item[] \haskinline|f3 x = x x|
   \end{itemize}
 \end{frame}
 

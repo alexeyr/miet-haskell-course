@@ -16,7 +16,7 @@
   \frametitle{Монада IO}
   \begin{itemize}
     \item Среди многих монад стандартной библиотеки, \haskinline|IO| играет особую роль.
-    \item Значение типа \haskinline|IO a| описывает вычисление с результатом типа \lstinline|a| и побочными эффектами.
+    \item Значение типа \haskinline|IO a| описывает вычисление с результатом типа \haskinline|a| и побочными эффектами.
     \item В первую очередь имеются в виду ввод-вывод, как видно из названия, но также изменяемые переменные и т.д.
   \end{itemize}
 \end{frame}
@@ -38,54 +38,54 @@
   \begin{itemize}
     \item Из консоли можно читать текст, вводимый пользователем:
           \begin{haskell}
-    getLine ::`\pause` IO String
-    \end{haskell}
+            getLine ::!\pause! IO String
+          \end{haskell}
     \item И писать в неё:
           \begin{haskell}
-    putStr, putStrLn ::`\pause` String -> IO ()
-    print :: Show a => a -> IO () 
-    \end{haskell}
+            putStr, putStrLn ::!\pause! String -> IO ()
+            print :: Show a => a -> IO () 
+          \end{haskell}
           \pause
     \item Простой пример: читаем любую строку, выводим её длину и повторяем (а на \haskinline|"quit"| выходим):
           \pause
-          \begin{haskell}
-    main = do
-      line <- getLine
-      if line != "quit"
-        then do
-          print (length line)
-          main
-        else
-          pure ()  -- или exitSuccess
-    \end{haskell}
+          \begin{haskellsmall}
+            main = do
+              line <- getLine
+              if line /= "quit"
+                then do
+                  print (length line)
+                  main
+                else
+                  pure ()  -- или exitSuccess
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Работа с файлами}
   \begin{itemize}
-    \item Модуль \href{http://hackage.haskell.org/package/base-4.12.0.0/docs/System-IO.html}{\haskinline|System.IO|}.
+    \item Модуль \href{http://hackage.haskell.org/package/base/docs/System-IO.html}{\haskinline|System.IO|}.
     \item Напомню, \haskinline|type FilePath = String|.
     \item Простейшие операции это чтение и запись в файл:
           \begin{haskell}
-    readFile :: FilePath -> IO String
-    writeFile, appendFile :: 
-      FilePath -> String -> IO ()
-    \end{haskell}
+            readFile :: FilePath -> IO String
+            writeFile, appendFile :: 
+              FilePath -> String -> IO ()
+          \end{haskell}
     \item
           Или можно открыть файл один раз, получить \haskinline|Handle| (дескриптор файла) и работать с ним:
           \begin{haskell}
-    openFile, openBinaryFile :: 
-      FilePath -> IOMode -> IO Handle 
-    hPutStrLn :: Handle -> String -> IO ()
-    hGetStr...
-    \end{haskell}
+            openFile, openBinaryFile :: 
+              FilePath -> IOMode -> IO Handle 
+            hPutStrLn :: Handle -> String -> IO ()
+            hGetStr...
+          \end{haskell}
           \pause
     \item
           Функции работы с консолью сводятся к этим:
           \begin{haskell}
-    getLine = hGetLine stdin
-    \end{haskell}
+            getLine = hGetLine stdin
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -94,20 +94,20 @@
   \begin{itemize}
     \item В чём проблема с кодом вроде
           \begin{haskell}
-    do
-      file <- openFile path ReadWriteMode
-      ...
-      hClose file
-    \end{haskell}
+            do
+              file <- openFile path ReadWriteMode
+              ...
+              hClose file
+          \end{haskell}
           \pause
     \item Что, если на каком-то из шагов случится исключение? Мы остаёмся с открытым файлом.
     \item Если это случится много раз, программа вылетит.
           \pause
     \item Чтобы закрыть файл и при исключении:
           \begin{haskell}
-    withFile path ReadWriteMode $ \file -> do
-      ...
-    \end{haskell}
+            withFile path ReadWriteMode $ \file -> do
+              ...
+          \end{haskell}
     \item Это частный случай функции \haskinline|bracket|.
   \end{itemize}
 \end{frame}
@@ -118,17 +118,17 @@
     \item Функция \haskinline|hGetContents| не читает содержимое файла, а сразу возвращает строку, по мере доступа к которой читается файл.
     \item С одной стороны, это хорошо: не нужно явно указывать, сколько читать.
     \item Но если закрыть файл до того, как он реально прочитан, строка закончится как если бы она дошла до конца файла:
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             wrong = do
             fileData <- withFile "test.txt" ReadMode hGetContents
             putStr fileData
-          \end{haskell*}
+          \end{haskellsmall}
     \item Нужно использовать данные внутри \haskinline|withFile|:
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             right = withFile "test.txt" ReadMode $ \file -> do
             fileData <- hGetContents file
             putStr fileData
-          \end{haskell*}
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -148,22 +148,22 @@
   \begin{itemize}
     \item Модуль \haskinline|System.Random| содержит класс
     \item
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             class RandomGen g where
-            next :: g -> (Int, g)
-            split :: g -> (g, g)
-            genRange :: g -> (Int, Int)
-            genRange _ = (minBound, maxBound)
-          \end{haskell*}
+              next :: g -> (Int, g)
+              split :: g -> (g, g)
+              genRange :: g -> (Int, Int)
+              genRange _ = (minBound, maxBound)
+          \end{haskellsmall}
           описывающий генераторы случайных \haskinline|Int|.
     \item Есть тип \haskinline|StdGen| и \haskinline|instance RandomGen StdGen|.
     \item Глобальный генератор живёт в \haskinline|IORef|:
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             getStdGen :: IO StdGen
             setStdGen :: StdGen -> IO ()
             newStdGen :: IO StdGen  -- применяет split к getStdGen
             getStdRandom :: (StdGen -> (a, StdGen)) -> IO a
-          \end{haskell*}
+          \end{haskellsmall}
     \item Типы \haskinline|next| и \haskinline|getStdRandom| могут напомнить про \haskinline|State| и не зря!
     \item Реализуем \haskinline|newStdGen| и \haskinline|getStdRandom|.
   \end{itemize}
@@ -174,27 +174,27 @@
   \begin{itemize}
     \item
           \begin{haskell}
-    newStdGen = do 
-      currGen <- getStdGen
-      let (newGen1, newGen2) = split currGen
-      setStdGen newGen2
-      pure newGen1
-    \end{haskell}
+            newStdGen = do 
+              currGen <- getStdGen
+              let (newGen1, newGen2) = split currGen
+              setStdGen newGen2
+              pure newGen1
+          \end{haskell}
           \pause
     \item
           \begin{haskell}
-    getStdRandom f = do 
-      currGen <- getStdGen
-      (result, newGen) = f currGen
-      setStdGen newGen
-      pure result
-    \end{haskell}
+            getStdRandom f = do 
+              currGen <- getStdGen
+              (result, newGen) = f currGen
+              setStdGen newGen
+              pure result
+          \end{haskell}
           \pause
     \item Можем выразить одно через другое?
           \pause
           \begin{haskell}
-    newStdGen = getStdRandom split
-    \end{haskell}
+            newStdGen = getStdRandom split
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -204,16 +204,16 @@
     \item Ещё один класс в \haskinline|System.Random| описывает типы, для которых можно получить случайные значения, если есть ГСЧ:
     \item
           \begin{haskell}
-    class Random a where 
-      randomR :: RandomGen g => (a, a) -> g -> (a, g) 
-      random :: RandomGen g => g -> (a, g) 
-    \end{haskell}
+            class Random a where 
+              randomR :: RandomGen g => (a, a) -> g -> (a, g) 
+              random :: RandomGen g => g -> (a, g) 
+          \end{haskell}
           Первый аргумент \haskinline|randomR|: диапазон, в котором берутся значения.
     \item Опять видим тип, похожий на \haskinline|State|.
     \item
           \begin{haskell}
-    randomRIO :: Random a => (a, a) -> IO a
-    \end{haskell}
+            randomRIO :: Random a => (a, a) -> IO a
+          \end{haskell}
           использует глобальный генератор.
   \end{itemize}
 \end{frame}
@@ -232,12 +232,12 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{Дополнительное чтение}
-  \begin{itemize}
-    \item TODO
-  \end{itemize}
-\end{frame}
-
+% TODO добавить ссылки
+% \begin{frame}[fragile]
+%   \frametitle{Дополнительное чтение}
+%   \begin{itemize}
+%     \item TODO
+%   \end{itemize}
+% \end{frame}
 
 \end{document}

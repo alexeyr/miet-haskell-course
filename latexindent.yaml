@@ -2,6 +2,7 @@ defaultIndent: "  "
 
 verbatimEnvironments:
   haskell: 1
+  haskell*: 1
 
 verbatimCommands:
   haskinline: 1

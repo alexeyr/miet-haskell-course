@@ -14,63 +14,63 @@
     \item Полиморфные функции, которые мы видели в прошлый раз, имеют одно определение для любых параметров типов.
     \item Часто нужно определить функции по-разному для разных типов.
     \item Для этого используются классы типов.
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-class Eq a where
-    (==), (/=) :: a -> a -> Bool
-    x == y = not (x /= y)
-    x /= y = not (x == y)
-\end{lstlisting}
-    \item \lstinline|Eq| "--- название класса.
-    \item \lstinline|a| "--- тип, относящийся к этому классу.
-    \item \lstinline|(==)| и \lstinline|(/=)| "--- функции-члены класса, с определениями по умолчанию.
-    \item Их нужно определить для типа \lstinline|a| \pause(достаточно одну).
+          \begin{haskell}
+            class Eq a where
+                (==), (/=) :: a -> a -> Bool
+                x == y = not (x /= y)
+                x /= y = not (x == y)
+          \end{haskell}
+    \item \haskinline|Eq| "--- название класса.
+    \item \haskinline|a| "--- тип, относящийся к этому классу.
+    \item \haskinline|(==)| и \haskinline|(/=)| "--- функции-члены класса, с определениями по умолчанию.
+    \item Их нужно определить для типа \haskinline|a| \pause(достаточно одну).
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Экземпляры классов}
   \begin{itemize}
-    \item Чтобы объявить, что тип \lstinline|Bool| относится к классу \lstinline|Eq|:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Eq Bool where
-    -- (==) :: Bool -> Bool -> Bool
-    True == True = True
-    False == False = True !\pause!
-    _ == _ = False
-\end{lstlisting}
-    \item При этом \lstinline|a| в сигнатуре членов заменяется на тип, для которого определяется экземпляр.
+    \item Чтобы объявить, что тип \haskinline|Bool| относится к классу \haskinline|Eq|:
+          \begin{haskell}
+            instance Eq Bool where
+                -- (==) :: Bool -> Bool -> Bool
+                True == True = True
+                False == False = True !\pause!
+                _ == _ = False
+          \end{haskell}
+    \item При этом \haskinline|a| в сигнатуре членов заменяется на тип, для которого определяется экземпляр.
     \item Ещё пример:\pause
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Eq IpAddress where
-    -- (==) :: IpAddress -> IpAddress -> Bool
-    Ip4Address x == Ip4Address y = x == y
-    Ip6Address x == Ip6Address y = x == y
-    _ == _ = False
-\end{lstlisting}
+          \begin{haskell}
+            instance Eq IpAddress where
+                -- (==) :: IpAddress -> IpAddress -> Bool
+                Ip4Address x == Ip4Address y = x == y
+                Ip6Address x == Ip6Address y = x == y
+                _ == _ = False
+          \end{haskell}
           \only<3>{\item Рекурсивно ли это определение?}
-    \item<4-> Это не рекурсия: \lstinline|==| в правой части относится к другому типу (\lstinline|String|).
+    \item<4-> Это не рекурсия: \haskinline|==| в правой части относится к другому типу (\haskinline|String|).
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Ограниченный полиморфизм}
   \begin{itemize}
-    \item Если спросить GHCi про тип \lstinline|==|, получим
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-ghci> :t (==)
-(==) :: Eq a => a -> a -> Bool
-\end{lstlisting}
-    \item Читается \enquote{\lstinline|a -> a -> Bool| для любого \lstinline|a| из \lstinline|Eq|}.
-    \item Часть перед \lstinline|=>| называется контекстом.
+    \item Если спросить GHCi про тип \haskinline|==|, получим
+          \begin{haskell}
+            ghci> :t (==)
+            (==) :: Eq a => a -> a -> Bool
+          \end{haskell}
+    \item Читается \enquote{\haskinline|a -> a -> Bool| для любого \haskinline|a| из \haskinline|Eq|}.
+    \item Часть перед \haskinline|=>| называется контекстом.
     \item Его элементы "--- ограничения. Когда их больше одного, они пишутся в скобках через запятую.\pause
-    \item Типы полиморфных функций, \emph{использующих} \lstinline|==| и \lstinline|/=|, пишутся аналогично. Определим:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-foo [] = True
-foo [x] = True
-foo (x : tail@(y : _)) = x == y && foo tail
-\end{lstlisting}
+    \item Типы полиморфных функций, \emph{использующих} \haskinline|==| и \haskinline|/=|, пишутся аналогично. Определим:
+          \begin{haskell}
+            foo [] = True
+            foo [x] = True
+            foo (x : tail@(y : _)) = x == y && foo tail
+          \end{haskell}
           Какой у неё тип (и смысл)? \pause
-    \item \lstinline[basicstyle=\ttfamily\small]|foo :: Eq a => [a] -> Bool| \pause
+    \item \haskinline|foo :: Eq a => [a] -> Bool| \pause
     \item Функция проверяет, равны ли все элементы списка.
   \end{itemize}
 \end{frame}
@@ -78,25 +78,26 @@ foo (x : tail@(y : _)) = x == y && foo tail
 \begin{frame}[fragile]
   \frametitle{Экземпляры для полиморфных типов}
   \begin{itemize}
-    \item Попробуем определить \lstinline|Eq| для \lstinline|Maybe a|:\pause
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Eq (Maybe a) where
-    -- (==) :: Maybe a -> Maybe a -> Bool
-    Just x == Just y = x == y
-    Nothing == Nothing = True
-    _ == _ = False
-\end{lstlisting}
+    \item Попробуем определить \haskinline|Eq| для \haskinline|Maybe a|:\pause
+          \begin{haskell}
+            instance Eq (Maybe a) where
+                -- (==) :: Maybe a -> Maybe a -> Bool
+                Just x == Just y = x == y
+                Nothing == Nothing = True
+                _ == _ = False
+          \end{haskell}
           \only<2>{\item Верное ли это определение?} \pause
-    \item Здесь \lstinline|a| не обязательно \lstinline|Eq|, и поэтому \lstinline|x == y| \\не скомпилируется.
+    \item Здесь \haskinline|a| не обязательно \haskinline|Eq|, и поэтому \haskinline|x == y| \\не скомпилируется.
     \item А можно ли так?
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Eq (Maybe a) where
-    (==) :: Eq a => Maybe a -> Maybe a -> Bool
-    Just x == Just y = x == y
-    Nothing == Nothing = True
-    _ == _ = False
-\end{lstlisting} \pause
-    \item Нет: эта сигнатура для \lstinline|(==)| более ограничена, чем заданная классом.
+          \begin{haskell}
+            instance Eq (Maybe a) where
+                (==) :: Eq a => Maybe a -> Maybe a -> Bool
+                Just x == Just y = x == y
+                Nothing == Nothing = True
+                _ == _ = False
+          \end{haskell}
+          \pause
+    \item Нет: эта сигнатура для \haskinline|(==)| более ограничена, чем заданная классом.
   \end{itemize}
 \end{frame}
 
@@ -104,13 +105,13 @@ instance Eq (Maybe a) where
   \frametitle{Экземпляры для полиморфных типов \\с ограничениями}
   \begin{itemize}
     \item Правильно так:
-          \begin{lstlisting}
-instance Eq a => Eq (Maybe a) where
-    Just x == Just y = x == y
-    Nothing == Nothing = True
-    _ == _ = False
-\end{lstlisting}
-    \item Читаем \enquote{\lstinline|Maybe a| относится к \lstinline|Eq| только тогда, когда \lstinline|a| относится к \lstinline|Eq|}.
+          \begin{haskell}
+            instance Eq a => Eq (Maybe a) where
+                Just x == Just y = x == y
+                Nothing == Nothing = True
+                _ == _ = False
+          \end{haskell}
+    \item Читаем \enquote{\haskinline|Maybe a| относится к \haskinline|Eq| только тогда, когда \haskinline|a| относится к \haskinline|Eq|}.
     \item Контексты экземпляров подчиняются тем же правилам, что контексты функций.
     \item Ограничения могут упоминать другие классы, а не только тот, экземпляр которого определяется.
     \item Не может быть много экземпляров одного класса для одного типа с разными условиями.
@@ -136,25 +137,25 @@ instance Eq a => Eq (Maybe a) where
   \begin{itemize}
     \item
           Линейно упорядоченные типы:
-          \begin{lstlisting}
-class Eq a => Ord a where
-    compare :: a -> a -> Ordering
-    (<), (<=), (>), (>=) :: a -> a -> Bool 
-    max, min :: a -> a -> a
-\end{lstlisting}
+          \begin{haskell}
+            class Eq a => Ord a where
+                compare :: a -> a -> Ordering
+                (<), (<=), (>), (>=) :: a -> a -> Bool 
+                max, min :: a -> a -> a
+          \end{haskell}
           \begin{itemize}
-            \item \lstinline|Eq a| "--- надкласс \lstinline|Ord|, то есть любой экземпляр \lstinline|Ord| должен быть и экземпляром \lstinline|Eq|. \pause
-            \item Логически стрелка скорее в другом направлении:\\ \lstinline|a| относится к \lstinline|Ord| $\implies$ \lstinline|a| относится к \lstinline|Eq|.
+            \item \haskinline|Eq a| "--- надкласс \haskinline|Ord|, то есть любой экземпляр \haskinline|Ord| должен быть и экземпляром \haskinline|Eq|. \pause
+            \item Логически стрелка скорее в другом направлении:\\ \haskinline|a| относится к \haskinline|Ord| $\implies$ \haskinline|a| относится к \haskinline|Eq|.
           \end{itemize}
           \pause
     \item
           Типы, ограниченные сверху и снизу:
-          \begin{lstlisting}
-class Bounded a where
-    minBound, maxBound :: a 
-\end{lstlisting}
+          \begin{haskell}
+            class Bounded a where
+                minBound, maxBound :: a 
+          \end{haskell}
           \begin{itemize}
-            \item Это не подкласс \lstinline|Ord| потому, что порядок, для которого эти значения "--- границы, может быть частичным.
+            \item Это не подкласс \haskinline|Ord| потому, что порядок, для которого эти значения "--- границы, может быть частичным.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -164,46 +165,50 @@ class Bounded a where
   \begin{itemize}
     \item
           Типы, значения которых можно превратить в строки:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-class Show a where
-    show :: a -> String 
-    ...
-\end{lstlisting}\pause
+          \begin{haskell}
+            class Show a where
+                show :: a -> String 
+                ...
+          \end{haskell}
+          \pause
     \item Или прочитать из строк:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-class Read a where ...
+          \begin{haskell}
+            class Read a where ...
 
-read :: Read a => String -> a
-\end{lstlisting}\pause
+            read :: Read a => String -> a
+          \end{haskell}
+          \pause
     \item Для нас то, что за многоточиями, неважно, но подробности описаны \href{http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude.html#g:22}{в документации}.\pause
-    \item \lstinline|read| должна быть обратной к \lstinline|show|.
-    \item Заметьте полиморфизм \lstinline|read| по возвращаемому типу:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-ghci> read "2" :: Integer
-2
-ghci> read "2" :: Double
-2.0
-\end{lstlisting}
+    \item \haskinline|read| должна быть обратной к \haskinline|show|.
+    \item Заметьте полиморфизм \haskinline|read| по возвращаемому типу:
+          \begin{haskell}
+            ghci> read "2" :: Integer
+            2
+            ghci> read "2" :: Double
+            2.0
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Опасность \lstinline|read|}
+  \frametitle{Опасность \haskinline|read|}
   \begin{itemize}
-    \item Что случится, если передать \lstinline|read| неподходящий аргумент?
-          \begin{lstlisting}
-ghci> read "1" :: [Bool] !\pause!
-*** Exception: Prelude.read: no parse
-\end{lstlisting}
+    \item Что случится, если передать \haskinline|read| неподходящий аргумент?
+          \begin{haskell}
+            ghci> read "1" :: [Bool] !\pause!
+          \end{haskell}
+          \begin{ghci}
+            *** Exception: Prelude.read: no parse
+          \end{ghci}
     \item Если вы не знаете \emph{точно}, что текст содержит значение, используйте безопасную
-          \begin{lstlisting}
-readMaybe :: Read a => String -> Maybe a
-\end{lstlisting}
-          из модуля \lstinline|Text.Read|.
+          \begin{haskell}
+            readMaybe :: Read a => String -> Maybe a
+          \end{haskell}
+          из модуля \haskinline|Text.Read|.
           \pause
     \item[]
     \item Это не единственная функция в Prelude с такой проблемой.
-    \item Пакет \href{https://hackage.haskell.org/package/safe}{safe} содержит безопасные варианты для всех таких функций (посмотрите его документацию).
+    \item Пакет \hackage{safe} содержит безопасные варианты для всех таких функций (посмотрите его документацию).
   \end{itemize}
 \end{frame}
 
@@ -211,28 +216,28 @@ readMaybe :: Read a => String -> Maybe a
   \frametitle{Класс перечислимых типов}
   \begin{itemize}
     \item
-          \lstinline|Enum| содержит типы, значения которых образуют последовательность.
-          \begin{lstlisting}
-class Enum a where
-    succ, pred :: a -> a
-    toEnum   :: Int -> a
-    fromEnum :: a -> Int
-    enumFrom :: a -> [a] -- и ещё 3 вариации
-\end{lstlisting}
+          \haskinline|Enum| содержит типы, значения которых образуют последовательность.
+          \begin{haskell}
+            class Enum a where
+                succ, pred :: a -> a
+                toEnum   :: Int -> a
+                fromEnum :: a -> Int
+                enumFrom :: a -> [a] -- и ещё 3 вариации
+          \end{haskell}
           \pause
     \item Для него есть специальный синтаксис:
           \begin{itemize}
-            \item \lstinline|[n..]| означает \lstinline|enumFrom n|;
-            \item \lstinline|[n..m]| "--- \lstinline|enumFromTo n m|;
-            \item \lstinline|[n,m..]| "--- \lstinline|enumFromThen n m|;
-            \item \lstinline|[n,m..l]| "--- \lstinline|enumFromThenTo n m l|.
+            \item \haskinline|[n..]| означает \haskinline|enumFrom n|;
+            \item \haskinline|[n..m]| "--- \haskinline|enumFromTo n m|;
+            \item \haskinline|[n,m..]| "--- \haskinline|enumFromThen n m|;
+            \item \haskinline|[n,m..l]| "--- \haskinline|enumFromThenTo n m l|.
           \end{itemize}
           \pause
-    \item Для \lstinline|Float| и \lstinline|Double| есть экземпляры \lstinline|Enum|, так что можно писать \lstinline|[1.0..]|\only<4->{, но они довольно странные}:
-          \begin{lstlisting}
-ghci> [1.2..2.0] !\pause!
-[1.2,2.2]
-\end{lstlisting}
+    \item Для \haskinline|Float| и \haskinline|Double| есть экземпляры \haskinline|Enum|, так что можно писать \haskinline|[1.0..]|\only<4->{, но они довольно странные}:
+          \begin{haskell}
+            ghci> [1.2..2.0] !\pause!
+            [1.2,2.2]
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -241,63 +246,62 @@ ghci> [1.2..2.0] !\pause!
   \begin{itemize}
     \item Вернёмся к \enquote{числовым типам} из первой лекции.
     \item Это тоже классы типов, образующие довольно сложную иерархию.\pause
-          \begin{lstlisting}
-class Num a where
-    (+), (-), (*), negate, abs, signum, fromInteger
+          \begin{haskell}
+            class Num a where
+                (+), (-), (*), negate, abs, signum, fromInteger
 
-class (Num a, Ord a) => Real a where
-    toRational
-    
-class (Real a, Enum a) => Integral a where
-    quot, rem, div, mod, quotRem, divMod
-    toInteger
-    
-class Num a => Fractional a where
-    (/), recip, fromRational    
-\end{lstlisting}
-
+            class (Num a, Ord a) => Real a where
+                toRational
+                
+            class (Real a, Enum a) => Integral a where
+                quot, rem, div, mod, quotRem, divMod
+                toInteger
+                
+            class Num a => Fractional a where
+                (/), recip, fromRational    
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Иерархия числовых классов: дробные типы}
   \begin{itemize}
-    \begin{lstlisting}[basicstyle=\ttfamily\small]
-class Fractional a => Floating a where 
-    exp, log, sqrt, (**), logBase, 
-    pi, sin, cos, ...
+    \begin{haskell}
+      class Fractional a => Floating a where 
+          exp, log, sqrt, (**), logBase, 
+          pi, sin, cos, ...
 
-class (Real a, Fractional a) => RealFrac a where 
-    properFraction :: Integral b => a -> (b, a)
-    truncate, round, ceiling, floor :: 
-        Integral b => a -> b
+      class (Real a, Fractional a) => RealFrac a where 
+          properFraction :: Integral b => a -> (b, a)
+          truncate, round, ceiling, floor :: 
+              Integral b => a -> b
 
-class (RealFrac a, Floating a) => RealFloat a where
-    isNaN, isInfinite :: a -> Bool
-    ...
-    
-fromIntegral :: (Integral a, Num b) => a -> b
-realToFrac :: (Real a, Fractional b) => a -> b
-\end{lstlisting}
-    \item \href{http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude.html#g:6}{Полная документация.}
+      class (RealFrac a, Floating a) => RealFloat a where
+          isNaN, isInfinite :: a -> Bool
+          ...
+          
+      fromIntegral :: (Integral a, Num b) => a -> b
+      realToFrac :: (Real a, Fractional b) => a -> b
+    \end{haskell}
+    \item \href{http://hackage.haskell.org/package/base-4.16.4.0/docs/Prelude.html#g:7}{Полная документация.}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Числовые литералы}
   \begin{itemize}
-    \item Литерал \lstinline|0| означает \lstinline|fromInteger (0 :: Integer)| и соответственно получает тип \pause\lstinline|Num a => a|.
-    \item Аналогично для дробных: \lstinline|1.1| представляется как рациональное и превращается в \lstinline|fromRational ((11 % 10) :: Rational)| типа \lstinline|Fractional a => a|.
+    \item Литерал \haskinline|0| означает \haskinline|fromInteger (0 :: Integer)| и соответственно получает тип \pause\haskinline|Num a => a|.
+    \item Аналогично для дробных: \haskinline|1.1| представляется как рациональное и превращается в \haskinline|fromRational ((11 % 10) :: Rational)| типа \haskinline|Fractional a => a|.
     \item Здесь:
-          \begin{lstlisting}
-module Data.Ratio where
-data Ratio a -- экспортировано без конструктора
-type Rational = Ratio Integer
-(%) :: Integral a => a -> a -> Ratio a
-\end{lstlisting}
+          \begin{haskell}
+            module Data.Ratio where
+              data Ratio a -- экспортировано без конструктора
+              type Rational = Ratio Integer
+              (%) :: Integral a => a -> a -> Ratio a
+          \end{haskell}
           \pause
     \item Использование рациональных чисел для дробных литералов позволяет избежать ошибок округления.\pause
-    \item Конечно, при преобразовании в \lstinline|Float| или \lstinline|Double| они вернутся.
+    \item Конечно, при преобразовании в \haskinline|Float| или \haskinline|Double| они вернутся.
   \end{itemize}
 \end{frame}
 
@@ -305,16 +309,16 @@ type Rational = Ratio Integer
   \frametitle{Алгебраические классы}
   \begin{itemize}
     \item Для разных структур из общей алгебры или линейной алгебры можно определить соответствующие им классы. В стандартной библиотеке есть
-    \item моноиды в \lstinline|Prelude|:
-          \begin{lstlisting}
-class Monoid a where
-    mempty :: a
-    mappend :: a -> a -> a
-    mconcat :: [a] -> a
-    
-x <> y = mappend x y -- синоним для mappend
-\end{lstlisting}
-    \item и полугруппы в \href{https://hackage.haskell.org/package/base-4.10.1.0/docs/Data-Semigroup.html}{\lstinline|Data.Semigroup|}. \pause
+    \item моноиды в \haskinline|Prelude|:
+          \begin{haskell}
+            class Monoid a where
+                mempty :: a
+                mappend :: a -> a -> a
+                mconcat :: [a] -> a
+                
+            x <> y = mappend x y -- синоним для mappend
+          \end{haskell}
+    \item и полугруппы в \href{https://hackage.haskell.org/package/base/docs/Data-Semigroup.html}{\haskinline|Data.Semigroup|}. \pause
     \item Ещё несколько из теории категорий, но это предмет будущих лекций.
   \end{itemize}
 \end{frame}
@@ -327,11 +331,12 @@ x <> y = mappend x y -- синоним для mappend
             \item член класса с определением по умолчанию;
             \item функция, определённая вне класса.
           \end{itemize}
-    \item Например, \lstinline|(/=)| можно было бы определить вне класса:
-          \begin{lstlisting}
-(/=) :: Eq a => a -> a -> Bool
-x /= y = not (x == y)
-\end{lstlisting}\pause
+    \item Например, \haskinline|(/=)| можно было бы определить вне класса:
+          \begin{haskell}
+            (/=) :: Eq a => a -> a -> Bool
+            x /= y = not (x == y)
+          \end{haskell}
+          \pause
     \item Такую функцию нельзя реализовать по-разному для разных экземпляров.\pause
     \item Если для каких-то типов есть реализация лучше той, что по умолчанию, лучше сделать функцию членом класса.
           \pause
@@ -346,11 +351,11 @@ x /= y = not (x == y)
 % TODO Похоже, неверно: compare оптимально? Поискать пример лучше
 
 %\begin{frame}[fragile]
-%\frametitle{Определение функций внутри или вне класса:\\случай \lstinline|Ord|}
+%\frametitle{Определение функций внутри или вне класса:\\случай \haskinline|Ord|}
 %\begin{itemize}
-%    \item Ещё пример: в \lstinline|Ord| можно было бы оставить только \lstinline|(<=)| членом класса.
-%    \item Или только \lstinline|compare|.
-%    \item Но определение \lstinline|(<)| и других функций через них не всегда оптимально.
+%    \item Ещё пример: в \haskinline|Ord| можно было бы оставить только \haskinline|(<=)| членом класса.
+%    \item Или только \haskinline|compare|.
+%    \item Но определение \haskinline|(<)| и других функций через них не всегда оптимально.
 %    \item (Подумайте, почему!)
 %\end{itemize}
 %\end{frame}
@@ -359,14 +364,14 @@ x /= y = not (x == y)
   \frametitle{Законы классов типов}
   \begin{itemize}
     \item Рассмотрим такой экземпляр типа:
-          \begin{lstlisting}
-data Weird = Weird Int
+          \begin{haskell}
+            data Weird = Weird Int
 
-instance Eq Weird where
-    Weird x == Weird y = x /= y
-\end{lstlisting}
-    \item Даже не зная смысла \lstinline|Weird| мы видим, что что-то здесь не так. \only<1>{Что?}\pause
-    \item Это определение нерефлексивно, то есть \lstinline|Weird 1 /= Weird 1|.
+            instance Eq Weird where
+                Weird x == Weird y = x /= y
+          \end{haskell}
+    \item Даже не зная смысла \haskinline|Weird| мы видим, что что-то здесь не так. \only<1>{Что?}\pause
+    \item Это определение нерефлексивно, то есть \haskinline|Weird 1 /= Weird 1|.
     \item У всех классов типов (почти) есть законы.
     \item То есть наличия функций типов, указанных в определении, недостаточно;
     \item для корректных экземпляров должны выполняться определённые законы.
@@ -376,20 +381,21 @@ instance Eq Weird where
 \begin{frame}[fragile]
   \frametitle{Законы классов типов}
   \begin{itemize}
-    \item Например, для \lstinline|Eq| законы такие:\pause
-          \begin{lstlisting}
-!$\forall$! x :: a. x == x
-!$\forall$! x, y :: a. x == y !$\implies$! y == x
-!$\forall$! x, y, z :: a. x == y !$\wedge$! y == z !$\implies$! x == z !\pause!
+    \item Например, для \haskinline|Eq| законы такие:\pause
+          \begin{haskell}
+            !$\forall$! x :: a. x == x
+            !$\forall$! x, y :: a. x == y !$\implies$! y == x
+            !$\forall$! x, y, z :: a. x == y !$\wedge$! y == z !$\implies$! x == z !\pause!
 
-!$\forall$! x, y :: a; Eq b; f :: a -> b. x == y !$\implies$\pause! 
-    f x == f y
-\end{lstlisting}\pause
-    \item Законы могут говорить и о связи между классами. Например, если тип одновременно \lstinline|Ord| и \lstinline|Bounded|, то естественно требовать
-          \begin{lstlisting}
-!$\forall$! x :: a. x <= maxBound
-!$\forall$! x :: a. x >= minBound
-\end{lstlisting}
+            !$\forall$! x, y :: a; Eq b; f :: a -> b. x == y !$\implies$\pause! 
+                f x == f y
+          \end{haskell}
+          \pause
+    \item Законы могут говорить и о связи между классами. Например, если тип одновременно \haskinline|Ord| и \haskinline|Bounded|, то естественно требовать
+          \begin{haskell}
+            !$\forall$! x :: a. x <= maxBound
+            !$\forall$! x :: a. x >= minBound
+          \end{haskell}
           \pause
     \item Компилятор не может проверить законы.
     \item Поэтому ответственность за их соблюдение лежит на программисте.
@@ -399,70 +405,70 @@ instance Eq Weird where
 \begin{frame}[fragile]
   \frametitle{Автоматический вывод экземпляров}
   \begin{itemize}
-    \item Почти все определения \lstinline|(==)| устроены одинаково:\pause
+    \item Почти все определения \haskinline|(==)| устроены одинаково:\pause
           \begin{itemize}
-            \item Типы всех полей всех конструкторов должны быть \lstinline|Eq|;
+            \item Типы всех полей всех конструкторов должны быть \haskinline|Eq|;
             \item Значения с одинаковым конструктором равны, если равны все их поля (или полей нет);
             \item Значения с разными конструкторами не равны;
           \end{itemize}
     \item Почти, но не все: \pause для рациональных чисел не так.\pause
-    \item Чтобы не писать такие определения каждый раз, после \lstinline|data| или \lstinline|newtype| ставят \lstinline|deriving (Eq)|.
-    \item \lstinline|deriving| также работает для \lstinline|Ord|, \lstinline|Show|, \lstinline|Read|, \lstinline|Enum| и \lstinline|Bounded|.
-    \item Порядок на значениях для \lstinline|Ord|, \lstinline|Enum| и \lstinline|Bounded| задаётся порядком конструкторов в определении.\pause
-    \item Разные расширения GHC позволяют \lstinline|deriving| для других классов.
+    \item Чтобы не писать такие определения каждый раз, после \haskinline|data| или \haskinline|newtype| ставят \haskinline|deriving (Eq)|.
+    \item \haskinline|deriving| также работает для \haskinline|Ord|, \haskinline|Show|, \haskinline|Read|, \haskinline|Enum| и \haskinline|Bounded|.
+    \item Порядок на значениях для \haskinline|Ord|, \haskinline|Enum| и \haskinline|Bounded| задаётся порядком конструкторов в определении.\pause
+    \item Разные расширения GHC позволяют \haskinline|deriving| для других классов.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Классы типов и \lstinline|newtype|}
+  \frametitle{Классы типов и \haskinline|newtype|}
   \begin{itemize}
     \item Для каждой пары класса и типа можно определить только один экземпляр.
     \item А что делать, если осмысленных экземпляров больше одного?
-    \item Например, числа "--- моноиды по операциям \lstinline|+| и \lstinline|*|.\pause
-    \item В таком случае мы можем завернуть существующий тип в \lstinline|newtype| и определить для нового:
-          \begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
-newtype Sum a = Sum { getSum :: a }
-    deriving (Eq, Ord, Read, Show, Bounded, Num)
+    \item Например, числа "--- моноиды по операциям \haskinline|+| и \haskinline|*|.\pause
+    \item В таком случае мы можем завернуть существующий тип в \haskinline|newtype| и определить для нового:
+          \begin{haskellsmall}
+            newtype Sum a = Sum { getSum :: a }
+                deriving (Eq, Ord, Read, Show, Bounded, Num)
 
-instance Num a => Monoid (Sum a) where
-    mempty = Sum 0
-    mappend (Sum x) (Sum y) = Sum (x + y) !\pause!
+            instance Num a => Monoid (Sum a) where
+                mempty = Sum 0
+                mappend (Sum x) (Sum y) = Sum (x + y) !\pause!
 
-newtype Product a = Product { getProduct :: a }
-    deriving (Eq, Ord, Read, Show, Bounded, Num)
+            newtype Product a = Product { getProduct :: a }
+                deriving (Eq, Ord, Read, Show, Bounded, Num)
 
-instance Num a => Monoid (Product a) where ...
-\end{lstlisting}
+            instance Num a => Monoid (Product a) where ...
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Классы типов и \lstinline|newtype|}
+  \frametitle{Классы типов и \haskinline|newtype|}
   \begin{itemize}
-    \item Если заметили, \lstinline|Num| не было в списке классов, для которых есть автоматический вывод экземпляров.
-    \item Для \lstinline|newtype| можно вывести любой класс с помощью расширения \lstinline|GeneralizedNewtypeDeriving|.\pause
+    \item Если заметили, \haskinline|Num| не было в списке классов, для которых есть автоматический вывод экземпляров.
+    \item Для \haskinline|newtype| можно вывести любой класс с помощью расширения \haskinline|GeneralizedNewtypeDeriving|.\pause
     \item Выведенное определение каждой функции вызывает ту же функцию завёрнутого типа с вставкой и разбором конструкторов где нужно:
-          \begin{lstlisting}
-instance Num a => Num (Sum a) where
-    Sum x + Sum y = Sum (x + y)
-    Sum x * Sum y = Sum (x * y)
-    negate (Sum x) = Sum (negate x)
-    ...
-\end{lstlisting}
+          \begin{haskell}
+            instance Num a => Num (Sum a) where
+                Sum x + Sum y = Sum (x + y)
+                Sum x * Sum y = Sum (x * y)
+                negate (Sum x) = Sum (negate x)
+                ...
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Классы типов и модули}
   \begin{itemize}
-    \item \lstinline|Класс(..)| в списке импорта/экспорта означает класс со всеми методами, как для типа.
+    \item \haskinline|Класс(..)| в списке импорта/экспорта означает класс со всеми методами, как для типа.
     \item Поскольку экземпляры не имеют имён, они экспортируются из модуля всегда.
     \item И импортируются всегда, когда модуль упоминается в списке импорта.\pause
     \item[]
     \item Из-за этого существование экземпляров для пары класс-тип не в одном модуле "--- проблема.
     \item Поэтому экземпляры обычно определяются либо в том модуле, где определён тип, либо в том, где определён класс.
     \item Остальные называются сиротами и по возможности их создания следует избегать.
-    \item Это делается с помощью того же трюка с \lstinline|newtype|.
+    \item Это делается с помощью того же трюка с \haskinline|newtype|.
   \end{itemize}
 \end{frame}
 
@@ -472,11 +478,12 @@ instance Num a => Num (Sum a) where
     \item В стандартном Haskell есть несколько ограничений на объявления классов типов и экземпляров.
     \item А в GHC расширений, которые их снимают.
     \item Все перечислять не будем, они есть в  \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#class-declarations}{User's Guide, раздел 10.8}.
-    \item Сейчас достаточно знать, что если что-то не компилируется из-за отсутствия \lstinline|-XFlexibleInstances|, \lstinline|-XFlexibleContexts| или \lstinline|-XInstanceSigs|, их спокойно можно включить.
-    \item \lstinline|-XUndecidableInstances|, \lstinline|-XOverlappingInstances|, \lstinline|-XIncoherentInstances| опаснее, но в этом курсе в любом случае не понадобятся.
+    \item Сейчас достаточно знать, что если что-то не компилируется из-за отсутствия \haskinline|-XFlexibleInstances|, \haskinline|-XFlexibleContexts| или \haskinline|-XInstanceSigs|, их спокойно можно включить.
+    \item \haskinline|-XUndecidableInstances|, \haskinline|-XOverlappingInstances|, \haskinline|-XIncoherentInstances| опаснее, но в этом курсе в любом случае не понадобятся.
   \end{itemize}
 \end{frame}
 
+% TODO восстановить слайды
 %\begin{frame}[fragile]
 %\frametitle{Классы с несколькими параметрами}
 %\begin{itemize}

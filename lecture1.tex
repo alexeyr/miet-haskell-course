@@ -38,7 +38,7 @@
           \pause
     \item В парадигме важно не только то, что используется, но то, использование чего не допускается или минимизируется.
           \pause
-    \item Например, \lstinline!goto! в структурном программировании, глобальные переменные в ООП.
+    \item Например, \haskinline!goto! в структурном программировании, глобальные переменные в ООП.
   \end{itemize}
 \end{frame}
 
@@ -58,7 +58,7 @@
           \end{itemize}
     \item Выражения лучше инструкций.
           \begin{itemize}
-            \item Аналоги \lstinline|if|, \lstinline|try-catch| и т.д. "--- выражения.
+            \item Аналоги \haskinline|if|, \haskinline|try-catch| и т.д. "--- выражения.
           \end{itemize}
     \item Функции как в математике (следующий слайд)
   \end{itemize}
@@ -115,34 +115,37 @@
             \item Print: и выводит его на экран
           \end{itemize}
     \item Пример:
-          \begin{lstlisting}[breaklines]
-GHCi, version 9.2.5: http://www.haskell.org/ghc/  :? for help
-ghci> 2 + 2
-4
-ghci> :t True -- команда GHCi
-True :: Bool
-\end{lstlisting}
+          \begin{ghci}
+            GHCi, version 9.2.5: http://www.haskell.org/ghc/  :? for help
+          \end{ghci}
+          \begin{haskell}
+            ghci> 2 + 2
+            4
+            ghci> :t True -- команда GHCi
+            True :: Bool
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Язык Haskell: начало}
   \begin{itemize}
-    \item \lstinline|2 + 2|, \lstinline|True| "--- выражения
-    \item \lstinline|4|, \lstinline|True| "--- значения
-    \item \lstinline|Bool| "--- тип
+    \item \haskinline|2 + 2|, \haskinline|True| "--- выражения
+    \item \haskinline|4|, \haskinline|True| "--- значения
+    \item \haskinline|Bool| "--- тип
           \pause
     \item Значение "--- \enquote{вычисленное до конца} выражение.
     \item Тип (статический) "--- множество значений и выражений, построенное по таким правилам, что компилятор может определить типы и проверить отсутствие ошибок в них без запуска программы.
     \item От типа зависит то, какие операции допустимы:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-ghci> True + False
-
-<interactive>:12:1: error:
-No instance for (Num Bool) arising from a use of '+'
-In the expression: True + False
-In an equation for 'it': it = True + False
-\end{lstlisting}
+          \begin{haskell}
+            ghci> True + False
+          \end{haskell}
+          \begin{ghci}
+            <interactive>:12:1: error:
+            No instance for (Num Bool) arising from a use of '+'
+            In the expression: True + False
+            In an equation for 'it': it = True + False
+          \end{ghci}
     \item Это ошибка компиляции, а не выполнения.
   \end{itemize}
 \end{frame}
@@ -150,15 +153,15 @@ In an equation for 'it': it = True + False
 \begin{frame}[fragile]
   \frametitle{Вызов функций}
   \begin{itemize}
-    \item Вызов (применение) функции пишется без скобок: \lstinline|f x|, \lstinline|foo x y|.
-    \item Скобки используются, когда аргументы "--- сложные выражения: \lstinline|f (g x)|
+    \item Вызов (применение) функции пишется без скобок: \haskinline|f x|, \haskinline|foo x y|.
+    \item Скобки используются, когда аргументы "--- сложные выражения: \haskinline|f (g x)|
     \item И внутри сложных выражений вообще.
-    \item Бинарные операторы (как \lstinline|+|) это просто функции с именем из символов вместо букв и цифр.
+    \item Бинарные операторы (как \haskinline|+|) это просто функции с именем из символов вместо букв и цифр.
           \begin{itemize}
-            \item Можно писать их префиксно, заключив в скобки: \lstinline[breaklines=false]|(+) 2 2|.
+            \item Можно писать их префиксно, заключив в скобки: \haskinline[breaklines=false]|(+) 2 2|.
             \item А любую функцию двух аргументов с алфавитным именем можно писать инфиксно между обратными апострофами:
-                  \lstinline|4 `div` 2|.
-            \item Единственный небинарный оператор "--- унарный \lstinline|-|.
+                  \haskinline|4 `div` 2|.
+            \item Единственный небинарный оператор "--- унарный \haskinline|-|.
           \end{itemize}
     \item Названия переменных и функций начинаются со строчной буквы (кроме операторов).
   \end{itemize}
@@ -168,22 +171,22 @@ In an equation for 'it': it = True + False
   \frametitle{Определение функций и переменных}
   \begin{itemize}
     \item Определение переменной выглядит как в математике, даже без ключевых слов:
-          \begin{lstlisting}
-название = значение
-\end{lstlisting}
+          \begin{haskell}
+            название = значение
+          \end{haskell}
     \item Определение функции почти такое же:
-          \begin{lstlisting}
-название параметр1 параметр2 = значение
-\end{lstlisting}
+          \begin{haskell}
+            название параметр1 параметр2 = значение
+          \end{haskell}
     \item Тело функции это не блок, а одно выражение (но сколь угодно сложное).
-          \begin{lstlisting}
-ghci> x = sin pi
-ghci> x !\pause!
-1.2246063538223773e-16
-ghci> square x = x * x
-ghci> square 2
-4
-\end{lstlisting}
+          \begin{haskell}
+            ghci> x = sin pi
+            ghci> x !\pause!
+            1.2246063538223773e-16
+            ghci> square x = x * x
+            ghci> square 2
+            4
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -191,35 +194,35 @@ ghci> square 2
   \frametitle{Базовые типы}
   \begin{itemize}
     \item Названия типов всегда с заглавной буквы.
-    \item \lstinline|Bool|: логические значения \lstinline|True| и \lstinline|False|.
+    \item \haskinline|Bool|: логические значения \haskinline|True| и \haskinline|False|.
     \item Целые числа:
           \begin{itemize}
-            \item \lstinline|Integer|: неограниченные (кроме размера памяти);
-            \item \lstinline|Int|: машинные\footnote{по cтандарту минимум 30 бит, но в GHC именно 32 или 64 бита}, \lstinline|Word|: машинные без знака;
-            \item \lstinline|Data.{Int.Int/Word.Word}{8/16/32/64}|: фиксированного размера в битах, со знаком и без.
+            \item \haskinline|Integer|: неограниченные (кроме размера памяти);
+            \item \haskinline|Int|: машинные\footnote{по cтандарту минимум 30 бит, но в GHC именно 32 или 64 бита}, \haskinline|Word|: машинные без знака;
+            \item \haskinline|Data.{Int.Int/Word.Word}{8/16/32/64}|: фиксированного размера в битах, со знаком и без.
           \end{itemize}
-    \item \lstinline|Float| и \lstinline|Double|: 32- и 64-битные числа с плавающей точкой, по стандарту IEEE-754.
-    \item \lstinline|Character|: символы Unicode.
-    \item \lstinline|()|: \enquote{Единичный тип} (unit) с единственным значением \lstinline|()|.
+    \item \haskinline|Float| и \haskinline|Double|: 32- и 64-битные числа с плавающей точкой, по стандарту IEEE-754.
+    \item \haskinline|Character|: символы Unicode.
+    \item \haskinline|()|: \enquote{Единичный тип} (unit) с единственным значением \haskinline|()|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Тип функций и сигнатуры}
   \begin{itemize}
-    \item Типы функций записываются через \lstinline|->|. Например, \lstinline|Int -> Char| это тип функции из \lstinline|Int| в \lstinline|Char|.
+    \item Типы функций записываются через \haskinline|->|. Например, \haskinline|Int -> Char| это тип функции из \haskinline|Int| в \haskinline|Char|.
 
-    \item Для нескольких аргументов это выглядит как \pause\lstinline|Bool -> Bool -> Bool|.
+    \item Для нескольких аргументов это выглядит как \pause\haskinline|Bool -> Bool -> Bool|.
 
-    \item \lstinline|::| читается как \enquote{имеет тип}.
+    \item \haskinline|::| читается как \enquote{имеет тип}.
 
-    \item Запись \lstinline|выражение :: тип| "--- \enquote{сигнатура типа}.
+    \item Запись \haskinline|выражение :: тип| "--- \enquote{сигнатура типа}.
 
     \item При объявлении экспортируемой функции или переменной  сигнатура обычно указывается явно:
-          \begin{lstlisting}
-foo :: Int -> Char
-foo x = ...
-\end{lstlisting}
+          \begin{haskell}
+            foo :: Int -> Char
+            foo x = ...
+          \end{haskell}
     \item Компилятор обычно может вывести типы сам, но это защищает от \emph{непреднамеренного} изменения.
   \end{itemize}
 \end{frame}
@@ -229,85 +232,89 @@ foo x = ...
   \begin{itemize}
     \item Это упрощённая версия.
     \item Полное объяснение требует понятия, которое будет введено позже.
-    \item Например, команды \lstinline|:type 1| или \lstinline|:type (+)| дадут тип, который понимать пока не требуется.
-    \item То же относится к ошибкам вроде \lstinline[breaklines=false]|No instance for (Num Bool)...|\\ на более раннем слайде.
+    \item Например, команды \haskinline|:type 1| или \haskinline|:type (+)| дадут тип, который понимать пока не требуется.
+    \item То же относится к ошибкам вроде \ghcinline[breaklines=false]|No instance for (Num Bool)...|\\ на более раннем слайде.
     \item Пока достаточно понимать, что есть несколько числовых типов.
-    \item Они делятся на целочисленные (\lstinline|Int|, \lstinline|Integer|) и дробные (\lstinline|Float|, \lstinline|Double|).
+    \item Они делятся на целочисленные (\haskinline|Int|, \haskinline|Integer|) и дробные (\haskinline|Float|, \haskinline|Double|).
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Числовые литералы}
   \begin{itemize}
-    \item Числовые литералы выглядят, как в других языках: \lstinline|0|, \lstinline|1.5|, \lstinline|1.2E-1|, \lstinline|0xDEADBEEF|.
+    \item Числовые литералы выглядят, как в других языках: \haskinline|0|, \haskinline|1.5|, \haskinline|1.2E-1|, \haskinline|0xDEADBEEF|.
     \item Целочисленные литералы могут иметь любой числовой тип, а дробные любой дробный.
     \item Но это относится \emph{только} к литералам.
-    \item Неявного приведения (например, \lstinline|Int| в \lstinline|Double|) в Haskell \emph{нет}.
+    \item Неявного приведения (например, \haskinline|Int| в \haskinline|Double|) в Haskell \emph{нет}.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Приведение числовых типов}
   \begin{itemize}
-    \item Используйте \lstinline|fromIntegral| для приведения из любого целочисленного типа в любой числовой. Тип-цель можно указать явно:
-          \begin{lstlisting}
-ghci> let {x :: Integer; x = 2}
-ghci> x :: Double
-<interactive>:22:1: error:
-Couldn't match expected type 'Double' with actual type 'Integer' ...
-ghci> fromIntegral x :: Double
-2.0
-\end{lstlisting}
+    \item Используйте \haskinline|fromIntegral| для приведения из любого целочисленного типа в любой числовой. Тип-цель можно указать явно:
+          \begin{haskell}
+            ghci> let {x :: Integer; x = 2}
+            ghci> x :: Double
+          \end{haskell}
+          \begin{ghci}
+            <interactive>:22:1: error:
+            Couldn't match expected type 'Double' with actual type 'Integer' ...
+          \end{ghci}
+          \begin{haskell}
+            ghci> fromIntegral x :: Double
+            2.0
+          \end{haskell}
     \item А может выводиться из контекста:
-          \begin{lstlisting}
-ghci> :t fromIntegral 2 / (4 :: Double)
-fromIntegral 2 / (4 :: Double) :: Double
-\end{lstlisting}
+          \begin{haskell}
+            ghci> :t fromIntegral 2 / (4 :: Double)
+            fromIntegral 2 / (4 :: Double) :: Double
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Приведение числовых типов}
   \begin{itemize}
-    \item \lstinline|toInteger| переводит любой целочисленный тип \\в \lstinline|Integer|.
-    \item \lstinline|fromInteger| "--- наоборот. Если аргумент слишком велик, возвращает значение по модулю:
-          \begin{lstlisting}
-ghci> fromInteger (2^64) :: Int
-0
-\end{lstlisting}
-    \item \lstinline|toRational| и \lstinline|fromRational| "--- аналогично для \lstinline|Rational| и дробных типов.
-    \item \lstinline|ceiling|, \lstinline|floor|, \lstinline|truncate| и \lstinline|round| "--- из дробных типов в целочисленные.
+    \item \haskinline|toInteger| переводит любой целочисленный тип \\в \haskinline|Integer|.
+    \item \haskinline|fromInteger| "--- наоборот. Если аргумент слишком велик, возвращает значение по модулю:
+          \begin{haskell}
+            ghci> fromInteger (2^64) :: Int
+            0
+          \end{haskell}
+    \item \haskinline|toRational| и \haskinline|fromRational| "--- аналогично для \haskinline|Rational| и дробных типов.
+    \item \haskinline|ceiling|, \haskinline|floor|, \haskinline|truncate| и \haskinline|round| "--- из дробных типов в целочисленные.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Арифметические операции}
   \begin{itemize}
-    \item Операции \lstinline|+|, \lstinline|-|, \lstinline|*| "--- как обычно (унарного \lstinline|+| нет).
-    \item \lstinline|/| "--- деление \emph{дробных} чисел.
+    \item Операции \haskinline|+|, \haskinline|-|, \haskinline|*| "--- как обычно (унарного \haskinline|+| нет).
+    \item \haskinline|/| "--- деление \emph{дробных} чисел.
           \begin{itemize}
-            \item Использование \lstinline|/| для целых чисел даст ошибку \lstinline|No instance... arising from a use of '/'|. \\Нужно сначала использовать \lstinline|fromIntegral|.
+            \item Использование \haskinline|/| для целых чисел даст ошибку \ghcinline|No instance... arising from a use of '/'|. Нужно сначала использовать \haskinline|fromIntegral|.
           \end{itemize}
-    \item \lstinline|div| "--- деление нацело
-    \item \lstinline|mod| "--- остаток
+    \item \haskinline|div| "--- деление нацело
+    \item \haskinline|mod| "--- остаток
     \item
-          \lstinline|quot| и \lstinline|rem| тоже, но отличаются от них поведением на отрицательных числах.
-    \item \lstinline|^| "--- возведение любого числа в неотрицательную  целую степень.
-    \item \lstinline|^^| "--- дробного в любую целую.
-    \item \lstinline|**| "--- дробного в степень того же типа.
+          \haskinline|quot| и \haskinline|rem| тоже, но отличаются от них поведением на отрицательных числах.
+    \item \haskinline|^| "--- возведение любого числа в неотрицательную  целую степень.
+    \item \haskinline|^^| "--- дробного в любую целую.
+    \item \haskinline|**| "--- дробного в степень того же типа.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Операции сравнения и\\логические операции}
   \begin{itemize}
-    \item Большинство операций сравнения выглядят как обычно: \lstinline|==|, \lstinline|>|, \lstinline|<|, \lstinline|>=|, \lstinline|<=|.
-    \item Но $\neq$ обозначается как \lstinline|/=|.
-    \item Функция \lstinline|compare| возвращает \lstinline|Ordering|: тип с тремя значениями \lstinline|LT|, \lstinline|EQ| и \lstinline|GT|.
-    \item Есть функции \lstinline|min| и \lstinline|max|.
+    \item Большинство операций сравнения выглядят как обычно: \haskinline|==|, \haskinline|>|, \haskinline|<|, \haskinline|>=|, \haskinline|<=|.
+    \item Но $\neq$ обозначается как \haskinline|/=|.
+    \item Функция \haskinline|compare| возвращает \haskinline|Ordering|: тип с тремя значениями \haskinline|LT|, \haskinline|EQ| и \haskinline|GT|.
+    \item Есть функции \haskinline|min| и \haskinline|max|.
     \item[]
-    \item \enquote{и} это \lstinline|&&|, а \enquote{или} "--- \lstinline!||!, как обычно.
-    \item \enquote{не} "--- \lstinline|not|.
+    \item \enquote{и} это \haskinline|&&|, а \enquote{или} "--- \haskinline!||!, как обычно.
+    \item \enquote{не} "--- \haskinline|not|.
   \end{itemize}
 \end{frame}
 

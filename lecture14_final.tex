@@ -3,7 +3,6 @@
 
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
-\usepackage{syntax}
 
 \title{Лекция 14: что дальше?}
 
@@ -15,17 +14,17 @@
 \begin{frame}[fragile]
   \frametitle{Нерассмотренные части Haskell: стандартные библиотеки}
   \begin{itemize}
-    \item В самом начале упоминалось, что тип \haskinline{String} очень плох для практического использования. Альтернативы в пакетах \lstinline|text| и \lstinline|bytestring|.
+    \item В самом начале упоминалось, что тип \haskinline{String} очень плох для практического использования. Альтернативы в пакетах \hackage{text} и \hackage{bytestring}.
     \item Коллекции:
           \begin{itemize}
-            \item \lstinline|containers|: \haskinline|Data.Map|, \haskinline|Data.Set|, \haskinline|Data.Sequence|.
-            \item \lstinline|unordered-containers|: \haskinline|Data.Hash{Map/Set}|.
-            \item Массивы: \lstinline|array| и \lstinline|vector|.
+            \item \hackage{containers}: \haskinline|Data.Map|, \haskinline|Data.Set|, \haskinline|Data.Sequence|.
+            \item \hackage{unordered-containers}: \haskinline|Data.Hash{Map/Set}|.
+            \item Массивы: \hackage{array} и \hackage{vector}.
           \end{itemize}
-    \item Комбинаторы парсеров: \lstinline|megaparsec|.
-    \item Сборка проектов и управление зависимостями: \lstinline|cabal + cabal-install| и \lstinline|stack|.
-    \item Линзы (\lstinline|lens|): обобщение геттеров и сеттеров.
-    \item Альтернативы \lstinline|show| для больших структур: \lstinline|pretty-show| и \lstinline|prettyprinter|.
+    \item Комбинаторы парсеров: \hackage{megaparsec}.
+    \item Сборка проектов и управление зависимостями: \href{https://cabal.readthedocs.io/en/stable/}{cabal} и \href{https://docs.haskellstack.org/en/stable/}{stack}.
+    \item Линзы (\hackage{lens}): обобщение геттеров и сеттеров.
+    \item Альтернативы \haskinline|show| для больших структур: \hackage{pretty-show} и \hackage{prettyprinter}.
   \end{itemize}
 \end{frame}
 
@@ -62,7 +61,7 @@
     \item Как их комбинировать?
     \item Композиция монад не обязательно монада.
           \pause
-    \item Трансформеры монад: \lstinline|transformers| и \lstinline|mtl|
+    \item Трансформеры монад: \hackage{transformers} и \hackage{mtl}
     \item Алгебраические эффекты
     \item Свободные (free) и \enquote{более свободные} (freer) монады
     \item Небольшой обзор: \href{https://ocharles.org.uk/posts/2016-01-26-transformers-free-monads-mtl-laws.html}{Monad transformers, free monads, mtl, laws and a new approach}
@@ -96,7 +95,7 @@
     \item \href{https://serokell.io/blog/2018/12/17/why-dependent-haskell}{Зависимые типы}: типы, параметризованные значениями.
           \begin{itemize}
             \item Стандартный пример: вектор с размером в типе.
-            \item Библиотека \lstinline|singletons| позволяет эмулировать многие применения зависимых типов.
+            \item Библиотека \hackage{singletons} позволяет эмулировать многие применения зависимых типов.
           \end{itemize}
           \pause
     \item Не совсем будущее: уточнённые типы (refinement types) в Liquid Haskell.
@@ -120,7 +119,7 @@
           \begin{itemize}
             \item Мощная и интересная система типов, описывающая время жизни значений.
             \item Очень быстрое развитие.
-            \item Реальная альтернатива C++.
+            \item Реальная альтернатива C++ для низкоуровневого программирования.
           \end{itemize}
           \pause
     \item Языки с зависимыми типами: Agda, Idris, Coq.

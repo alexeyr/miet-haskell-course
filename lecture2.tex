@@ -12,14 +12,14 @@
   \frametitle{Существенные отступы}
   \begin{itemize}
     \item Вспомним виденное раньше
-          \begin{lstlisting}
-let {x :: Integer; x = 2}
-\end{lstlisting}
+          \begin{haskell}
+            let {x :: Integer; x = 2}
+          \end{haskell}
           По правилам Haskell можно написать это же без фигурных скобок и точки с запятой:
-          \begin{lstlisting}
-let x :: Integer
-    x = 2
-\end{lstlisting}
+          \begin{haskell}
+            let x :: Integer
+                x = 2
+          \end{haskell}
     \item Если два выражения (или других фрагмента кода) относятся к одному уровню одного блока, то они должны иметь одинаковый отступ (начинаться в одном и том же столбце).
     \item Фрагмент кода, являющийся частью другого, должен иметь отступ больше той строки, где тот начинается.
     \item Но не обязательно больше начала его самого.
@@ -28,13 +28,13 @@ let x :: Integer
 \begin{frame}[fragile]
   \frametitle{Правило преобразования отступов}
   \begin{itemize}
-    \item Если после ключевых слов \lstinline|where|, \lstinline|let|, \lstinline|do|, \lstinline|of| нет открывающей фигурной скобки \lstinline|{|\footnote{Если она есть, то правило перестаёт действовать до соответствующей ей закрывающей.}, то такая скобка вставляется и начинается новый блок.
+    \item Если после ключевых слов \haskinline|where|, \haskinline|let|, \haskinline|do|, \haskinline|of| нет открывающей фигурной скобки \haskinline|{|\footnote{Если она есть, то правило перестаёт действовать до соответствующей ей закрывающей.}, то такая скобка вставляется и начинается новый блок.
     \item Его базовый отступ "--- столбец, содержащий следующий непробельный символ.
     \item После этого каждая строка, которая начинается:
           \begin{itemize}
-            \item в том же столбце: относится к этому блоку и перед ней ставится \lstinline|;|
+            \item в том же столбце: относится к этому блоку и перед ней ставится \haskinline|;|
             \item правее: продолжает предыдущую, перед ней ничего не ставится.
-            \item левее: блок закончился, перед ней ставится \lstinline|}| (одновременно может закончиться несколько блоков).
+            \item левее: блок закончился, перед ней ставится \haskinline|}| (одновременно может закончиться несколько блоков).
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -43,40 +43,40 @@ let x :: Integer
   \frametitle{Условные выражения}
   \begin{itemize}
     \item В любом языке нужна возможность выдать результат в зависимости от какого-то условия.
-    \item В Haskell это выражения \lstinline|if| и \lstinline|case|.
-    \item Синтаксис \lstinline|if|:
-          \begin{lstlisting}
-if условие then выражение1 else выражение2
-\end{lstlisting}
-          Варианта без \lstinline|else| нет.
+    \item В Haskell это выражения \haskinline|if| и \haskinline|case|.
+    \item Синтаксис \haskinline|if|:
+          \begin{haskell}
+            if условие then выражение1 else выражение2
+          \end{haskell}
+          Варианта без \haskinline|else| нет.
     \item Многострочно пишется так:
-          \begin{lstlisting}
-if условие 
-    then выражение1 
-    else выражение2
-\end{lstlisting}
-    \item Тип \lstinline|условия| обязательно \lstinline|Bool|.
-    \item Типы \lstinline|выражения1| и \lstinline|выражения2| должны совпадать.
-    \item Это же и тип всего  \lstinline|if ... then ... else ...|
-    \item Ближе к \lstinline|?:|, чем к \lstinline|if| в C-подобных языках.
+          \begin{haskell}
+            if условие 
+                then выражение1 
+                else выражение2
+          \end{haskell}
+    \item Тип \haskinline|условия| обязательно \haskinline|Bool|.
+    \item Типы \haskinline|выражения1| и \haskinline|выражения2| должны совпадать.
+    \item Это же и тип всего  \haskinline|if ... then ... else ...|
+    \item Ближе к \haskinline|?:|, чем к \haskinline|if| в C-подобных языках.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Сопоставление с образцом}
   \begin{itemize}
-    \item Синтаксис \lstinline|case|: \\
-          \begin{lstlisting}
-case выражение of 
-    образец1 -> выражение1 
-    образец2 -> выражение2
-\end{lstlisting}
+    \item Синтаксис \haskinline|case|: \\
+          \begin{haskell}
+            case выражение of 
+                образец1 -> выражение1 
+                образец2 -> выражение2
+          \end{haskell}
     \item Образец это \enquote{форма} для значений типа, которая может содержать несвязанные переменные. Для конкретного значения он либо подходит (и связывает эти переменные), либо не подходит.
     \item Процедура вычисления:
           \begin{itemize}
-            \item Вычислить значение \lstinline|выражения|.
+            \item Вычислить значение \haskinline|выражения|.
             \item Сопоставить его с каждым образцом по очереди.
-            \item Если первым подошёл \lstinline|образецN|, вычислить \lstinline|выражениеN| и вернуть его значение.
+            \item Если первым подошёл \haskinline|образецN|, вычислить \haskinline|выражениеN| и вернуть его значение.
             \item Если ни один не подошёл, выкинуть ошибку.
           \end{itemize}
   \end{itemize}
@@ -85,41 +85,38 @@ case выражение of
 \begin{frame}[fragile]
   \frametitle{Образцы для известных нам типов}
   \begin{itemize}
-    %    \item 
-    %    \begin{itemize}
-    \item \lstinline|True| и \lstinline|False| "--- образцы для \lstinline|Bool|. Они подходят, только если значение совпадает с ними.
-    \item Аналогично \lstinline|LT|, \lstinline|EQ| и \lstinline|GT| для \lstinline|Ordering|, а числовые литералы для числовых типов.
+    \item \haskinline|True| и \haskinline|False| "--- образцы для \haskinline|Bool|. Они подходят, только если значение совпадает с ними.
+    \item Аналогично \haskinline|LT|, \haskinline|EQ| и \haskinline|GT| для \haskinline|Ordering|, а числовые литералы для числовых типов.
     \item Переменная "--- образец для любого типа, который подходит для любого значения.
           \begin{itemize}
             \item В Haskell все переменные в образцах \enquote{свежие} и перекрывают видимые снаружи переменные с тем же названием.
           \end{itemize}
-    \item \lstinline|_| тоже подходит для любого значения любого типа и означает, что это значение не важно.
+    \item \haskinline|_| тоже подходит для любого значения любого типа и означает, что это значение не важно.
     \item Образцы похожи на выражения, но ими не являются: это новая синтаксическая категория!
-          %    \end{itemize}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Связь \lstinline[basicstyle=\ttfamily]|case| и \lstinline[basicstyle=\ttfamily]|if|}
+  \frametitle{Связь \haskinline|case| и \haskinline|if|}
   \begin{itemize}
     \item Пример:
-          \begin{lstlisting}
-if условие 
-    then выражение1 
-    else выражение2
-\end{lstlisting}
+          \begin{haskell}
+            if условие 
+                then выражение1 
+                else выражение2
+          \end{haskell}
           это ровно то же самое, что
-          \begin{lstlisting}
-case условие of
-    True -> выражение1 
-    False -> выражение2
-\end{lstlisting}
+          \begin{haskell}
+            case условие of
+                True -> выражение1 
+                False -> выражение2
+          \end{haskell}
           или
-          \begin{lstlisting}
-case условие of
-    True -> выражение1 
-    _ -> выражение2
-\end{lstlisting}
+          \begin{haskell}
+            case условие of
+                True -> выражение1 
+                _ -> выражение2
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -127,103 +124,104 @@ case условие of
   \frametitle{Охраняющие условия}
   \begin{itemize}
     \item У каждого образца могут быть дополнительные условия (зависящие от его переменных):
-          \begin{lstlisting}[basicstyle=\ttfamily]
-образец
-    | условие1 -> выражение1 
-    | условие2 -> выражение2
-\end{lstlisting}
+          \begin{haskell}
+            образец
+                | условие1 -> выражение1 
+                | условие2 -> выражение2
+          \end{haskell}
           При удачном сопоставлении они проверяются по порядку. Если все оказались ложны, сопоставление переходит к следующему образцу.
-    \item Последнее условие часто \lstinline|otherwise| (синоним \lstinline|True|), тогда хотя бы одно условие точно истинно.
-    \item Чтобы сравнить переменную в образце с внешней, нужно использовать \lstinline|==| в условии:
-          \begin{lstlisting}[basicstyle=\ttfamily]
-case foo x of
-    y | y == x -> ... -- не то же, что x -> ...
-    _ -> ...
-\end{lstlisting}
+    \item Последнее условие часто \haskinline|otherwise| (синоним \haskinline|True|), тогда хотя бы одно условие точно истинно.
+    \item Чтобы сравнить переменную в образце с внешней, нужно использовать \haskinline|==| в условии:
+          \begin{haskell}
+            case foo x of
+                y | y == x -> ... -- не то же, что x -> ...
+                _ -> ...
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Многоветвенные \lstinline[basicstyle=\ttfamily]|if|}
-  \begin{itemize}
-    \item Цепочка \lstinline|if ... else if ...|, оформленная по правилам отступа, напоминает лестницу:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-if условие1
-    then результат1
-    else if условие2
-        then результат2
-        else результат3
-\end{lstlisting}
-    \item С расширением \lstinline|MultiWayIf| \cprotect\footnote{Его можно включить прагмой \lstinline|{-# LANGUAGE -XMultiWayIf #-}| в начале файла} можем написать:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-if | условие1 -> результат1
-   | условие2 -> результат2
-   | otherwise -> результат3
-\end{lstlisting}
-    \item Это можно сделать и с \lstinline|case| без расширений: \only<1>{как?} \pause \begin{lstlisting}[basicstyle=\ttfamily\small]
-case () of _ | условие1 -> ...
-\end{lstlisting}
-  \end{itemize}
+  \frametitle{Многоветвенные \haskinline|if|}
+    \begin{itemize}
+      \item Цепочка \haskinline|if ... else if ...|, оформленная по правилам отступа, напоминает лестницу:
+            \begin{haskell}
+              if условие1
+                  then результат1
+                  else if условие2
+                      then результат2
+                      else результат3
+            \end{haskell}
+    \item С расширением \haskinline|MultiWayIf| можем написать:
+          \begin{haskell}
+            if | условие1 -> результат1
+               | условие2 -> результат2
+               | otherwise -> результат3
+          \end{haskell}
+    \item Это можно сделать и с \haskinline|case| без расширений: \only<1>{как?} \pause
+          \begin{haskell}
+            case () of _ | условие1 -> ...
+          \end{haskell}
+    \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Определение функций по случаям}
   \begin{itemize}
-    \item Часто тело функции "--- \lstinline|case| по аргументу, например.
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-not x = case x of
-    True -> False
-    False -> True
-\end{lstlisting}
-    \item Такие функции можно записать несколькими равенствами, по одному на ветвь \lstinline|case|:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-not True = False
-not False = True
-\end{lstlisting}
+    \item Часто тело функции "--- \haskinline|case| по аргументу, например.
+          \begin{haskell}
+            not x = case x of
+                True -> False
+                False -> True
+          \end{haskell}
+    \item Такие функции можно записать несколькими равенствами, по одному на ветвь \haskinline|case|:
+          \begin{haskell}
+            not True = False
+            not False = True
+          \end{haskell}
     \item Это работает и с охранными условиями:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-not x | x = False
-      | otherwise = True
-\end{lstlisting}
+          \begin{haskell}
+            not x | x = False
+                  | otherwise = True
+          \end{haskell}
     \item и для нескольких параметров:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-nand True True = False
-nand _    _ = True
-\end{lstlisting}
+          \begin{haskell}
+            nand True True = False
+            nand _    _ = True
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Локальные определения: \lstinline[basicstyle=\ttfamily]|let|}
+  \frametitle{Локальные определения: \haskinline|let|}
   \begin{itemize}
     \item Локальные определения дают две выгоды:
           \begin{itemize}
             \item Более читаемый код.
             \item Избавление от повторяющихся вычислений.
           \end{itemize}
-    \item В Haskell два способа их задать: \lstinline|let| и \lstinline|where|.
-    \item Синтаксис \lstinline|let|:
-          \begin{lstlisting}
-let переменная1 = выражение1
-    функция2 x = выражение2
-    ...
-in выражение3
-\end{lstlisting}
-    \item Всё \lstinline|let ... in ...| "--- выражение.
-    \item Первое проявление ленивости: будут вычислены только те переменные, которые понадобятся для вычисления \lstinline|выражения3|.
+    \item В Haskell два способа их задать: \haskinline|let| и \haskinline|where|.
+    \item Синтаксис \haskinline|let|:
+          \begin{haskell}
+            let переменная1 = выражение1
+                функция2 x = выражение2
+                ...
+            in выражение3
+          \end{haskell}
+    \item Всё \haskinline|let ... in ...| "--- выражение.
+    \item Первое проявление ленивости: будут вычислены только те переменные, которые понадобятся для вычисления \haskinline|выражения3|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Локальные определения: \lstinline[basicstyle=\ttfamily]|where|}
+  \frametitle{Локальные определения: \haskinline|where|}
   \begin{itemize}
-    \item Синтаксис \lstinline|where|:
-          \begin{lstlisting}
-функция образец1 | условие1 = выражение3
-                 | условие2 = выражение4
-    where переменная1 = выражение1
-          функция2 x = выражение2
-\end{lstlisting}
+    \item Синтаксис \haskinline|where|:
+          \begin{haskell}
+            функция образец1 | условие1 = выражение3
+                             | условие2 = выражение4
+                where переменная1 = выражение1
+                      функция2 x = выражение2
+          \end{haskell}
     \item Видимы в условиях и в правых частях (но не для других образцов).
     \item Можно применить только к определениям.
     \item В том числе к локальным.
@@ -234,19 +232,19 @@ in выражение3
   \frametitle{Модули}
   \begin{itemize}
     \item Программа на Haskell состоит из модулей.
-    \item Модуль \lstinline|Модуль| (названия с заглавной буквы) определяется в файле \lstinline|Модуль.hs|:
+    \item Модуль \haskinline|Модуль| (названия с заглавной буквы) определяется в файле \haskinline|Модуль.hs|:
           \begin{itemize}
-            \item Для названия вида \lstinline|A.B.C| будет файл \lstinline|A/B/C.hs|.
+            \item Для названия вида \haskinline|A.B.C| будет файл \ghcinline|A/B/C.hs|.
           \end{itemize}
-          \begin{lstlisting}
-module Модуль(функция1) where
+          \begin{haskell}
+            module Модуль(функция1) where
 
-import ...
+            import ...
 
-функция1 :: ...
-функция1 x = ...
-\end{lstlisting}
-    \item \lstinline|функция1| экспортирована, она доступна другим модулям и GHCi. Все остальные "--- нет.
+            функция1 :: ...
+            функция1 x = ...
+          \end{haskell}
+    \item \haskinline|функция1| экспортирована, она доступна другим модулям и GHCi. Все остальные "--- нет.
     \item Можно экспортировать всё, опустив список экспортов (включая скобки).
   \end{itemize}
 \end{frame}
@@ -254,30 +252,30 @@ import ...
 \begin{frame}[fragile]
   \frametitle{Импорт из другого модуля}
   \begin{itemize}
-    \item У директивы \lstinline|import| есть много вариантов.
+    \item У директивы \haskinline|import| есть много вариантов.
     \item По адресу \url{https://wiki.haskell.org/Import} есть полный перечень.
     \item Нам пока достаточно простейших:
-    \item \begin{lstlisting}
-import Модуль(функция1, функция2)
-\end{lstlisting}
+    \item \begin{haskell}
+            import Модуль(функция1, функция2)
+          \end{haskell}
           импортирует конкретные функции.
-    \item \begin{lstlisting}
-import Модуль
-\end{lstlisting}
+    \item \begin{haskell}
+            import Модуль
+          \end{haskell}
           импортирует всё, что возможно.
-    \item Импортированные функции доступны как \lstinline|функция| и как \lstinline|Модуль.функция|.
+    \item Импортированные функции доступны как \haskinline|функция| и как \haskinline|Модуль.функция|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Загрузка модуля}
   \begin{itemize}
-    \item В GHCi можно скомпилировать и загрузить модуль (вместе с зависимостями) командой \lstinline|:load Модуль|. Подробности в документации:
+    \item В GHCi можно скомпилировать и загрузить модуль (вместе с зависимостями) командой \haskinline|:load Модуль|. Подробности в документации:
           \begin{itemize}
             \item \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-load-scope}{The effect of :load on what is in scope}
           \end{itemize}
     \item Под Windows можно просто дважды щёлкнуть на файл или нажать Enter в Проводнике.
-    \item Потом при изменениях файла повторить \lstinline|:load| или сделать \lstinline|:reload|.
+    \item Потом при изменениях файла повторить \haskinline|:load| или сделать \haskinline|:reload|.
     \item Многие редакторы позволяют это автоматизировать.
   \end{itemize}
 \end{frame}
@@ -287,11 +285,11 @@ import Модуль
   \begin{itemize}
     \item Для сборки лабораторных мы используем \href{https://docs.haskellstack.org/en/stable/#quick-start-guide}{Stack}.
     \item Ещё одна распространённая система сборки: \href{https://cabal.readthedocs.io/}{Cabal}.
-    \item Обе ставятся вместе с Haskell через ghcup.
+    \item Обе ставятся вместе с Haskell через \ghcinline|ghcup|.
     \item Основные команды можно посмотреть в документации, но нам пока достаточно
           \begin{itemize}
-            \item \lstinline|stack repl| для запуска GHCi с загруженными файлами проекта.
-            \item \lstinline|stack test| для запуска тестов.
+            \item \ghcinline|stack repl| для запуска GHCi с загруженными файлами проекта.
+            \item \ghcinline|stack test| для запуска тестов.
           \end{itemize}
   \end{itemize}
 \end{frame}

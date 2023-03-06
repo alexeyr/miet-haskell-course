@@ -17,20 +17,20 @@
     \item Монады расширяют возможности аппликативных функторов так же, как те расширяют возможности функторов.
     \item А именно, там добавляется
           \begin{haskell}
-    class Applicative m => Monad m where
-      (>>=) :: m a -> (a -> m b) -> m b
-      (>>) :: m a -> m b -> m b
-      mx >> my =`\pause` mx >>=`\pause` \_ -> my
-    \end{haskell}
+            class Applicative m => Monad m where
+              (>>=) :: m a -> (a -> m b) -> m b
+              (>>) :: m a -> m b -> m b
+              mx >> my =!\pause! mx >>=!\pause! \_ -> my
+          \end{haskell}
           \pause
-    \item По историческим причинам есть ещё \haskinline|return = pure| и \haskinline|fail :: String -> m a|.
+    \item По историческим причинам есть ещё \haskinline|return = pure| и \haskinline|fail :: String -> m a|.  % TODO fail уже нет!
           \pause
     \item Больше похоже на знакомые типы, если поменять аргументы местами:
           \begin{haskell}
-    fmap  ::   (a -> b) -> f a -> f b
-    (<*>) :: f (a -> b) -> f a -> f b
-    (=<<) :: (a -> m b) -> m a -> m b
-    \end{haskell}
+            fmap  ::   (a -> b) -> f a -> f b
+            (<*>) :: f (a -> b) -> f a -> f b
+            (=<<) :: (a -> m b) -> m a -> m b
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -43,32 +43,32 @@
           \end{displayquote}
     \item Монады снимают это ограничение. Теперь можно написать
           \begin{haskell}
-    ifM :: Monad m => m Bool -> m a -> m a -> m a
-    ifM mCond mThen mElse = mCond >>=`\pause` \cond ->`\pause` 
-      if cond then mThen else mElse
-    \end{haskell}
+            ifM :: Monad m => m Bool -> m a -> m a -> m a
+            ifM mCond mThen mElse = mCond >>=!\pause! \cond ->!\pause!
+              if cond then mThen else mElse
+          \end{haskell}
           и проверить:
           \begin{haskell}
-    ghci> ifM [True] [1] [2,3]
-    [1]
-    ghci> ifM [False] [1] [2,3]
-    [2,3]
-    \end{haskell}
+            ghci> ifM [True] [1] [2,3]
+            [1]
+            ghci> ifM [False] [1] [2,3]
+            [2,3]
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Законы монад}
   \begin{itemize}
-    \item \haskinline|pure x >>= f `$\equiv$` f x|
-    \item \haskinline|mx >>= pure `$\equiv$` mx|
-    \item \haskinline[fontsize=\small]|(mx >>= f) >>= g `$\equiv$` mx >>= (\x -> f x >>= g)|
+    \item \haskinline|pure x >>= f| $\equiv$ \haskinline|f x|
+    \item \haskinline|mx >>= pure| $\equiv$ \haskinline|mx|
+    \item \haskinline|(mx >>= f) >>= g| $\equiv$ \haskinline|mx >>= (\x -> f x >>= g)|
     \item Может быть, они не совсем интуитивны.
           \pause
     \item С помощью монадической композиции \haskinline|(>=>) :: (a -> m b) -> (b -> m c) -> (a -> m c)| они записываются естественнее:
-    \item \haskinline|pure >=> f `$\equiv$` f|
-    \item \haskinline|f >=> pure `$\equiv$` f|
-    \item \haskinline|(f >=> g) >=> h `$\equiv$` f >=> (g >=> h)| \pause
+    \item \haskinline|pure >=> f| $\equiv$ \haskinline|f|
+    \item \haskinline|f >=> pure| $\equiv$ \haskinline|f|
+    \item \haskinline|(f >=> g) >=> h| $\equiv$ \haskinline|f >=> (g >=> h)| \pause
     \item Кроме этого, должно быть согласование с \haskinline|<*>|: \\
           \haskinline|mf <*> mx| $\equiv$ \haskinline|  mf >>= (\f -> mx >>= (\x -> pure (f x)))|
   \end{itemize}
@@ -79,21 +79,21 @@
   \begin{itemize}[<+->]
     \item \haskinline|Maybe| "--- монада. Определим:
           \begin{haskell}
-    instance Monad Maybe where
-      -- (>{}>=) ::\pause Maybe a -> (a -> Maybe b) -> Maybe b
-      Nothing >>= _ =`\pause` Nothing
-      Just x  >>= f =`\pause` f x
-    \end{haskell}
+            instance Monad Maybe where
+              -- (>{}>=) ::\pause Maybe a -> (a -> Maybe b) -> Maybe b
+              Nothing >>= _ =!\pause! Nothing
+              Just x  >>= f =!\pause! f x
+          \end{haskell}
     \item Списки тоже монада:
           \begin{haskell}
-    -- (>{}>=) ::\pause [a] -> (a -> [b]) -> [b]
-    []     >>= _ =`\pause` []
-    (x:xs) >>= f =`\pause` f x ++ (xs >>= f)
-    \end{haskell}
+            -- (>{}>=) ::\pause [a] -> (a -> [b]) -> [b]
+            []     >>= _ =!\pause! []
+            (x:xs) >>= f =!\pause! f x ++ (xs >>= f)
+          \end{haskell}
           Или проще:
           \begin{haskell}
-    xs >>= f = [y |`\pause` x <- xs, y <- f x]
-    \end{haskell}
+            xs >>= f = [y |!\pause! x <- xs, y <- f x]
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -113,12 +113,12 @@
     \item Есть и примеры аппликативных функторов, для которых нельзя определить экземпляр монады:
     \item
           \begin{haskell}
-    newtype ConstInt a = ConstInt Int
-    fmap f (ConstInt x) = ConstInt x
-    pure _ = 0
-    ConstInt x <*> ConstInt y = ConstInt (x + y)
-    \end{haskell}
-    \item Легко увидеть, что \haskinline|pure x >>= f `$\equiv$` f x| не может выполняться ни для какого определения \haskinline|>>=|: правая часть зависит от \haskinline|x|, а левая нет.
+            newtype ConstInt a = ConstInt Int
+            fmap f (ConstInt x) = ConstInt x
+            pure _ = 0
+            ConstInt x <*> ConstInt y = ConstInt (x + y)
+          \end{haskell}
+    \item Легко увидеть, что \haskinline|pure x >>= f| $\equiv$ \haskinline|f x| не может выполняться ни для какого определения \haskinline|>>=|: правая часть зависит от \haskinline|x|, а левая нет.
           \pause
     \item Ещё пример "--- \haskinline|ZipList| (если не допускать \emph{только} бесконечные списки, как в домашнем задании, или активное использование $\bot$).
   \end{itemize}
@@ -129,26 +129,26 @@
   \begin{itemize}
     \item Для монад есть специальный синтаксис, которым часто удобнее пользоваться.
     \item Скажем, у нас есть цепочка операций
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             action1 >>= (\x1 -> action2 x1 >>=
-            (\x2 -> action3 x1 x2 >> action4 x1))
-          \end{haskell*}
+              (\x2 -> action3 x1 x2 >> action4 x1))
+          \end{haskellsmall}
     \item
           Сначала перепишем так:
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             action1 >>= \x1 ->
-            action2 x1 >>= \x2 ->
-            action3 x1 x2 >>
-            action4 x1
-          \end{haskell*}
+              action2 x1 >>= \x2 ->
+              action3 x1 x2 >>
+              action4 x1
+          \end{haskellsmall}
     \item
           В \haskinline|do|-блоке строки вида \haskinline|action1 >>= \x1 ->| превращаются в \haskinline|x1 <- action1|, а \haskinline|>>| пропадает:
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             do x1 <- action1
-            x2 <- action2 x1
-            action3 x1 x2
-            action4 x1
-          \end{haskell*}
+               x2 <- action2 x1
+               action3 x1 x2
+               action4 x1
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -158,26 +158,26 @@
     \item Законы монад также можно записать через \haskinline|do|:
     \item
           \begin{haskell}
-    do y <- pure x    `$\mathtt{\equiv}$`    f x
-       f y
-    \end{haskell}
+            do y <- pure x    !$\mathtt{\equiv}$!    f x
+              f y
+          \end{haskell}
     \item
           \begin{haskell}
-    do x <- mx        `$\mathtt{\equiv}$`    mx
-       pure x
-    \end{haskell}
+            do x <- mx        !$\mathtt{\equiv}$!    mx
+              pure x
+          \end{haskell}
     \item
           \begin{haskell}
-    do x <- mx        `$\mathtt{\equiv}$`    do y <- do x <- mx
-       y <- f x       `\textcolor{white}{$\mathtt{\equiv}$}`               f x
-       g y            `\textcolor{white}{$\mathtt{\equiv}$}`       g y
-    \end{haskell}
+            do x <- mx        !$\mathtt{\equiv}$!    do y <- do x <- mx
+              y <- f x       !\textcolor{white}{$\mathtt{\equiv}$}!               f x
+              g y            !\textcolor{white}{$\mathtt{\equiv}$}!       g y
+          \end{haskell}
     \item
           \begin{haskell}
-    mf <*> mx         `$\mathtt{\equiv}$`    do f <- mf
-                      `\textcolor{white}{$\mathtt{\equiv}$}`       x <- mx
-                      `\textcolor{white}{$\mathtt{\equiv}$}`       pure (f x)
-    \end{haskell}
+            mf <*> mx         !$\mathtt{\equiv}$!    do f <- mf
+                              !\textcolor{white}{$\mathtt{\equiv}$}!       x <- mx
+                              !\textcolor{white}{$\mathtt{\equiv}$}!       pure (f x)
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -215,24 +215,24 @@
   \begin{itemize}
     \item Рассмотрим ещё один, более сложный пример:
     \item
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             newtype State s a = State { runState :: s -> (a, s) }
-          \end{haskell*}
+          \end{haskellsmall}
           Это \enquote{вычисления с состоянием}, которые могут выдать результат, зависящий от состояния и изменить это состояние.
     \item Как сделать их аппликативным функтором?
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             instance Functor (State s) where
-            fmap f (State gx) = State (\s1 ->`\pause`
-            let (x, s2) = gx s1
-            in`\pause` (f x, s2))
+              fmap f (State gx) = State (\s1 ->!\pause!
+                let (x, s2) = gx s1
+                in!\pause! (f x, s2))
 
             instance Applicative (State s) where
-            pure x = State (\s1 ->`\pause` (x, s1))
-            (State gf) <*> (State gx) = State (\s1 ->
-            let (f, s2) = gf s1`\pause`
-            (x, s3) = gx s2
-            in`\pause` (f x, s3))
-          \end{haskell*}
+              pure x = State (\s1 ->!\pause! (x, s1))
+              (State gf) <*> (State gx) = State (\s1 ->
+                let (f, s2) = gf s1!\pause!
+                (x, s3) = gx s2
+                in!\pause! (f x, s3))
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -240,26 +240,26 @@
   \frametitle{Монада \haskinline|State|}
   \begin{itemize}
     \item А теперь монадой:
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             instance Monad (State s) where
-            State gx >>= f = State (\s1 ->
-            let (x, s2) = gx s1`\pause`
-            State gy = f x
-            in`\pause` gy s2)
-          \end{haskell*}
+              State gx >>= f = State (\s1 ->
+                let (x, s2) = gx s1!\pause!
+                State gy = f x
+                in!\pause! gy s2)
+          \end{haskellsmall}
           \pause
     \item Определим вспомогательные функции:
-          \begin{haskell*}{fontsize=\footnotesize}
+          \begin{haskellsmall}
             get :: State s s
-            get = State`\pause` (\s -> (s, s))
+            get = State!\pause! (\s -> (s, s))
 
             put :: s -> State s ()
-            put x = State`\pause` (\_ -> ((), x))
+            put x = State!\pause! (\_ -> ((), x))
 
             modify :: (s -> s) -> State s ()
             modify f = do x <- get
-            put (f x)
-          \end{haskell*}
+                          put (f x)
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 

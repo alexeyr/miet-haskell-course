@@ -1,6 +1,5 @@
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
-\usepackage{syntax}
 
 \title{Лекция 9: функторы, монады и все-все-все}
 
@@ -13,22 +12,22 @@
   \frametitle{Роды типов}
   \begin{itemize}
     \item У значений есть типы, а у типов "--- р\'{о}ды (kinds).
-    \item Все обычные типы (\lstinline|Int|, \lstinline|Maybe Bool|, \lstinline|(Int, Int)|, \ldots) имеют род \lstinline|*| (синоним "--- \lstinline|Type|).
+    \item Все обычные типы (\haskinline|Int|, \haskinline|Maybe Bool|, \haskinline|(Int, Int)|, \ldots) имеют род \haskinline|*| (синоним "--- \haskinline|Type|).
           \pause
-    \item Пример более сложного рода "--- \lstinline|Maybe|. Он принимает тип рода \lstinline|*| и возвращает тип рода \lstinline|*|:
-          \begin{lstlisting}
-ghci> :kind Maybe !\pause!
-Maybe :: * -> *
-    \end{lstlisting}
+    \item Пример более сложного рода "--- \haskinline|Maybe|. Он принимает тип рода \haskinline|*| и возвращает тип рода \haskinline|*|:
+          \begin{haskell}
+            ghci> :kind Maybe !\pause!
+            Maybe :: * -> *
+          \end{haskell}
           \pause
     \item Определите род:
           \begin{itemize}
-            \item \lstinline!Either! (\lstinline!data Either a b = Left a | Right b!)
+            \item \haskinline!Either! (\haskinline!data Either a b = Left a | Right b!)
                   \pause
-            \item \lstinline!Shape! (\lstinline|type Shape f = f ()|)
+            \item \haskinline!Shape! (\haskinline|type Shape f = f ()|)
                   \pause
           \end{itemize}
-    \item В стандартном Haskell все роды строятся из  \lstinline|*| и \lstinline|->|, в GHC всё сложнее (\href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#kind-polymorphism}{Kind polymorphism}, \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#unboxed-types-and-primitive-operations}{Unboxed type kinds}, \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#datatype-promotion}{Datatype promotion},  \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#the-constraint-kind}{The \lstinline|Constraint| kind}).
+    \item В стандартном Haskell все роды строятся из \haskinline|*| и \haskinline|->|, в GHC всё сложнее (\href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#kind-polymorphism}{Kind polymorphism}, \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#unboxed-types-and-primitive-operations}{Unboxed type kinds}, \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#datatype-promotion}{Datatype promotion},  \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#the-constraint-kind}{The \haskinline|Constraint| kind}).
   \end{itemize}
 \end{frame}
 
@@ -36,33 +35,33 @@ Maybe :: * -> *
   \frametitle{Частичное применение типов}
   \begin{itemize}
     \item Конструкторы типов могут быть частично применены (как функции).
-    \item Если \lstinline!Either :: * -> * -> *!, то \lstinline|Either Int|\pause\lstinline| :: * -> *|. \lstinline|Either a| "--- тоже.
+    \item Если \haskinline!Either :: * -> * -> *!, то \haskinline|Either Int|\pause\haskinline| :: * -> *|. \haskinline|Either a| "--- тоже.
           \pause
     \item Типы кортежей, функций и списков можно писать в префиксном виде: \\
-          \lstinline|(,) a b|, \lstinline|(->) a b|, \lstinline|[] a|.
+          \haskinline|(,) a b|, \haskinline|(->) a b|, \haskinline|[] a|.
           \pause
-    \item И применять частично: \lstinline|(->) Int| читается как \enquote{функции из \lstinline|Int|} и имеет род \pause\lstinline|* -> *|.
+    \item И применять частично: \haskinline|(->) Int| читается как \enquote{функции из \haskinline|Int|} и имеет род \pause\haskinline|* -> *|.
           \pause
-    \item Синонимы типов (как \lstinline|Shape| с прошлого слайда) всегда должны быть применены полностью.
+    \item Синонимы типов (как \haskinline|Shape| с прошлого слайда) всегда должны быть применены полностью.
           \pause
     \item Для частичного применения нужен \\
-          \lstinline|newtype Shape f = Shape (f ())|.
+          \haskinline|newtype Shape f = Shape (f ())|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Варианты \lstinline|map|}
+  \frametitle{Варианты \haskinline|map|}
   \begin{itemize}
     \item Сравним типы нескольких функций:
-    \item \alt<-4>{\lstinline|map :: (a -> b) -> [a] -> [b]|}{\lstinline|map :: (a -> b) -> [] a -> [] b|}
+    \item \alt<-4>{\haskinline|map :: (a -> b) -> [a] -> [b]|}{\haskinline|map :: (a -> b) -> [] a -> [] b|}
           \pause
-    \item \lstinline|mapMb :: (a -> b) -> Maybe a -> Maybe b -- mapMaybe называется другая функция|
+    \item \haskinline|mapMb :: (a -> b) -> Maybe a -> Maybe b| (\haskinline|mapMaybe| называется другая функция)
           \pause
-    \item \lstinline|mapMap :: (a -> b) -> Map k a -> Map k b -- Data.Map.{Lazy/Strict}.map|
+    \item \haskinline|mapMap :: (a -> b) -> Map k a -> Map k b| (она же \haskinline|Data.Map.{Lazy/Strict}.map|)
           \pause
-    \item \alt<+>{\lstinline|mapSnd :: (a -> b) -> (c, a) -> (c, b)|}{\lstinline|mapSnd :: (a -> b) -> (,) c a -> (,) c b|} \pause
+    \item \alt<+>{\haskinline|mapSnd :: (a -> b) -> (c, a) -> (c, b)|}{\haskinline|mapSnd :: (a -> b) -> (,) c a -> (,) c b|} \pause
     \item Видим, что все они имеют вид \pause \\
-          \lstinline|forall a b. (a -> b) -> f a -> f b| для разных \lstinline|f| (\lstinline|f| не под \lstinline|forall|!).
+          \haskinline|forall a b. (a -> b) -> f a -> f b| для разных \haskinline|f| (\haskinline|f| не под \haskinline|forall|!).
   \end{itemize}
 \end{frame}
 
@@ -70,17 +69,17 @@ Maybe :: * -> *
   \frametitle{Функторы}
   \begin{itemize}
     \item Можем обобщить все функции с предыдущего слайда, введя класс типов
-          \begin{lstlisting}
-class Functor f where
-  fmap :: (a -> b) -> f a -> f b
-  (<$) :: a        -> f b -> f a
-  (<$) = fmap . const
-\end{lstlisting}
-    \item Здесь \lstinline|f| "--- переменная типа сорта \pause \lstinline|* -> *|.
-    \item Смысл \lstinline|fmap g xs|: применить функцию \lstinline|g| ко всем значениям типа \lstinline|a| \enquote{внутри} \lstinline|xs|, не меняя структуры.
-    \item \lstinline|(<$)| "--- частный случай \lstinline|fmap|, который иногда может быть реализован напрямую.
+          \begin{haskell}
+            class Functor f where
+              fmap :: (a -> b) -> f a -> f b
+              (<$) :: a        -> f b -> f a
+              (<$) = fmap . const
+          \end{haskell}
+    \item Здесь \haskinline|f| "--- переменная типа сорта \pause \haskinline|* -> *|.
+    \item Смысл \haskinline|fmap g xs|: применить функцию \haskinline|g| ко всем значениям типа \haskinline|a| \enquote{внутри} \haskinline|xs|, не меняя структуры.
+    \item \haskinline|(<$)| "--- частный случай \haskinline|fmap|, который иногда может быть реализован напрямую.
           \pause
-    \item \lstinline|(<$>)| "--- синоним \lstinline|fmap| как оператор.
+    \item \haskinline|(<$>)| "--- синоним \haskinline|fmap| как оператор.
   \end{itemize}
 \end{frame}
 
@@ -88,44 +87,44 @@ class Functor f where
   \frametitle{Законы функторов}
   \begin{itemize}
     \item Что значит \enquote{не меняя структуры}?
-    \item Например, рассмотрим случай \lstinline|fmap id|. Чему должно быть равно \lstinline|fmap id xs|? \pause
-          \begin{lstlisting}
+    \item Например, рассмотрим случай \haskinline|fmap id|. Чему должно быть равно \haskinline|fmap id xs|? \pause
+          \begin{haskell}
 fmap id xs == xs
-\end{lstlisting}
+\end{haskell}
           \pause
-    \item Этот закон также формулируется как \\ \alt<+>{\lstinline|fmap id == id|}{\lstinline|fmap (id @a) == id @(f a)|}. \pause
+    \item Этот закон также формулируется как \\ \alt<+>{\haskinline|fmap id == id|}{\haskinline|fmap (id @a) == id @(f a)|}. \pause
     \item Второй закон функторов:
-          \begin{lstlisting}
-fmap (g . h) xs ==!\pause! fmap g (fmap h xs)
-\end{lstlisting}
+          \begin{haskell}
+            fmap (g . h) xs ==!\pause! fmap g (fmap h xs)
+          \end{haskell}
           \pause
-          \begin{lstlisting}
+          \begin{haskell}
 fmap (g . h)    ==!\pause! fmap g . fmap h
-\end{lstlisting}
+\end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Примеры функторов}
   \begin{itemize}
-    \item Очень многие типы (рода \lstinline|* -> *|) являются функторами. Например:
-          \begin{lstlisting}
-instance Functor Maybe where 
-  -- fmap :: (a -> b) -> Maybe a -> Maybe b
-  fmap f (Just x) =!\pause! Just (f x)
-  fmap _ Nothing  =!\pause! Nothing
-\end{lstlisting}
+    \item Очень многие типы (рода \haskinline|* -> *|) являются функторами. Например:
+          \begin{haskell}
+            instance Functor Maybe where 
+              -- fmap :: (a -> b) -> Maybe a -> Maybe b
+              fmap f (Just x) =!\pause! Just (f x)
+              fmap _ Nothing  =!\pause! Nothing
+          \end{haskell}
           \pause
     \item
-          \begin{lstlisting}
-instance Functor [] where 
-  fmap =!\pause! map
-\end{lstlisting}
+          \begin{haskell}
+            instance Functor [] where 
+              fmap =!\pause! map
+          \end{haskell}
     \item Не можем определить
-          \begin{lstlisting}
-instance Functor [] where 
-  fmap f xs = []
-\end{lstlisting}
+          \begin{haskell}
+            instance Functor [] where 
+              fmap f xs = []
+          \end{haskell}
           \pause
           Типы сходятся (проверьте!), но законы нарушены.
   \end{itemize}
@@ -135,25 +134,25 @@ instance Functor [] where
   \frametitle{Ещё примеры функторов}
   \begin{itemize}
     \item Частично применённые кортежи:
-          \begin{lstlisting}
-instance Functor ((,) c) where 
--- fmap :: (a -> b) -> (c, a) -> (c, b)
-fmap f (z, x) =!\pause! (z, f x)
-\end{lstlisting}
+          \begin{haskell}
+            instance Functor ((,) c) where 
+            -- fmap :: (a -> b) -> (c, a) -> (c, b)
+            fmap f (z, x) =!\pause! (z, f x)
+          \end{haskell}
           \pause
     \item
-          \begin{lstlisting}
-data Pair a = Pair a a
-instance Functor Pair where 
--- fmap :: (a -> b) -> Pair a -> Pair b
-fmap f (Pair x y) =!\pause! Pair (f x) (f y)
-\end{lstlisting}
+          \begin{haskell}
+            data Pair a = Pair a a
+            instance Functor Pair where 
+            -- fmap :: (a -> b) -> Pair a -> Pair b
+            fmap f (Pair x y) =!\pause! Pair (f x) (f y)
+          \end{haskell}
           \pause
-    \item Дома (начните с уточнения типа \lstinline|fmap|):
-          \begin{lstlisting}
-instance Functor (Either c) where ...
-instance Functor ((->) c) where ...
-\end{lstlisting}
+    \item Дома (начните с уточнения типа \haskinline|fmap|):
+          \begin{haskell}
+            instance Functor (Either c) where ...
+            instance Functor ((->) c) where ...
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -161,45 +160,45 @@ instance Functor ((->) c) where ...
   \frametitle{... и нефункторов}
   \begin{itemize}
     \item Не все типы можно сделать функторами! Рассмотрим
-          \begin{lstlisting}
-newtype Pred a = Pred (a -> Bool)
-instance Functor Pred where 
--- fmap :: (a -> b) -> Pred a -> Pred b
-fmap g (Pred p) =!\pause! Pred (\x -> ???)
-\end{lstlisting}
-          \pause \lstinline|g :: a -> b| не к чему применить: у нас нет ничего типа \lstinline|a|!
+          \begin{haskell}
+            newtype Pred a = Pred (a -> Bool)
+            instance Functor Pred where 
+            -- fmap :: (a -> b) -> Pred a -> Pred b
+            fmap g (Pred p) =!\pause! Pred (\x -> ???)
+          \end{haskell}
+          \pause \haskinline|g :: a -> b| не к чему применить: у нас нет ничего типа \haskinline|a|!
           \pause
-    \item Общее правило: \lstinline|instance Functor F| можно определить, если \lstinline|a| не входит в определение \lstinline|F a| слева от нечётного числа \lstinline|->| (\href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#deriving-functor-instances}{объяснение}).
+    \item Общее правило: \haskinline|instance Functor F| можно определить, если \haskinline|a| не входит в определение \haskinline|F a| слева от нечётного числа \haskinline|->| (\href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#deriving-functor-instances}{объяснение}).
           \pause
     \item По этому правилу, функтор ли ниже?
-          \begin{lstlisting}
-newtype Tricky a = T ((a -> Int) -> a)
-\end{lstlisting}
+          \begin{haskell}
+            newtype Tricky a = T ((a -> Int) -> a)
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Доказательство законов для экземпляра \lstinline|Functor|}
+  \frametitle{Доказательство законов для экземпляра \haskinline|Functor|}
   \begin{itemize}
-    \item Возьмём для примера \lstinline|instance Functor Pair|. Нужно доказать, что для него:
-    \item $\forall$ \lstinline|a :: *|, \lstinline|pair :: Pair a|
-          \begin{lstlisting}
-fmap id pair == pair
-\end{lstlisting}
+    \item Возьмём для примера \haskinline|instance Functor Pair|. Нужно доказать, что для него:
+    \item $\forall$ \haskinline|a :: *|, \haskinline|pair :: Pair a|
+          \begin{haskell}
+            fmap id pair == pair
+          \end{haskell}
           \pause
-    \item Шаг 1: \lstinline|pair = Pair x y|, где \lstinline|x, y :: |\pause\lstinline|a|
-          \begin{lstlisting}
-fmap id pair ==
-fmap id (Pair x y) == !\pause! -- определение fmap!\pause!
-Pair (id x) (id y) == !\pause! -- определение id!\pause!
-Pair x y == 
-pair
-\end{lstlisting}
+    \item Шаг 1: \haskinline|pair = Pair x y|, где \haskinline|x, y :: |\pause\haskinline|a|
+          \begin{haskell}
+            fmap id pair ==
+            fmap id (Pair x y) == !\pause! -- определение fmap \pause
+            Pair (id x) (id y) == !\pause! -- определение id \pause
+            Pair x y == 
+            pair
+          \end{haskell}
           \pause
-    \item $\forall$ \lstinline|a, b, c :: *|, \lstinline|pair :: Pair a|, \lstinline|h :: a -> b|, \lstinline|g :: b -> c|
-          \begin{lstlisting}
-fmap (g . h) pair == fmap g (fmap h pair)
-\end{lstlisting}
+    \item $\forall$ \haskinline|a, b, c :: *|, \haskinline|pair :: Pair a|, \haskinline|h :: a -> b|, \haskinline|g :: b -> c|
+          \begin{haskell}
+            fmap (g . h) pair == fmap g (fmap h pair)
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -207,77 +206,78 @@ fmap (g . h) pair == fmap g (fmap h pair)
   \frametitle{Использование функторов}
   \begin{itemize}
     \item Предскажите результаты:
-          \begin{lstlisting}
-(+ 3) <$> Just 1
-(+ 3) <$> Nothing
-(+ 3) <$> [1, 2, 3]
-\end{lstlisting}
-          \pause \item[] \item
-          \begin{lstlisting}
-void :: Functor f => f a -> f ()
-void x = ???
+          \begin{haskell}
+            (+ 3) <$> Just 1
+            (+ 3) <$> Nothing
+            (+ 3) <$> [1, 2, 3]
+          \end{haskell}
+          \pause
+    \item[]
+    \item
+          \begin{haskell}
+            void :: Functor f => f a -> f ()
+            void x = ???
 
-void [1, 2]
-\end{lstlisting}
-
+            void [1, 2]
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Чего не могут функторы?}
   \begin{itemize}
-    \item Удобно считать, что \lstinline|fmap| берёт функцию \lstinline|a -> b| и \enquote{поднимает} её в тип \lstinline|f a -> f b|.
+    \item Удобно считать, что \haskinline|fmap| берёт функцию \haskinline|a -> b| и \enquote{поднимает} её в тип \haskinline|f a -> f b|.
     \item Можно ли с её помощью поднять функцию двух аргументов? Т.е. можно ли реализовать
-          \begin{lstlisting}
-fmap2 :: Functor f => (a -> b -> c) -> f a -> f b -> f c
-fmap2 g fx fy = ???
-\end{lstlisting}
+          \begin{haskellsmall}
+            fmap2 :: Functor f => (a -> b -> c) -> f a -> f b -> f c
+            fmap2 g fx fy = ???
+          \end{haskellsmall}
           \pause
-    \item Нет! Единственное, с чего мы можем начать: \pause \lstinline|fmap g|. Она имеет тип \pause \lstinline|f a -> f (b -> c)|.
-    \item Применив к \lstinline|fx| (тип подходит), получим
-          \lstinline|fmap g fx :: f (b -> c)|. \pause
-    \item Но \lstinline|f (b -> c)| и  \lstinline|f b| скомбинировать уже не получится.
+    \item Нет! Единственное, с чего мы можем начать: \pause \haskinline|fmap g|. Она имеет тип \pause \haskinline|f a -> f (b -> c)|.
+    \item Применив к \haskinline|fx| (тип подходит), получим
+          \haskinline|fmap g fx :: f (b -> c)|. \pause
+    \item Но \haskinline|f (b -> c)| и  \haskinline|f b| скомбинировать уже не получится.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Аппликативные функторы}
   \begin{itemize}
-    \item Если добавить к функторам метод получения \lstinline|f c| из \lstinline|f (b -> c)| и \lstinline|f b|, и метод поднятия любого значения, получится понятие аппликативного функтора:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-class Functor f => Applicative f where
-  pure  :: a -> f a
-  infixl 4 <*>, *>, <*
-  (<*>) :: f (a -> b) -> f a -> f b
-  (*>) :: f a -> f b -> f b
-  (<*) :: f a -> f b -> f a
-\end{lstlisting}
-    \item \lstinline|(*>)| и \lstinline|(<*)| имеют определения по умолчанию.
+    \item Если добавить к функторам метод получения \haskinline|f c| из \haskinline|f (b -> c)| и \haskinline|f b|, и метод поднятия любого значения, получится понятие аппликативного функтора:
+          \begin{haskell}
+            class Functor f => Applicative f where
+              pure  :: a -> f a
+              infixl 4 <*>, *>, <*
+              (<*>) :: f (a -> b) -> f a -> f b
+              (*>) :: f a -> f b -> f b
+              (<*) :: f a -> f b -> f a
+          \end{haskell}
+    \item \haskinline|(*>)| и \haskinline|(<*)| имеют определения по умолчанию.
     \item Теперь можно определить
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-liftA2 :: Applicative f => (a -> b -> c) -> 
-   f a -> f b -> f c
-liftA2 g fx fy = ???
-\end{lstlisting}
+          \begin{haskell}
+            liftA2 :: Applicative f => (a -> b -> c) -> 
+              f a -> f b -> f c
+            liftA2 g fx fy = ???
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Законы аппликативных функторов}
   \begin{itemize}
-    \item У \lstinline|Applicative| 5 законов:
+    \item У \haskinline|Applicative| 5 законов:
     \item
-          \begin{lstlisting}
-pure id <*> v = v
+          \begin{haskell}
+            pure id <*> v = v
 
-pure f <*> pure x = pure (f x)
+            pure f <*> pure x = pure (f x)
 
-u <*> pure y = pure ($ y) <*> u
+            u <*> pure y = pure ($ y) <*> u
 
-u <*> (v <*> w) = pure (.) <*> u <*> v <*> w
+            u <*> (v <*> w) = pure (.) <*> u <*> v <*> w
 
-fmap g x = pure g <*> x
-\end{lstlisting}
+            fmap g x = pure g <*> x
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -286,18 +286,18 @@ fmap g x = pure g <*> x
   \begin{itemize}
     \item Эти законы не очень удобны и их трудно запомнить. Но мы можем использовать другой класс:
     \item
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-class Functor f => Monoidal f where
-  unit :: f ()
-  (**) :: f a -> f b -> f (a,b)
-\end{lstlisting}
-    \item Он взаимовыразим с аппликативными функторами (т.е. \lstinline|pure| и \lstinline|(<*>)| выражаются через \lstinline|unit| и \lstinline|(**)| и наоборот).
+          \begin{haskell}
+            class Functor f => Monoidal f where
+              unit :: f ()
+              (**) :: f a -> f b -> f (a,b)
+          \end{haskell}
+    \item Он взаимовыразим с аппликативными функторами (т.е. \haskinline|pure| и \haskinline|(<*>)| выражаются через \haskinline|unit| и \haskinline|(**)| и наоборот).
     \item Законы ($\simeq$: с точностью до изоморфизма):
-          \begin{lstlisting}[ basicstyle=\ttfamily\small]
-unit ** v !$\simeq$! v
-u ** unit !$\simeq$! u
-u ** (v ** w) !$\simeq$! (u ** v) ** w
-\end{lstlisting}
+          \begin{haskell}
+            unit ** v !$\simeq$! v
+            u ** unit !$\simeq$! u
+            u ** (v ** w) !$\simeq$! (u ** v) ** w
+          \end{haskell}
     \item Упражнение: записать точные их версии
   \end{itemize}
 \end{frame}
@@ -306,46 +306,46 @@ u ** (v ** w) !$\simeq$! (u ** v) ** w
   \frametitle{Примеры аппликативных функторов}
   \begin{itemize}
     \item Многие функторы являются аппликативными:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Applicative Maybe where 
-  -- pure :: a -> Maybe a
-  pure =!\pause! Just
-  -- (<*>) :: Maybe (a -> b) -> Maybe a -> Maybe b
-  Just g <*> Just x  =!\pause! Just (g x)
-  _      <*> _       =!\pause! Nothing
-\end{lstlisting}
+          \begin{haskell}
+            instance Applicative Maybe where
+              -- pure :: a -> Maybe a
+              pure =!\pause! Just
+              -- (<*>) :: Maybe (a -> b) -> Maybe a -> Maybe b
+              Just g <*> Just x  =!\pause! Just (g x)
+              _      <*> _       =!\pause! Nothing
+          \end{haskell}
           \pause
     \item Для списков есть 2 варианта. Стандартный:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Applicative [] where 
-  -- pure :: a -> [a]
-  pure x =!\pause! [x]
-  -- (<*>) :: [a -> b] -> [a] -> [b]
-  gs <*> xs =!\pause! [g x | g <- gs, x <- xs]
-\end{lstlisting}
+          \begin{haskell}
+            instance Applicative [] where 
+              -- pure :: a -> [a]
+              pure x =!\pause! [x]
+              -- (<*>) :: [a -> b] -> [a] -> [b]
+              gs <*> xs =!\pause! [g x | g <- gs, x <- xs]
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Примеры аппликативных функторов}
   \begin{itemize}
-    \item Второй аппликативный функтор для списков (определён в \lstinline|Control.Applicative|):
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-newtype ZipList a = ZipList { getZipList :: [a] }
-instance Applicative ZipList where 
-  (ZipList fs) <*> (ZipList xs) = ZipList (zipWith ($) fs xs)
-  pure x = ???
-\end{lstlisting}
+    \item Второй аппликативный функтор для списков (определён в \haskinline|Control.Applicative|):
+          \begin{haskell}
+            newtype ZipList a = ZipList { getZipList :: [a] }
+            instance Applicative ZipList where 
+              (ZipList fs) <*> (ZipList xs) = ZipList (zipWith ($) fs xs)
+              pure x = ???
+          \end{haskell}
           \pause
     \item Подсказка: реализация определяется законом
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-pure id <*> v = v
-\end{lstlisting}
+          \begin{haskell}
+            pure id <*> v = v
+          \end{haskell}
           \pause
     \item Ответ:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-pure x = ZipList (repeat x)
-\end{lstlisting}
+          \begin{haskell}
+            pure x = ZipList (repeat x)
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -353,19 +353,19 @@ pure x = ZipList (repeat x)
   \frametitle{Пример неаппликативного функтора}
   \begin{itemize}
     \item
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Applicative ((,) c) where 
-  -- pure :: a -> (c, a)
-  pure = ???
-\end{lstlisting}
-          \pause Невозможно определить без ограничений на \lstinline|c|.
+          \begin{haskell}
+            instance Applicative ((,) c) where 
+              -- pure :: a -> (c, a)
+              pure = ???
+          \end{haskell}
+          \pause Невозможно определить без ограничений на \haskinline|c|.
           \pause
     \item А какие ограничения нужны? \pause
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-instance Monoid c => Applicative ((,) c) where
-  pure x = (mempty, x)
-  (c1, g) <*> (c2, x) =!\pause! (c1 <> c2, g x)
-\end{lstlisting}
+          \begin{haskell}
+            instance Monoid c => Applicative ((,) c) where
+              pure x = (mempty, x)
+              (c1, g) <*> (c2, x) =!\pause! (c1 <> c2, g x)
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -373,20 +373,20 @@ instance Monoid c => Applicative ((,) c) where
   \frametitle{Что можно сделать с аппликативными функторами}
   \begin{itemize}
     \item Предскажите результаты:
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-pure (+) <*> [2, 3, 4] <*> pure 4
-[(+1), (*2)] <*> [2, 3]
-[1, 2] *> [3, 4, 5]
-[1, 2] <* [3, 4, 5]
-ZipList [1, 2] *> ZipList [3, 4, 5]
-\end{lstlisting}
+          \begin{haskell}
+            pure (+) <*> [2, 3, 4] <*> pure 4
+            [(+1), (*2)] <*> [2, 3]
+            [1, 2] *> [3, 4, 5]
+            [1, 2] <* [3, 4, 5]
+            ZipList [1, 2] *> ZipList [3, 4, 5]
+          \end{haskell}
           \pause
     \item Реализуйте
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-when :: Applicative f => Bool -> f () -> f ()    
-sequenceAL :: Applicative f => [f a] -> f [a]
-\end{lstlisting}
-    \item У второй есть обобщённая версия \href{http://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Traversable.html#v:sequenceA}{\lstinline|sequenceA|}, определяющая ещё один класс \lstinline|Traversable|.
+          \begin{haskell}
+            when :: Applicative f => Bool -> f () -> f ()    
+            sequenceAL :: Applicative f => [f a] -> f [a]
+          \end{haskell}
+    \item У второй есть обобщённая версия \href{http://hackage.haskell.org/package/base/docs/Data-Traversable.html#v:sequenceA}{\haskinline|sequenceA|}, определяющая ещё один класс \haskinline|Traversable|.
   \end{itemize}
 \end{frame}
 
@@ -395,17 +395,17 @@ sequenceAL :: Applicative f => [f a] -> f [a]
   \begin{itemize}
     \item Структура результата аппликативного вычисления зависит только от структуры аргументов, а не от значений внутри них.
     \item Т.е. мы не можем определить функцию
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-ifA :: Applicative f => f Bool -> f a -> f a -> f a
-\end{lstlisting}
+          \begin{haskell}
+            ifA :: Applicative f => f Bool -> f a -> f a -> f a
+          \end{haskell}
           так, чтобы выполнялось
-          \begin{lstlisting}[basicstyle=\ttfamily\small]
-ifA [True]  [1, 2] [3] == [1, 2]
-ifA [False] [1, 2] [3] == [3]
-\end{lstlisting}
+          \begin{haskell}
+            ifA [True]  [1, 2] [3] == [1, 2]
+            ifA [False] [1, 2] [3] == [3]
+          \end{haskell}
           (в случае списков структура "--- число элементов).
           \pause
-    \item Попробуйте написать какие-нибудь варианты \lstinline|ifA| по типу и убедиться в этом.
+    \item Попробуйте написать какие-нибудь варианты \haskinline|ifA| по типу и убедиться в этом.
           \pause
     \item Эту проблему решают монады, о которых будет следующая лекция.
   \end{itemize}
@@ -416,15 +416,16 @@ ifA [False] [1, 2] [3] == [3]
   \includegraphics[width=\linewidth]{Typeclassopedia-diagram.png}
 \end{frame}
 
+% TODO восстановить слайды
 %\begin{frame}[fragile]
-%\frametitle{\lstinline|Foldable| и \lstinline|Traversable|}
+%\frametitle{\haskinline|Foldable| и \haskinline|Traversable|}
 %\begin{itemize}
 %    \item TODO
 %\end{itemize}
 %\end{frame}
 %
 %\begin{frame}[fragile]
-%\frametitle{Вывод \lstinline|Functor|, \lstinline|Foldable|, \lstinline|Traversable|}
+%\frametitle{Вывод \haskinline|Functor|, \haskinline|Foldable|, \haskinline|Traversable|}
 %\begin{itemize}
 %    \item TODO
 %\end{itemize}
@@ -440,7 +441,7 @@ ifA [False] [1, 2] [3] == [3]
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
-    \item \href{https://wiki.haskell.org/Typeclassopedia}{Typeclassopedia} (диаграмма на предыдущем слайде оттуда). Особенно посмотрите на \lstinline|Foldable|, \lstinline|Traversable| и \lstinline|Alternative|.
+    \item \href{https://wiki.haskell.org/Typeclassopedia}{Typeclassopedia} (диаграмма на предыдущем слайде оттуда). Особенно посмотрите на \haskinline|Foldable|, \haskinline|Traversable| и \haskinline|Alternative|.
     \item \href{https://stackoverflow.com/questions/7220436/good-examples-of-not-a-functor-functor-applicative-monad}{Good examples of Not a Functor/Applicative/Monad?}
     \item     \href{http://adit.io/posts/2013-04-17-functors,_applicatives,_and_monads_in_pictures.html}{Functors, Applicatives, And Monads In Pictures.}
     \item Глава \href{https://en.wikibooks.org/wiki/Haskell/Applicative_functors}{Applicative Functors} в Wikibook.
