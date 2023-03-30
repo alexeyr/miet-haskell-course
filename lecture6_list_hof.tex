@@ -152,8 +152,31 @@
             foldMaybe ::   b      -> (a -> b) -> Maybe a -> b
           \end{haskellsmall}
           \pause
-    \item Это \haskinline|Data.Maybe.maybe| с обратным порядком аргументов. (TODO Bool и деревья)  % TODO
+    \item Это \haskinline|Data.Maybe.maybe| с обратным порядком аргументов.
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Свёртка деревьев}
+  \begin{itemize}
+    \item Для деревьев возьмём пример, где данные хранятся в листьях, но не в ветвях:
+          \begin{haskellsmall}
+            data Tree a = Leaf a | Node (Tree a) (Tree a)
+            foldTree   :: ? ->        ?             -> Tree a -> b !\pause!
+            foldTree   :: (a -> b) -> (b -> b -> b) -> Tree a -> b !\pause!
+
+            sumTree = foldTree!\pause! id (+)
+          \end{haskellsmall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Дополнительное чтение}
+  \begin{itemize}
+    \item \href{https://habr.com/ru/post/667058/}{Применение обобщённой свёртки для обработки синтаксических деревьев}
+    \item \href{http://www.cs.nott.ac.uk/~pszgmh/fold.pdf}{A tutorial on the universality and expressiveness of fold}
+    \item \href{https://wiki.haskell.org/wikiupload/1/14/TMR-Issue6.pdf}{Getting a Fix from the Right Fold} (реализация \haskinline{dropWhile} через \haskinline{foldr})
+  \end{itemize} 
 \end{frame}
 
 \end{document}
