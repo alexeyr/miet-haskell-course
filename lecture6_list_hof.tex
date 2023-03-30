@@ -95,18 +95,63 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Свёртки списков}
+  \frametitle{Правая свёртка списков и структурная рекурсия}
   \begin{itemize}
-    \item
+    \item При \emph{структурной рекурсии} рекурсивный вызов делается на подтерме одного из аргументов функции (например, хвосте списка).
+    \item Большинство наших рекурсивных определений выглядели именно так.
+    \pause
+    \item Оказывается, что есть универсальная функция, через которую выражаются такие определения:
           \begin{haskell}
-            foldr, foldr' :: (a -> b -> b) -> b -> [a] -> b
+            foldr :: (a -> b -> b) -> b -> [a] -> b
             foldr f z [x1, x2, ..., xn] == 
               x1 `f` (x2 `f` ... (xn `f` z)...)
-            foldl, foldl' :: (b -> a -> b) -> b -> [a] -> b
-            foldl f z [x1, x2, ..., xn] == 
-              (...((z `f` x1) `f` x2) `f`...) `f` xn
           \end{haskell}
-    \item Функции \haskinline|sum|, \haskinline|length| и т.д. можно реализовать через них (TODO)  % TODO
+    \item Правая свёртка проходит по структуре списка и заменяет \haskinline{[]} на \haskinline{z} и \haskinline{(:)} на \haskinline{f}.
+    \item Например, \haskinline|sum| получится, если взять \haskinline{f =!\pause! (+)} и \haskinline{z =!\pause! 0}.
+    \item Упражнение: реализовать \haskinline|length|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Левая свёртка и хвостовая рекурсия}
+  \begin{itemize}
+    \item При \emph{хвостовой рекурсии} рекурсивный вызов делается в самом конце вычисления. Например,
+    \item \begin{haskellsmall}
+            sum xs = sum' 0 xs where
+              sum' acc [] = acc
+              sum' acc (x:xs) = sum' !\pause!(acc + x) xs
+          \end{haskellsmall}
+    \item Универсальная функция для таких определений:
+          \begin{haskellsmall}
+            foldl :: (b -> a -> b) -> b -> [a] -> b
+            foldl _f z [] = z
+            foldl f z (x:xs) = foldl f !\pause!(f z x) xs
+          \end{haskellsmall}
+    \item Она проходит по списку слева и получается 
+          \begin{haskellsmall}
+            (...((z `f` x1) `f` x2) `f`...) `f` xn
+          \end{haskellsmall}
+    \item Хвостовая рекурсия может быть скомпилирована в цикл и в других языках ФП очень важна. В Haskell ленивость всё усложняет.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Левая свёртка и хвостовая рекурсия}
+  \begin{itemize}
+    \item При \emph{хвостовой рекурсии} рекурсивный вызов делается в самом конце вычисления. Например,
+    \item \begin{haskellsmall}
+            sum xs = sum' 0 xs
+              where
+                sum' acc [] = acc
+                sum' acc (x:xs) = sum' !\pause!(acc + x) xs
+          \end{haskellsmall}
+    \item Универсальная функция для таких определений:
+          \begin{haskellsmall}
+            foldl :: (b -> a -> b) -> b -> [a] -> b
+            foldl _f z [] = z
+            foldl f z (x:xs) = foldl !\pause!f !\pause!(f z x) xs
+          \end{haskellsmall}
+    \item Хвостовая рекурсия очень полезна 
   \end{itemize}
 \end{frame}
 
