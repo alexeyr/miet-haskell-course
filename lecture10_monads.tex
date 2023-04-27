@@ -23,7 +23,7 @@
               mx >> my =!\pause! mx >>=!\pause! \_ -> my
           \end{haskell}
           \pause
-    \item По историческим причинам есть ещё \haskinline|return = pure| и \haskinline|fail :: String -> m a|.  % TODO fail уже нет!
+    \item По историческим причинам есть ещё \haskinline|return = pure|.
           \pause
     \item Больше похоже на знакомые типы, если поменять аргументы местами:
           \begin{haskell}
@@ -57,6 +57,22 @@
   \end{itemize}
 \end{frame}
 
+
+\begin{frame}[fragile]
+  \frametitle{Стрелки Клейсли}
+  \begin{itemize}
+    \item Тип второго аргумента \haskinline|(>>=)|, \haskinline|a -> m b|, где \haskinline|m| "--- монада, называется \emph{стрелкой Клейсли}.
+    \item \haskinline|a| и \haskinline|b| могут быть как переменными типа, так и конкретными типами.
+    \item Стрелки Клейсли можно композировать:
+          \begin{haskellsmall}
+            (>=>) :: Monad m => (a -> m b) -> (b -> m c) ->
+                                (a -> m c)
+            f >=> g = \x ->!\pause! f x >>=!\pause! g
+          \end{haskellsmall}
+    \item Есть и аналоги \haskinline|filter|, \haskinline|map| и т.д., работающие со стрелками Клейсли. Их можно найти в \href{https://hackage.haskell.org/package/base-4.18.0.0/docs/Control-Monad.html}{документации \haskinline{Control.Monad}}.
+  \end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Законы монад}
   \begin{itemize}
@@ -65,12 +81,13 @@
     \item \haskinline|(mx >>= f) >>= g| $\equiv$ \haskinline|mx >>= (\x -> f x >>= g)|
     \item Может быть, они не совсем интуитивны.
           \pause
-    \item С помощью монадической композиции \haskinline|(>=>) :: (a -> m b) -> (b -> m c) -> (a -> m c)| они записываются естественнее:
+    \item С помощью монадической композиции они записываются естественнее:
     \item \haskinline|pure >=> f| $\equiv$ \haskinline|f|
     \item \haskinline|f >=> pure| $\equiv$ \haskinline|f|
     \item \haskinline|(f >=> g) >=> h| $\equiv$ \haskinline|f >=> (g >=> h)| \pause
     \item Кроме этого, должно быть согласование с \haskinline|<*>|: \\
-          \haskinline|mf <*> mx| $\equiv$ \haskinline|  mf >>= (\f -> mx >>= (\x -> pure (f x)))|
+          \haskinline|mf <*> mx| $\equiv$ \haskinline|mf >>= (\f -> mx >>= (\x -> pure (f x)))|
+          (тоже громоздко, но удобная запись немного позже)
   \end{itemize}
 \end{frame}
 
@@ -159,18 +176,18 @@
     \item
           \begin{haskell}
             do y <- pure x    !$\mathtt{\equiv}$!    f x
-              f y
+               f y
           \end{haskell}
     \item
           \begin{haskell}
             do x <- mx        !$\mathtt{\equiv}$!    mx
-              pure x
+               pure x
           \end{haskell}
     \item
           \begin{haskell}
             do x <- mx        !$\mathtt{\equiv}$!    do y <- do x <- mx
-              y <- f x       !\textcolor{white}{$\mathtt{\equiv}$}!               f x
-              g y            !\textcolor{white}{$\mathtt{\equiv}$}!       g y
+               y <- f x       !\textcolor{white}{$\mathtt{\equiv}$}!               f x
+               g y            !\textcolor{white}{$\mathtt{\equiv}$}!               g y
           \end{haskell}
     \item
           \begin{haskell}
@@ -189,8 +206,8 @@
     \item \haskinline|м_выражение| должно иметь тип \haskinline|m a| для какой-то монады \haskinline|m| и типа \haskinline|a|.
     \item \haskinline|m| одна для всех строк, \haskinline|a| могут различаться.
     \item \haskinline|образец| в строке с \haskinline|<-| имеет тип \haskinline|a|.
-    \item \haskinline|образец| может не быть обязательным для всех значений типа \haskinline|a|, как в \haskinline|Just x <- pure Nothing|. В этом случае и нужна функция \haskinline|fail|.
-    \item Но это не рекомендуется использовать.
+    \item Если \haskinline|m| "--- экземпляр \haskinline|MonadFail|, то \haskinline|образец| может не быть обязательным для всех значений типа \haskinline|a|, например \haskinline|Just x <- pure Nothing|.
+    \item Подробности в документации \haskinline|MonadFail|, но у нас в курсе такой необходимости нет.
   \end{itemize}
 \end{frame}
 
