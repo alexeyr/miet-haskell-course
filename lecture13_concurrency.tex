@@ -246,7 +246,7 @@ withStrategy s x = runEval (s x)
           \begin{haskell}
             parallelMap :: NFData b => (a -> b) -> [a] -> [b]
             parallelMap f xs = runPar $ do
-              ivars <- mapM (spawn (\x -> pure (f x)) xs
+              ivars <- mapM (\x -> spawn (pure (f x)) xs
               mapM get ivars
           \end{haskell}
           Как и в прошлый раз, создаёт \enquote{поток} для каждого элемента, для простоты кода.

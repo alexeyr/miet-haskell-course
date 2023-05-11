@@ -120,14 +120,14 @@
     \item Но если закрыть файл до того, как он реально прочитан, строка закончится как если бы она дошла до конца файла:
           \begin{haskellsmall}
             wrong = do
-            fileData <- withFile "test.txt" ReadMode hGetContents
-            putStr fileData
+              fileData <- withFile "test.txt" ReadMode hGetContents
+              putStr fileData
           \end{haskellsmall}
     \item Нужно использовать данные внутри \haskinline|withFile|:
           \begin{haskellsmall}
             right = withFile "test.txt" ReadMode $ \file -> do
-            fileData <- hGetContents file
-            putStr fileData
+              fileData <- hGetContents file
+              putStr fileData
           \end{haskellsmall}
   \end{itemize}
 \end{frame}
@@ -213,8 +213,9 @@
     \item
           \begin{haskell}
             randomRIO :: Random a => (a, a) -> IO a
+            randomIO :: Random a => IO a
           \end{haskell}
-          использует глобальный генератор.
+          используют глобальный генератор.
   \end{itemize}
 \end{frame}
 
