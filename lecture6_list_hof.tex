@@ -84,7 +84,8 @@
     \item Тех и других может быть много.
     \item Генераторы могут использовать переменные, введённые в предыдущих. Пример:
           \begin{haskell}
-            [(x, y) | x <- [1..5], y <- [1..x], odd (x - y)] == !\pause![(3, 2), (5, 2), (5, 4)]
+            [(x, y) | x <- [1..5], y <- [1..x], odd (x - y)] == !\pause!
+              [(3, 2), (5, 2), (5, 4)]
           \end{haskell}
     \item Эти выражения преобразуются в комбинации \haskinline|concatMap|, \haskinline|map| и \haskinline|filter|:
           \begin{haskell}
