@@ -8,7 +8,7 @@ import Data.Word (Word8)
 
 -- используйте сопоставление с образцом
 xor :: Bool -> Bool -> Bool
-xor x y = error "todo"
+xor x y = if x == y then False else True
 
 -- max3 x y z находит максимум из x, y и z
 -- max3 1 3 2 == 3
@@ -17,9 +17,11 @@ xor x y = error "todo"
 -- median3 1 3 2 == 2
 -- median3 5 2 5 == 5
 max3, median3 :: Integer -> Integer -> Integer -> Integer
-max3 x y z = error "todo"
-
-median3 x y z = error "todo"
+max3 x y z = max (max x y) z  -- if z >= a then z else a where {a = x >= y then z else y} 
+median3 x y z | (min x z <= y) && (y <= max x z) = y --sum
+              | (min y z <= x) && (x <= max y z) = x
+              | (min x y <= z) && (z <= max x y) = z
+              | otherwise = error "the median has not been calculated"
 
 -- Типы данных, описывающие цвета в моделях 
 -- RGB (https://ru.wikipedia.org/wiki/RGB), компоненты от 0 до 255
@@ -37,7 +39,17 @@ data CMYK = CMYK { cyan :: Double, magenta :: Double, yellow :: Double, black ::
 -- Заметьте, что (/) для Int не работает, и неявного преобразования Int в Double нет.
 -- Это преобразование производится с помощью функции fromIntegral.
 rbgToCmyk :: RGB -> CMYK
-rbgToCmyk color = error "todo"
+rbgToCmyk (RGB 0 0 0) = CMYK 0.0 0.0 0.0 1.0
+rbgToCmyk color = cmyk_color where
+    r = fromIntegral(red color) / 255.0
+    g = fromIntegral(green color) / 255.0
+    b = fromIntegral(blue color) / 255.0
+    k = (min (min (1.0 - r)  (1.0 - g)) (1.0 - b))
+    c = (1.0 - r - k) / (1.0 - k)
+    m = (1.0 - g - k) / (1.0 - k)
+    y = (1.0 - b - k) / (1.0 - k)
+    cmyk_color = CMYK c m y k
+
 
 -- geomProgression b q n находит n-й (считая с 0) член 
 -- геометрической прогрессии, нулевой член которой -- b, 
@@ -47,7 +59,9 @@ rbgToCmyk color = error "todo"
 -- используйте рекурсию
 -- не забудьте случаи n < 0 и n == 0.
 geomProgression :: Double -> Double -> Integer -> Double
-geomProgression b q n = error "todo"
+geomProgression b q n | (n == 0) = b 
+                      | n < 0 = error "n must be a natural number: n >= 2"
+                      | n > 0 = q * geomProgression b q (n - 1)  
 
 -- coprime a b определяет, являются ли a и b взаимно простыми
 -- (определение: Целые числа называются взаимно простыми, 
@@ -63,5 +77,17 @@ geomProgression b q n = error "todo"
 -- (или div, mod, divMod в зависимости от того, как 
 -- обрабатываете отрицательные числа)
 -- https://hackage.haskell.org/package/base-4.9.0.0/docs/Prelude.html
+{- euclidAlgorithm :: Integer -> Integer -> Integer
+euclidAlgorithm x 0 = x
+euclidAlgorithm x y = euclidAlgorithm y (mod x y) -}
+
+
 coprime :: Integer -> Integer -> Bool
-coprime a b = error "todo"
+coprime a b = 
+    let
+        euclidAlgorithm :: Integer -> Integer -> Integer
+        euclidAlgorithm x 0 = x
+        euclidAlgorithm x y = euclidAlgorithm y (mod x y)
+    in
+        if ((a * b) == 0) then error "ZeroException" else if euclidAlgorithm a b == 1 then True else False
+
