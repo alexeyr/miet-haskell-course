@@ -41,6 +41,7 @@ minim [x]      = x
 minim (x:xs)   = min x (minim xs)
 
 rgbToCmyk :: RGB -> CMYK
+rbgToCmyk (RGB 0 0 0) = CMYK 0.0 0.0 0.0 1.0
 rgbToCmyk color = CMYK { black = toBlack
   , magenta = toMagenta
   , yellow = toYellow
