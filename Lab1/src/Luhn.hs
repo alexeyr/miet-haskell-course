@@ -10,5 +10,24 @@ module Luhn where
 -- Не пытайтесь собрать всё в одну функцию, используйте вспомогательные.
 -- Например: разбить число на цифры (возможно, сразу в обратном порядке).
 -- Не забудьте добавить тесты, в том числе для вспомогательных функций!
+
+-- Функция для разбиения числа на цифры в обратном порядке
+digitsRev :: Int -> [Int]
+digitsRev n
+  | n < 10    = [n]
+  | otherwise = n `mod` 10 : digitsRev (n `div` 10)
+
+-- Функция для удвоения и коррекции цифр на четных позициях
+doubleEven :: [Int] -> [Int]
+doubleEven []       = []
+doubleEven [x]      = [x]
+doubleEven (x:y:zs) = x : (if y * 2 > 9 then y * 2 - 9 else y * 2) : doubleEven zs
+
+-- Функция для суммирования цифр
+sumDigits :: [Int] -> Int
+sumDigits [] = 0
+sumDigits (x:xs) = x + sumDigits xs
+
+-- Функция для проверки корректности номера по алгоритму Луна
 isLuhnValid :: Int -> Bool
-isLuhnValid = error "todo"
+isLuhnValid n = sumDigits (doubleEven (digitsRev n)) `mod` 10 == 0
