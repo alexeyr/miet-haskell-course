@@ -17,12 +17,13 @@ instance Show a => Show (Stream a) where
 
 -- Реализуйте функцию, превращающую поток в (бесконечный) список
 streamToList :: Stream a -> [a]
-streamToList = undefined
+streamToList (x :> xs) = x : streamToList xs
 
 -- функция, возвращающая n первых элементов потока
 -- удобна для написания тестов следующих функций
 sTake :: Int -> Stream a -> [a]
-sTake = undefined
+sTake n (x :> xs) | n == 0 = []
+                  | n > 0  = x : (sTake (n - 1) xs)
 
 -- Задание 2 -----------------------------------------
 
@@ -31,7 +32,7 @@ sTake = undefined
 
 -- поток, состоящий из одинаковых элементов
 sRepeat :: a -> Stream a
-sRepeat = undefined
+sRepeat x = x :> sRepeat x
 
 -- sRepeat 1 == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, ...
 
@@ -40,19 +41,19 @@ sRepeat = undefined
 -- будет циклическим (ссылаться сам на себя), а не бесконечно растущим)
 -- sCycle [1, 2, 3] == [1, 2, 3, 1, 2, 3, 1, 2, 3, 1, ...
 sCycle :: [a] -> Stream a
-sCycle = undefined
+sCycle (x:xs) = foldr (:>) (sCycle xs) xs
 
 -- поток, заданный начальным значением и функцией, строящей следующее значение
 -- по текущему
 -- sIterate (/ 2) 1.0 == [1.0, 0.5, 0.25, 0.125, 0.0625, ...
 sIterate :: (a -> a) -> a -> Stream a
-sIterate = undefined
+sIterate f x = x :> (sIterate f (f x))
 
 -- функция, возвращающая поток из чередующихся элементов двух потоков
 -- (для следующего задания нужно сделать эту функцию ленивой по
 -- второму аргументу, то есть не сопоставлять его с образцом)
 sInterleave :: Stream a -> Stream a -> Stream a
-sInterleave (_ :> _) _ = undefined
+sInterleave (x :> xs) ys = x :> sInterleave ys xs
 
 -- sInterleave (sRepeat 1) (sRepeat 2) == [1, 2, 1, 2, 1, 2, ...
 
@@ -62,7 +63,7 @@ sInterleave (_ :> _) _ = undefined
 
 -- поток натуральных чисел (начиная с 0)
 nats :: Stream Integer
-nats = undefined
+nats = sIterate ((+) 1) 0
 
 -- nats == [0, 1, 2, 3, 4, 5, 6, 7, ...
 
@@ -70,8 +71,11 @@ nats = undefined
 -- делящая n нацело. Подсказка: с помощью sInterleave это можно сделать без
 -- проверок на делимость, если её реализация ленива по второму аргументу
 -- (подумайте, почему это важно).
+-- pows 0 = 0
+-- pows 1 = 0
+-- pows x = if x `mod` 2 == 0 then 1 + pows (x-1) else 0 
 ruler :: Stream Integer
-ruler = undefined
+ruler = helper 0 where helper n = sInterleave (sRepeat n) (helper (n + 1))
 
 -- ruler == [0, 1, 0, 2, 0, 1, 0, 3, ...
 
@@ -90,7 +94,8 @@ minMaxSlow xs = Just (minimum xs, maximum xs)
 
 {- -O0: Total time: ??? Total Memory in use: ??? -}
 {- -O2: Total time: ??? Total Memory in use: ??? -}
-minMax = undefined
+minMax [] = Nothing
+minMax (x:xs) = Just (foldl update (x, x) xs) where update (minimum, maximum) curr = (min minimum curr, max maximum curr)
 
 -- Дополнительное задание: реализуйте ту же самую функцию (под названием minMaxBang) с
 -- использованием явной строгости (seq и/или !)
@@ -128,26 +133,28 @@ main = print $ minMaxSlow $ sTake 1000000 $ ruler
 -- или http://hackage.haskell.org/package/hedgehog-classes, если в предыдущем задании использовали Hedgehog.
 
 instance Functor Stream where
-    fmap = undefined
+        fmap f (x :> xs) = f x :> fmap f xs
 
 instance Applicative Stream where
-    pure = undefined
-    (<*>) = undefined
+    pure x = sRepeat x
+    (<*>) (f:>fs) (x:>xs) = (f x) :> (fs <*> xs)
 
 instance Monad Stream where
     return = pure
     -- в этом случае может быть проще использовать реализацию через join
     -- xs >>= f = join ... where join = ...
-    (>>=) = undefined
+    (>>=) xs f = join' (fmap f xs) where join' ((x :> zs) :> ys) = x :> sInterleave zs (join' ys)
 
 -- https://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Foldable.html
 instance Foldable Stream where
     -- достаточно определить одну из них
-    -- foldr = undefined
+    foldr :: (a -> b -> b) -> b -> Stream a -> b
+    foldr f acc (x :> xs) = f x (foldr f acc xs)
     -- foldMap = undefined
 
 -- https://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Traversable.html
 instance Traversable Stream where
     -- достаточно определить одну из них
     -- traverse = undefined
-    -- sequenceA = undefined
+    sequenceA :: (Traversable t, Applicative f) => t (f a) -> f (t a)
+    sequenceA = traverse id

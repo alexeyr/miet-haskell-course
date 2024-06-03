@@ -45,18 +45,33 @@ type State = String -> Int
 
 -- в начальном состоянии все переменные имеют значение 0
 empty :: State
-empty = undefined
+empty = const 0
 
 -- возвращает состояние, в котором переменная var имеет значение newVal, 
 -- все остальные -- то же, что в state
 extend :: State -> String -> Int -> State
-extend state var newVal = undefined
+extend state var newVal v | v == var = newVal
+                          | otherwise = state v
 
 -- Задание 2 -----------------------------------------
 
 -- возвращает значение выражения expr при значениях переменных из state.
 eval :: State -> Expression -> Int
-eval state expr = undefined
+eval state (Var var) = state var
+eval _ (Val val) = val
+eval state (Op val1 op val2) = case op of
+      Plus -> var1 + var2
+      Minus -> var1 - var2
+      Times -> var1 * var2
+      Divide -> var1 `div` var2
+      Gt -> if var1 > var2 then 1 else 0
+      Ge -> if var1 >= var2 then 1 else 0
+      Lt -> if var1 < var2 then 1 else 0
+      Le -> if var1 <= var2 then 1 else 0
+      Eql -> if var1 == var2 then 1 else 0
+      where
+        var1 = eval state val1
+        var2 = eval state val2
 
 -- Задание 3 -----------------------------------------
 
@@ -72,23 +87,61 @@ data DietStatement = DAssign String Expression
 
 -- упрощает программу Simple
 desugar :: Statement -> DietStatement
-desugar = undefined
+
+desugar (If expr outTrue outFalse) = DIf expr (desugar outTrue) (desugar outFalse) 
+
+desugar (While expr state) = DWhile expr (desugar state) 
+
+desugar (Assign var expr) = DAssign var expr 
+
+desugar (Incr var) = DAssign var (Op (Var var) Plus (Val 1))
+
+desugar Skip = DSkip
+
+desugar (Block []) = DSkip
+
+desugar (Block (st : sts)) = DSequence (desugar st) (desugar (Block sts))
+
+desugar (For state expr state1 state2) = DSequence (desugar state) (DWhile expr (DSequence (desugar state2) (desugar state1)))
 
 -- Задание 4 -----------------------------------------
 
 -- принимает начальное состояние и программу Simpler
 -- и возвращает состояние после работы программы
 runSimpler :: State -> DietStatement -> State
-runSimpler = undefined
 
+runSimpler state (DAssign var expr) = extend state var (eval state expr) 
+
+runSimpler state (DIf expr out1 out2) = if eval state expr == 1 then runSimpler state out1 
+                                        else runSimpler state out2
+
+runSimpler state (DWhile exp st) = if eval state exp == 1 then runSimpler (runSimpler state st) (DWhile exp st) 
+                                   else state
+
+runSimpler state (DSequence st1 st2) = runSimpler (runSimpler state st1) st2  
+
+runSimpler state DSkip = state
 -- 
 -- in s "A" ~?= 10
 
 -- принимает начальное состояние и программу Simple
 -- и возвращает состояние после работы программы
 run :: State -> Statement -> State
-run = undefined
-
+run state (Assign var expr) = extend state var (eval state expr) 
+run state (Incr var) = extend state var (state var + 1)  
+run state (If cond st1 st2) =
+    if eval state cond /= 0 then run state st1 else run state st2  
+run state (While cond stmt) =
+    let loop state = if eval state cond /= 0 then loop (run state stmt) else state
+    in loop state  
+run state (For initStmt cond incrStmt bodyStmt) =
+    let initState = run state initStmt
+        loop st = if eval st cond /= 0
+                 then loop (run st (Block [bodyStmt, incrStmt]))
+                 else st
+    in loop initState 
+run state (Block sts) = foldl run state sts  
+run state Skip = state 
 -- Программы -------------------------------------------
 
 {- Вычисление факториала
@@ -113,8 +166,10 @@ factorial = For (Assign "Out" (Val 1))
    B := B - 1
 -}
 squareRoot :: Statement
-squareRoot = undefined
-
+squareRoot = Block [ Assign "B" (Val 0), 
+  While (Op (Var "A") Ge (Op (Var "B") Times (Var "B"))) (Incr "B"), 
+  Assign "B" (Op (Var "B") Minus (Val 1))
+  ]
 {- Вычисление числа Фибоначчи
 
    F0 := 1;
@@ -135,4 +190,19 @@ squareRoot = undefined
    }
 -}
 fibonacci :: Statement
-fibonacci = undefined
+fibonacci = 
+  Block [
+    Assign "F0" (Val 1), Assign "F1" (Val 1),
+    If (Op (Var "In") Eql (Val 0))
+      (Assign "Out" (Val 1))
+      (If (Op (Var "In") Eql (Val 1))
+        (Assign "Out" (Var "F0"))
+        (For (Assign "C" (Val 2))
+          (Op (Var "C") Le (Var "In"))
+          (Incr "C")
+          (Block [ Assign "T" (Op (Var "F0") Plus (Var "F1")), Assign "F0" (Var "F1"), Assign "F1" (Var "T") , Assign "Out" (Var "T")
+            ]
+          )
+        )
+    )
+  ]
