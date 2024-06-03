@@ -51,3 +51,4 @@ tests:
     - hspec-hedgehog
     - quickcheck-classes
     - hedgehog-classes
+    - QuickCheck

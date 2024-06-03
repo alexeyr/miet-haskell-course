@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.36.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -46,6 +46,7 @@ test-suite Lab3-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -Wno-unused-matches -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Lab3
+    , QuickCheck
     , base >=4.7 && <5
     , hedgehog-classes
     , hspec

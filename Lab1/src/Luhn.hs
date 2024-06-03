@@ -10,5 +10,17 @@ module Luhn where
 -- Не пытайтесь собрать всё в одну функцию, используйте вспомогательные.
 -- Например: разбить число на цифры (возможно, сразу в обратном порядке).
 -- Не забудьте добавить тесты, в том числе для вспомогательных функций!
+
+reverseNumber :: Int -> [Int]
+reverseNumber n 
+    | ((div n 10) == 0) = [n]
+    | otherwise = (mod n 10) : reverseNumber (div n 10) 
+
+doublingEvenNumbers :: [Int] -> [Int]
+doublingEvenNumbers [] = []
+doublingEvenNumbers [n] = [n] -- doublingEvenNumbers [n] = n : []
+doublingEvenNumbers (first:second:end) = first : (mod (2*second) 9) : doublingEvenNumbers end
+
+
 isLuhnValid :: Int -> Bool
-isLuhnValid = error "todo"
+isLuhnValid number = if (mod (foldr (+) 0 (doublingEvenNumbers (reverseNumber number))) 10) == 0 then True else False 
