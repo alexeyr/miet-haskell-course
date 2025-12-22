@@ -10,7 +10,10 @@ newtype Point = Point [Double] deriving (Eq, Show, Read)
 
 -- используйте рекурсию и сопоставление с образцом
 distance :: Point -> Point -> Double
-distance x y = error "todo"
+distance x y
+where
+sumSq [] [] = 0
+sumSq (a:as) (b:bs) = (a - b) ^ 2 + sumSq as bs
 
 -- intersect xs ys возвращает список, содержащий общие элементы двух списков.
 -- intersect [1, 2, 4, 6] [5, 4, 2, 5, 7] == [2, 4] (или [4, 2]!)
@@ -18,14 +21,20 @@ distance x y = error "todo"
 
 -- используйте рекурсию и сопоставление с образцом
 intersect :: [Integer] -> [Integer] -> [Integer]
-intersect xs ys = error "todo"
+intersect [] _ = []
+intersect (x:xs) ys
+| x `elem` ys = x : intersect xs ys
+| otherwise = intersect xs ys
 
 -- zipN принимает список списков и возвращает список, который состоит из
 -- списка их первых элементов, списка их вторых элементов, и так далее.
 -- zipN [[1, 2, 3], [4, 5, 6], [7, 8, 9]] == [[1, 4, 7], [2, 5, 8], [3, 6, 9]]
 -- zipN [[1, 2, 3], [4, 5], [6]] == [[1, 4, 6], [2, 5], [3]]
 zipN :: [[a]] -> [[a]]
-zipN xss = error "todo"
+zipN [] = []
+zipN xss
+| any null xss = []
+| otherwise = map head xss : zipN (map tail xss)
 
 -- Нижеперечисленные функции можно реализовать или рекурсивно, или с помощью
 -- стандартных функций для работы со списками (map, filter и т.д.)
@@ -38,14 +47,22 @@ zipN xss = error "todo"
 -- findLast (> 0) [-1, 2, -3, 4] == Just 4
 -- find (> 0) [-1, -2, -3] == Nothing
 find, findLast :: (a -> Bool) -> [a] -> Maybe a
-find f xs = error "todo"
-findLast f xs = error "todo"
+find :: (a -> Bool) -> [a] -> Maybe a
+find _ [] = Nothing
+find f (x:xs)
+| f x = Just x
+| otherwise = find f xs
+
+findLast :: (a -> Bool) -> [a] -> Maybe a
+findLast f xs = case filter f xs of
+  [] -> Nothing
+  ys -> Just (last ys)
 
 -- mapFuncs принимает список функций fs и возвращает список результатов 
 -- применения всех функций из fs к x.
 -- mapFuncs [\x -> x*x, (1 +), \x -> if even x then 1 else 0] 3 == [9, 4, 0]
 mapFuncs :: [a -> b] -> a -> [b]
-mapFuncs fs x = error "todo"
+mapFuncs fs x = map ($ x) fs
 
 -- satisfiesAll принимает список предикатов (функций, возвращающих Bool) preds
 -- и возвращает True, если все они выполняются (т.е. возвращают True) для x.
@@ -53,7 +70,7 @@ mapFuncs fs x = error "todo"
 -- satisfiesAll [even, \x -> x rem 5 == 0] 10 == True
 -- satisfiesAll [] 4 == True (кстати, почему?)
 satisfiesAll :: [a -> Bool] -> a -> Bool
-satisfiesAll preds x = error "todo"
+satisfiesAll preds x = all ($ x) preds
 
 -- Непустой список состоит из первого элемента (головы)
 -- и обычного списка остальных элементов
@@ -62,8 +79,23 @@ data NEL a = NEL a [a] deriving (Eq, Show, Read)
 
 -- Запишите правильный тип (т.е. такой, чтобы функция имела результат для любых аргументов
 -- без вызовов error) и реализуйте функции на NEL, аналогичные tail, last и zip
--- tailNel :: NEL a -> ???
--- lastNel :: NEL a -> ???
--- zipNel :: NEL a -> NEL b -> ???
--- listToNel :: [a] -> ???
--- nelToList :: NEL a -> ???
+
+--
+data NEL a = NEL a [a] deriving (Eq, Show, Read)
+
+tailNel:: NEL a -> [a]
+tailNel (NEL _ xs) = xs
+
+lastNel:: NEL a -> a
+lastNel (NEL x [])     = x
+lastNel (NEL _ (y:ys)) = lastNel (NEL y ys)
+
+zipNel:: NEL a -> NEL b -> NEL (a, b)
+zipNel (NEL x xs) (NEL y ys) = NEL (x, y) (zip xs ys)
+
+nelToList:: NEL a -> [a]
+nelToList (NEL x xs) = x : xs
+
+listToNel :: [a] -> Maybe (NEL a)
+listToNel []     = Nothing
+listToNel (x:xs) = Just (NEL x xs)
