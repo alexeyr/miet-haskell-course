@@ -1,17 +1,17 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.39.6.
 --
 -- see: https://github.com/sol/hpack
 
 name:           Lab1
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/Lab1#readme>
-homepage:       https://github.com/githubuser/Lab1#readme
-bug-reports:    https://github.com/githubuser/Lab1/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2023 Author name here
+description:    Лабораторная работа 1 курса «Функциональное программирование на Haskell». См. README.md.
+homepage:       https://github.com/alexeyr/miet-haskell-course#readme
+bug-reports:    https://github.com/alexeyr/miet-haskell-course/issues
+author:         Alexey Romanov
+maintainer:     alexey.v.romanov@gmail.com
+copyright:      2023-2026 Alexey Romanov
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
@@ -21,7 +21,8 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/Lab1
+  location: https://github.com/alexeyr/miet-haskell-course
+  subdir: Lab1
 
 library
   exposed-modules:

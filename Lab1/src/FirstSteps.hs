@@ -63,6 +63,6 @@ geomProgression b q n = error "todo"
 -- части стандартной библиотеки): quot, rem, quotRem 
 -- (или div, mod, divMod в зависимости от того, как 
 -- обрабатываете отрицательные числа)
--- https://hackage.haskell.org/package/base-4.9.0.0/docs/Prelude.html
+-- https://hackage.haskell.org/package/base/docs/Prelude.html
 coprime :: Integer -> Integer -> Bool
 coprime a b = error "todo"

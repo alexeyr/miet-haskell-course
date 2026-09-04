@@ -6,7 +6,7 @@ import Test.Hspec
 main :: IO ()
 main = hspec $ do
     describe "first steps" $ do
-        -- Можно вложить глубже: describe "xor" do $ ... чтобы дать названия отдельным тестам
+        -- Можно вложить глубже: describe "xor" $ do ... чтобы дать названия отдельным тестам
         it "xor" $ do
             xor True True `shouldBe` False
             xor True False `shouldBe` True
@@ -26,9 +26,10 @@ main = hspec $ do
         it "find" pending
         it "findLast" pending
         it "mapFuncs" pending
+        it "satisfiesAll" pending
         it "tailNel" pending
         it "lastNel" pending
         it "zipNel" pending
         it "listToNel" pending
         it "nelToList" pending
-    describe "luhn" $ it "" pending
+    describe "luhn" $ it "isLuhnValid" pending
