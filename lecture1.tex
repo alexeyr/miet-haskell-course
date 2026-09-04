@@ -89,7 +89,7 @@
           \begin{itemize}
             \item Переменная даёт имя значению или функции, а не адресу в памяти.
             \item Переменные неизменяемы.
-            \item Типы данных неизменяемы.
+            \item Значения не изменяются после создания.
           \end{itemize}
     \item Выражения лучше инструкций.
           \begin{itemize}
@@ -159,6 +159,7 @@
             ghci> :t True -- команда GHCi
             True :: Bool
           \end{haskell}
+    \item Попробовать онлайн: \url{https://play.haskell.org/}
   \end{itemize}
 \end{frame}
 
@@ -187,7 +188,7 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Вызов функций}
+  \frametitle{Применение функций}
   \begin{itemize}
     \item Вызов (применение) функции пишется без скобок: \haskinline|f x|, \haskinline|foo x y|.
     \item Скобки используются, когда аргументы "--- сложные выражения: \haskinline|f (g x)|
@@ -204,6 +205,25 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Приоритет применения функций}
+  \begin{itemize}
+    \item Применение функции связывает сильнее любого инфиксного оператора:
+          \begin{haskell}
+            ghci> abs (-2) + 3 !\pause!
+            5
+            ghci> abs (-2 + 3) !\pause!
+            1
+            ghci> max 2 3 + 4 !\pause!
+            7
+          \end{haskell}
+    \item \haskinline|abs| возвращает модуль числа; \haskinline|abs (-2) + 3| читается как \haskinline|(abs (-2)) + 3|.
+    \pause
+    \item Без скобок \haskinline|abs -2 + 3| читается как \haskinline|(abs - 2) + 3|: минус означает вычитание.
+    \item Получится ошибка типов: мы пытаемся вычесть число из функции \haskinline|abs|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Определение функций и переменных}
   \begin{itemize}
     \item Определение переменной выглядит как в математике, даже без ключевых слов:
@@ -214,11 +234,13 @@
           \begin{haskell}
             название параметр1 параметр2 = значение
           \end{haskell}
+    \item \haskinline|=| используется в определениях, \haskinline|==| "--- для проверки равенства.
     \item Тело функции это не блок, а одно выражение (но сколь угодно сложное).
           \begin{haskell}
-            ghci> x = sin pi
-            ghci> x !\pause!
-            1.2246063538223773e-16
+            ghci> x = 2 + 3
+            ghci> x
+            5
+            !\pause!
             ghci> square x = x * x
             ghci> square 2
             4
@@ -304,17 +326,18 @@
           \end{haskell}
     \item А может выводиться из контекста:
           \begin{haskell}
-            ghci> :t fromIntegral 2 / (4 :: Double)
-            fromIntegral 2 / (4 :: Double) :: Double
+            ghci> :t fromIntegral x / (4 :: Double)
+            fromIntegral x / (4 :: Double) :: Double
           \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Приведение числовых типов}
+  \frametitle{Приведение числовых типов (справочно)}
   \begin{itemize}
     \item \haskinline|toInteger| переводит любой целочисленный тип \\в \haskinline|Integer|.
-    \item \haskinline|fromInteger| "--- наоборот. Если аргумент слишком велик, возвращает значение по модулю:
+    \item \haskinline|fromInteger| переводит \haskinline|Integer| в любой числовой тип, в том числе \haskinline|Double|.
+    \item При переводе в целые фиксированной разрядности значение может переполниться. Например, в GHC:
           \begin{haskell}
             ghci> fromInteger (2^64) :: Int
             0
@@ -330,7 +353,8 @@
     \item Операции \haskinline|+|, \haskinline|-|, \haskinline|*| "--- как обычно (унарного \haskinline|+| нет).
     \item \haskinline|/| "--- деление \emph{дробных} чисел.
           \begin{itemize}
-            \item Использование \haskinline|/| для целых чисел даст ошибку \ghcinline|No instance... arising from a use of ‘/’|. Нужно сначала использовать \haskinline|fromIntegral|.
+            \item Использование \haskinline|/| для значений целочисленных типов (\haskinline|Int|, \haskinline|Integer|) даст ошибку \ghcinline|No instance... arising from a use of ‘/’|. Нужно сначала использовать \haskinline|fromIntegral|.
+            \item \haskinline|2 / 4| работает, но \haskinline|(2 :: Integer) / 4| даёт ошибку типов.
           \end{itemize}
     \item \haskinline|div| "--- деление нацело
     \item \haskinline|mod| "--- остаток
@@ -355,6 +379,18 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Проверьте себя}
+  \begin{enumerate}
+    \item Предскажите результаты, затем проверьте их в GHCi:
+          \begin{haskell}
+            square 3 + 2
+            square (3 + 2)
+          \end{haskell}
+    \item Определите функцию \haskinline|root4|, которая вычисляет корень 4-й степени из числа (используйте \haskinline|sqrt|). Проверьте \haskinline|root4 16|.
+    \item Пусть \haskinline|x = 3 :: Integer|. Вычислите половину \haskinline|x| как \haskinline|Double| с помощью \haskinline|fromIntegral|.
+  \end{enumerate}
+\end{frame}
 %\begin{frame}
 %    \href{run:./lecture2.pdf}{\beamergotobutton{Следующая лекция}}
 %\end{frame}
