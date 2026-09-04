@@ -36,8 +36,8 @@
 \begin{frame}[fragile]
   \frametitle{Параллелизм: монада \haskinline|Eval|}
   \begin{itemize}
-    \item Модуль \haskinline|Concurrent.Parallel.Strategies| в пакете \hackage{parallel}.
-    \item Тип \haskinline|Eval a| --- монада, где в \haskinline|mx >>= f| значение \haskinline|mx| будет вычислено до СЗНФ перед запуском \haskinline|f|. \pause
+    \item Модуль \haskinline|Control.Parallel.Strategies| в пакете \hackage{parallel}.
+    \item Тип \haskinline|Eval a| --- \enquote{строгая} монада: в \haskinline|mx >>= f| действие \haskinline|mx| выполняется до вызова \haskinline|f|. Но \haskinline|rpar x| не вычисляет \haskinline|x|, а лишь создаёт \enquote{искру} (spark). \pause
     \item Есть функции
           \begin{haskell}
             runEval :: Eval a -> a
@@ -104,6 +104,28 @@
           \end{haskellsmall}
           \pause
     \item Здесь для простоты кода много повторных вычислений!
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Чтобы это работало}
+  \begin{itemize}
+    \item По умолчанию GHC собирает программу с однопоточной средой выполнения, и все \haskinline|rpar| (и \haskinline|forkIO| далее) работают на одном ядре.
+    \item Нужны опция компиляции \ghcinline|-threaded| и опция среды выполнения \ghcinline|+RTS -N| (все ядра) или \ghcinline|-N4|:
+          \begin{ghcismall}
+            ghc -O2 -threaded -rtsopts Fib.hs
+            ./Fib +RTS -N -s
+          \end{ghcismall}
+          (в \ghcinline|package.yaml| лабораторных это \ghcinline|-threaded -rtsopts -with-rtsopts=-N|).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Искры и их цена}
+  \begin{itemize}
+    \item \ghcinline|+RTS -s| печатает статистику искр: \ghcinline|SPARKS: 1000 (900 converted, 0 overflowed, 0 dud, 50 GC'd, 50 fizzled)|. \emph{Converted} "--- выполнены параллельно, \emph{fizzled} "--- главный поток успел вычислить значение сам, \emph{GC'd} "--- результат никому не понадобился.
+          \pause
+    \item Искра дешевле потока ОС, но не бесплатна. \haskinline|parFib| без порога делает $O(\varphi^n)$ искр на $O(1)$ работы каждая и работает \emph{медленнее} последовательного варианта. Обычно: ниже некоторого $n$ переходить на обычную рекурсию, а список делить \haskinline|parListChunk|.
   \end{itemize}
 \end{frame}
 
@@ -239,14 +261,14 @@ withStrategy s x = runEval (s x)
           \begin{haskell}
             spawn par = do
               var <- new
-              fork $ do (x <- par; put var x)
+              fork $ do { x <- par; put var x }
               return var
           \end{haskell}
     \item Параллельный \haskinline|map|:
           \begin{haskell}
             parallelMap :: NFData b => (a -> b) -> [a] -> [b]
             parallelMap f xs = runPar $ do
-              ivars <- mapM (\x -> spawn (pure (f x)) xs
+              ivars <- mapM (\x -> spawn (pure (f x))) xs
               mapM get ivars
           \end{haskell}
           Как и в прошлый раз, создаёт \enquote{поток} для каждого элемента, для простоты кода.
@@ -278,6 +300,15 @@ withStrategy s x = runEval (s x)
     \item \haskinline|forkIO :: IO () -> IO ThreadId| создаёт новый поток, который произведёт данные действия и выйдет, возвращает ссылку на созданный поток.
           \pause
     \item Это так называемый \enquote{зелёный поток}, то есть не поток операционной системы, а похожий по поведению объект виртуальной машины Haskell.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\haskinline|forkIO|: подводные камни}
+  \begin{itemize}
+    \item Когда \haskinline|main| завершается, программа завершается целиком: остальные потоки просто убиваются. Дождаться их "--- ваша забота (\haskinline|MVar| на следующем слайде или \hackage{async}).
+    \item Исключение в потоке \haskinline|forkIO| печатается в \haskinline|stderr| и теряется; в \haskinline|main| оно не попадает.
+    \item Как и для \haskinline|Eval|, второе ядро появится только с \ghcinline|-threaded| и \ghcinline|+RTS -N|; без них зелёные потоки всё равно работают, но по очереди на одном ядре.
   \end{itemize}
 \end{frame}
 
@@ -350,11 +381,42 @@ withStrategy s x = runEval (s x)
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Пакет \hackage{async}}
+  \begin{itemize}
+    \item На практике вместо голых \haskinline|forkIO| и \haskinline|MVar| используют \haskinline|Control.Concurrent.Async|:
+          \begin{haskellsmall}
+            async :: IO a -> IO (Async a)   -- аналог spawn
+            wait  :: Async a -> IO a        -- аналог get
+            withAsync :: IO a -> (Async a -> IO b) -> IO b
+            concurrently :: IO a -> IO b -> IO (a, b)
+            race :: IO a -> IO b -> IO (Either a b)
+            mapConcurrently :: (a -> IO b) -> [a] -> IO [b]
+          \end{haskellsmall}
+    \item \haskinline|wait| перебрасывает исключение из потока в вызывающий, а \haskinline|withAsync|/\haskinline|concurrently| убивают дочерний поток, если родитель завершился (в том числе исключением) "--- потоки не \enquote{утекают}.
+    \item Фибоначчи: \haskinline|(f1, f2) <- concurrently (parFib (n - 1)) (parFib (n - 2))|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Транзакции}
   \begin{itemize}
     \item Понятие транзакций может быть знакомо по базам данных.
     \item Это наборы операций, которые все вместе либо выполняются успешно, либо откатываются.
-    \item В Haskell это позволяет делать монада \haskinline|STM| с операциями над \haskinline|TVar|.
+    \item В Haskell это позволяет делать монада \haskinline|STM| (пакет \hackage{stm}) с операциями над \haskinline|TVar|:
+          \begin{haskellsmall}
+            newTVar :: a -> STM (TVar a)
+            readTVar :: TVar a -> STM a
+            writeTVar :: TVar a -> a -> STM ()
+            retry :: STM a   -- ждать, пока какая-то TVar не изменится
+            atomically :: STM a -> IO a
+          \end{haskellsmall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Транзакции (2)}
+  \begin{itemize}
+    \item \haskinline|atomically| выполняет транзакцию целиком: другие потоки не видят промежуточных состояний, а при конфликте транзакция повторяется.
     \item Типы гарантируют, что у действия в монаде \haskinline|STM| не может быть побочных эффектов, кроме изменения значений \haskinline|TVar|.
     \item Обычно проще написать правильный код, который работает с несколькими \haskinline|TVar|, чем с \haskinline|MVar|, так как можно не беспокоиться о видимости промежуточных состояний.
   \end{itemize}

@@ -16,7 +16,7 @@ main = hspec $ do
             max3 1 3 2 `shouldBe` 3
             max3 5 2 5 `shouldBe` 5
         it "median3" pending
-        it "rbgToCmyk" pending
+        it "rgbToCmyk" pending
         it "geomProgression" pending
         it "coprime" pending
     describe "lists" $ do

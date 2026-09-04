@@ -50,7 +50,7 @@ mapFuncs fs x = error "todo"
 -- satisfiesAll принимает список предикатов (функций, возвращающих Bool) preds
 -- и возвращает True, если все они выполняются (т.е. возвращают True) для x.
 -- Полезные стандартные функции: and, all.
--- satisfiesAll [even, \x -> x rem 5 == 0] 10 == True
+-- satisfiesAll [even, \x -> x `rem` 5 == 0] 10 == True
 -- satisfiesAll [] 4 == True (кстати, почему?)
 satisfiesAll :: [a -> Bool] -> a -> Bool
 satisfiesAll preds x = error "todo"

@@ -43,8 +43,8 @@
           \begin{haskell}
             instance Eq IpAddress where
                 -- (==) :: IpAddress -> IpAddress -> Bool
-                Ip4Address x == Ip4Address y = x == y
-                Ip6Address x == Ip6Address y = x == y
+                IPv4 x == IPv4 y = x == y
+                IPv6 x == IPv6 y = x == y
                 _ == _ = False
           \end{haskell}
           \only<3>{\item Рекурсивно ли это определение?}
@@ -67,7 +67,7 @@
           \begin{haskell}
             foo [] = True
             foo [x] = True
-            foo (x : tail@(y : _)) = x == y && foo tail
+            foo (x : rest@(y : _)) = x == y && foo rest
           \end{haskell}
           Какой у неё тип (и смысл)? \pause
     \item \haskinline|foo :: Eq a => [a] -> Bool| \pause
@@ -178,7 +178,7 @@
             read :: Read a => String -> a
           \end{haskell}
           \pause
-    \item Для нас то, что за многоточиями, неважно, но подробности описаны \href{http://hackage.haskell.org/package/base-4.10.1.0/docs/Prelude.html#g:22}{в документации}.\pause
+    \item Для нас то, что за многоточиями, неважно, но подробности описаны \href{https://hackage.haskell.org/package/base/docs/Prelude.html#g:22}{в документации}.\pause
     \item \haskinline|read| должна быть обратной к \haskinline|show|.
     \item Заметьте полиморфизм \haskinline|read| по возвращаемому типу:
           \begin{haskell}
@@ -283,7 +283,7 @@
       fromIntegral :: (Integral a, Num b) => a -> b
       realToFrac :: (Real a, Fractional b) => a -> b
     \end{haskell}
-    \item \href{http://hackage.haskell.org/package/base-4.16.4.0/docs/Prelude.html#g:7}{Полная документация.}
+    \item \href{https://hackage.haskell.org/package/base/docs/Prelude.html#g:7}{Полная документация.}
   \end{itemize}
 \end{frame}
 
@@ -308,17 +308,20 @@
 \begin{frame}[fragile]
   \frametitle{Алгебраические классы}
   \begin{itemize}
-    \item Для разных структур из общей алгебры или линейной алгебры можно определить соответствующие им классы. В стандартной библиотеке есть
-    \item моноиды в \haskinline|Prelude|:
+    \item Для разных структур из общей алгебры или линейной алгебры можно определить соответствующие им классы. В \haskinline|Prelude| есть
+    \item полугруппы (ассоциативная операция):
           \begin{haskell}
-            class Monoid a where
-                mempty :: a
-                mappend :: a -> a -> a
-                mconcat :: [a] -> a
-                
-            x <> y = mappend x y -- синоним для mappend
+            class Semigroup a where
+                (<>) :: a -> a -> a
           \end{haskell}
-    \item и полугруппы в \href{https://hackage.haskell.org/package/base/docs/Data-Semigroup.html}{\haskinline|Data.Semigroup|}. \pause
+    \item и моноиды (полугруппа с нейтральным элементом):
+          \begin{haskell}
+            class Semigroup a => Monoid a where
+                mempty :: a
+                mappend :: a -> a -> a -- = (<>), устарело
+                mconcat :: [a] -> a    -- = foldr (<>) mempty
+          \end{haskell}
+    \item Так стало с GHC 8.4; в старом коде и книгах \haskinline|mappend| "--- основной метод, а \haskinline|Semigroup| нет вообще. \pause
     \item Ещё несколько из теории категорий, но это предмет будущих лекций.
   \end{itemize}
 \end{frame}
@@ -411,7 +414,7 @@
             \item Значения с одинаковым конструктором равны, если равны все их поля (или полей нет);
             \item Значения с разными конструкторами не равны;
           \end{itemize}
-    \item Почти, но не все: \pause для рациональных чисел не так.\pause
+    \item Почти, но не все: \pause например, для \haskinline|Data.Set| и \haskinline|Data.Map| (два сбалансированных дерева с одними и теми же элементами могут иметь разную форму) или для типов с кэшированными полями.\pause
     \item Чтобы не писать такие определения каждый раз, после \haskinline|data| или \haskinline|newtype| ставят \haskinline|deriving (Eq)|.
     \item \haskinline|deriving| также работает для \haskinline|Ord|, \haskinline|Show|, \haskinline|Read|, \haskinline|Enum| и \haskinline|Bounded|.
     \item Порядок на значениях для \haskinline|Ord|, \haskinline|Enum| и \haskinline|Bounded| задаётся порядком конструкторов в определении.\pause
@@ -426,19 +429,21 @@
     \item А что делать, если осмысленных экземпляров больше одного?
     \item Например, числа "--- моноиды по операциям \haskinline|+| и \haskinline|*|.\pause
     \item В таком случае мы можем завернуть существующий тип в \haskinline|newtype| и определить для нового:
-          \begin{haskellsmall}
+          \begin{haskelltiny}
             newtype Sum a = Sum { getSum :: a }
                 deriving (Eq, Ord, Read, Show, Bounded, Num)
 
+            instance Num a => Semigroup (Sum a) where
+                Sum x <> Sum y = Sum (x + y)
             instance Num a => Monoid (Sum a) where
-                mempty = Sum 0
-                mappend (Sum x) (Sum y) = Sum (x + y) !\pause!
+                mempty = Sum 0 !\pause!
 
             newtype Product a = Product { getProduct :: a }
                 deriving (Eq, Ord, Read, Show, Bounded, Num)
 
+            instance Num a => Semigroup (Product a) where ...
             instance Num a => Monoid (Product a) where ...
-          \end{haskellsmall}
+          \end{haskelltiny}
   \end{itemize}
 \end{frame}
 
@@ -477,9 +482,9 @@
   \begin{itemize}
     \item В стандартном Haskell есть несколько ограничений на объявления классов типов и экземпляров.
     \item А в GHC расширений, которые их снимают.
-    \item Все перечислять не будем, они есть в  \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#class-declarations}{User's Guide, раздел 10.8}.
+    \item Все перечислять не будем, они есть в \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/instances.html}{User's Guide (Instance declarations and resolution)}.
     \item Сейчас достаточно знать, что если что-то не компилируется из-за отсутствия \haskinline|-XFlexibleInstances|, \haskinline|-XFlexibleContexts| или \haskinline|-XInstanceSigs|, их спокойно можно включить.
-    \item \haskinline|-XUndecidableInstances|, \haskinline|-XOverlappingInstances|, \haskinline|-XIncoherentInstances| опаснее, но в этом курсе в любом случае не понадобятся.
+    \item \haskinline|-XUndecidableInstances| и прагмы \haskinline|{-# OVERLAPPING #-}|/\haskinline|{-# INCOHERENT #-}| у отдельных экземпляров (расширения \haskinline|OverlappingInstances|/\haskinline|IncoherentInstances| устарели с GHC 7.10) опаснее, но в этом курсе в любом случае не понадобятся.
   \end{itemize}
 \end{frame}
 

@@ -26,7 +26,7 @@
   \begin{itemize}
     \item Исполняемая программа в Haskell задаётся значением
           \haskinline|main :: IO a| (почти всегда \haskinline|IO ()|).
-    \item Это аналог \mintinline{c}|int main(int argc, char** argv)| в C, \mintinline{java}|public static void main(char[] args)| в Java и т.д.
+    \item Это аналог \mintinline{c}|int main(int argc, char** argv)| в C, \mintinline{java}|public static void main(String[] args)| в Java и т.д.
     \item Соответственно, есть доступ к аргументам командной строки и возможность указать код выхода:
     \item \haskinline|System.Environment.getArgs :: IO [String]|. Там же есть функции для чтения переменных окружения.
     \item \haskinline|System.Exit.exitWith :: ExitCode -> IO a|.
@@ -58,6 +58,69 @@
                 else
                   pure ()  -- или exitSuccess
           \end{haskellsmall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Ловушки консоли: буферизация}
+  \begin{itemize}
+    \item В скомпилированной программе \haskinline|stdout| буферизуется построчно (а при перенаправлении в файл или канал "--- блоками). Поэтому
+          \begin{haskell}
+            putStr "Введите имя: "
+            name <- getLine
+          \end{haskell}
+          не покажет приглашение, пока пользователь не нажмёт Enter.
+          \pause
+    \item Решения: \haskinline|hFlush stdout| после \haskinline|putStr| или \haskinline|hSetBuffering stdout NoBuffering| в начале \haskinline|main| (модуль \haskinline|System.IO|).
+    \item В GHCi и \ghcinline|stack repl| этого не видно: там буферизация отключена. Проверяйте \ghcinline|stack run|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Ловушки консоли: кодировки}
+  \begin{itemize}
+    \item Кодировка \haskinline|stdin|/\haskinline|stdout| и \haskinline|readFile|/\haskinline|writeFile| берётся из локали, а \emph{не} UTF-8.
+    \item Под Windows с кодовой страницей 866 или 1251 вывод кириллицы может закончиться ошибкой вроде \ghcinline|<stdout>: hPutChar: invalid argument (invalid character)| или крякозябрами.
+          \pause
+    \item Решение: \ghcinline|chcp 65001| перед запуском и/или в программе
+          \begin{haskell}
+            hSetEncoding stdout utf8
+            hSetEncoding stdin utf8
+          \end{haskell}
+    \item Для файлов "--- \haskinline|hSetEncoding h utf8| после \haskinline|openFile| (или \haskinline|withFile|).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Изменяемые переменные: \haskinline|IORef|}
+  \begin{itemize}
+    \item Модуль \haskinline|Data.IORef|:
+          \begin{haskell}
+            newIORef :: a -> IO (IORef a)
+            readIORef :: IORef a -> IO a
+            writeIORef :: IORef a -> a -> IO ()
+            modifyIORef' :: IORef a -> (a -> a) -> IO ()
+          \end{haskell}
+    \item Используйте \haskinline|modifyIORef'| (строгий), а не \haskinline|modifyIORef|: последний накапливает отложенные вычисления ровно как \haskinline|foldl| в лекции 8.
+    \item Для нескольких потоков нужны \haskinline|atomicModifyIORef'|, \haskinline|MVar| или \haskinline|STM| (лекция 13).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Исключения (кратко)}
+  \begin{itemize}
+    \item Модуль \haskinline|Control.Exception|:
+          \begin{haskellsmall}
+            throwIO :: Exception e => e -> IO a
+            catch   :: Exception e => IO a -> (e -> IO a) -> IO a
+            try     :: Exception e => IO a -> IO (Either e a)
+            evaluate :: a -> IO a
+            bracket :: IO a -> (a -> IO b) -> (a -> IO c) -> IO c
+          \end{haskellsmall}
+    \item Тип исключения нужно указывать: \haskinline|try @IOException (readFile path)|. Ловить всё (\haskinline|SomeException|) "--- обычно плохая идея.
+          \pause
+    \item Ленивость: \haskinline|try (pure (div 1 0))| \emph{не} поймает ошибку "--- значение ещё не вычислено. Нужно \haskinline|try (evaluate (div 1 0))|.
+    \item \haskinline|error| и неполные сопоставления тоже исключения (\haskinline|ErrorCall|, \haskinline|PatternMatchFail|), но лучше их не ловить, а не допускать.
   \end{itemize}
 \end{frame}
 
@@ -133,6 +196,15 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Строгий ввод-вывод}
+  \begin{itemize}
+    \item С GHC 9.0 в \haskinline|System.IO| есть строгие варианты \haskinline|readFile'|, \haskinline|hGetContents'|, \haskinline|getContents'|: они читают всё сразу, и проблем с закрытием файла у них нет.
+    \item Почти всегда лучше использовать их (или \haskinline|Text|/\haskinline|ByteString| со следующего слайда, чьи \haskinline|readFile| тоже строгие).
+    \item Ленивый ввод-вывод остаётся полезным для потоковой обработки больших файлов, но для этого есть и более предсказуемые библиотеки (\hackage{conduit}, \hackage{streamly}).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{\haskinline|ByteString| и \haskinline|Text|}
   \begin{itemize}
     \item Мы знаем, что \haskinline|String| занимает очень много места в памяти, что ухудшает и время работы.
@@ -146,25 +218,24 @@
 \begin{frame}[fragile]
   \frametitle{Случайные значения}
   \begin{itemize}
-    \item Модуль \haskinline|System.Random| содержит класс
+    \item Модуль \haskinline|System.Random| (пакет \hackage{random}) содержит класс
     \item
           \begin{haskellsmall}
             class RandomGen g where
-              next :: g -> (Int, g)
+              genWord64 :: g -> (Word64, g)
               split :: g -> (g, g)
-              genRange :: g -> (Int, Int)
-              genRange _ = (minBound, maxBound)
+              -- также genWord8/16/32; next устарел
           \end{haskellsmall}
-          описывающий генераторы случайных \haskinline|Int|.
+          описывающий (чистые) генераторы псевдослучайных чисел.
     \item Есть тип \haskinline|StdGen| и \haskinline|instance RandomGen StdGen|.
-    \item Глобальный генератор живёт в \haskinline|IORef|:
+    \item Глобальный генератор живёт в \haskinline|IORef| (в документации типы чуть общее):
           \begin{haskellsmall}
             getStdGen :: IO StdGen
             setStdGen :: StdGen -> IO ()
             newStdGen :: IO StdGen  -- применяет split к getStdGen
             getStdRandom :: (StdGen -> (a, StdGen)) -> IO a
           \end{haskellsmall}
-    \item Типы \haskinline|next| и \haskinline|getStdRandom| могут напомнить про \haskinline|State| и не зря!
+    \item Типы \haskinline|genWord64| и \haskinline|getStdRandom| могут напомнить про \haskinline|State| и не зря!
     \item Реализуем \haskinline|newStdGen| и \haskinline|getStdRandom|.
   \end{itemize}
 \end{frame}
@@ -185,7 +256,7 @@
           \begin{haskell}
             getStdRandom f = do 
               currGen <- getStdGen
-              (result, newGen) = f currGen
+              let (result, newGen) = f currGen
               setStdGen newGen
               pure result
           \end{haskell}
@@ -216,6 +287,7 @@
             randomIO :: Random a => IO a
           \end{haskell}
           используют глобальный генератор.
+    \item С \hackage{random} 1.2 \haskinline|Random| оставлен для совместимости; новые классы "--- \haskinline|Uniform| и \haskinline|UniformRange| (функции \haskinline|uniform|, \haskinline|uniformR|).
   \end{itemize}
 \end{frame}
 

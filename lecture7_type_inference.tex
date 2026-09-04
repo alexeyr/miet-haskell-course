@@ -410,11 +410,34 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{А как же классы типов?}
+  \begin{itemize}
+    \item Мы выводили типы без ограничений, но \haskinline|1 + x| требует \haskinline|Num|.
+          \pause
+    \item Расширение системы Хиндли-Милнера "--- \emph{квалифицированные типы}: кроме подстановки $\phi$ накапливается набор ограничений; при обобщении в \haskinline|let| они попадают в контекст: \haskinline|Num a => a -> a|.
+          \pause
+    \item Реализация "--- передача \enquote{словарей}: \haskinline|Num a => a -> a| компилируется примерно в \haskinline|NumDict a -> a -> a|.
+          \pause
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Неоднозначные типы и умолчания}
+  \begin{itemize}
+    \item Проблема: если переменная типа осталась \emph{только} в ограничениях, тип неоднозначен. Какой тип у \haskinline|read s| в \haskinline|show (read s)|?
+          \pause
+    \item Для числовых классов есть правило умолчания (defaulting): пробуются \haskinline|Integer|, затем \haskinline|Double|. Отсюда предупреждение \ghcinline|Defaulting the following constraints to type 'Integer'| и то, что \haskinline|2^64| в GHCi "--- \haskinline|Integer|, а не \haskinline|Int|.
+          \pause
+    \item В GHCi правила расширены (\haskinline|ExtendedDefaultRules|, для прочих классов подставляется \haskinline|()|), поэтому \haskinline|print []| там работает, а в файле "--- ошибка \ghcinline|Ambiguous type variable|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
     \item Более известна альтернатива $\J$, избегающая \enquote{глобальной} $\phi$ "--- алгоритм $\mathcal{W}$. Вы можете легко найти его описания и реализации в Интернете.
     \item \href{http://dev.stephendiehl.com/fun/006_hindley_milner.html}{Глава Hindley-Milner Inference в Write You a Haskell}
-    \item \href{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.65.7733}{Algorithm W Step by Step}
+    \item \href{https://github.com/mgrabmueller/AlgorithmW}{Algorithm W Step by Step}
     \item Реализация системы типов всего (!) стандарта Haskell 98 с выводом, основанная на $\J$, есть в \href{https://gist.github.com/chrisdone/0075a16b32bfd4f62b7b}{Typing Haskell in Haskell}.
     \item \href{https://compsciclub.ru/courses/types/2019-spring/classes/}{Курс лекций В.~Н.~Брагилевского "Вывод типов от Хиндли — Милнера до GHC 8.8"  (есть видео)}
     \item Реализации на Haskell обычно используют монады, но это не должно сильно осложнить понимание.

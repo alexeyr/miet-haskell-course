@@ -4,9 +4,9 @@ module FunctorsMonads where
 -- чтобы нам не мешали их существующие экземпляры
 
 -- документация на стандартные версии:
--- https://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Functor.html
--- https://hackage.haskell.org/package/base-4.12.0.0/docs/Control-Applicative.html
--- https://hackage.haskell.org/package/base-4.12.0.0/docs/Control-Monad.html
+-- https://hackage.haskell.org/package/base/docs/Data-Functor.html
+-- https://hackage.haskell.org/package/base/docs/Control-Applicative.html
+-- https://hackage.haskell.org/package/base/docs/Control-Monad.html
 -- заметьте, что посмотрев в источники, можно взять реализацию оттуда;
 -- постарайтесь этого не делать.
 

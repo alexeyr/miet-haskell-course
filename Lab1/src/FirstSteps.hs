@@ -36,8 +36,8 @@ data CMYK = CMYK { cyan :: Double, magenta :: Double, yellow :: Double, black ::
 
 -- Заметьте, что (/) для Int не работает, и неявного преобразования Int в Double нет.
 -- Это преобразование производится с помощью функции fromIntegral.
-rbgToCmyk :: RGB -> CMYK
-rbgToCmyk color = error "todo"
+rgbToCmyk :: RGB -> CMYK
+rgbToCmyk color = error "todo"
 
 -- geomProgression b q n находит n-й (считая с 0) член 
 -- геометрической прогрессии, нулевой член которой -- b, 

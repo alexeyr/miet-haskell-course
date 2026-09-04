@@ -132,7 +132,7 @@
           \begin{haskell}
             newtype ConstInt a = ConstInt Int
             fmap f (ConstInt x) = ConstInt x
-            pure _ = 0
+            pure _ = ConstInt 0
             ConstInt x <*> ConstInt y = ConstInt (x + y)
           \end{haskell}
     \item Легко увидеть, что \haskinline|pure x >>= f| $\equiv$ \haskinline|f x| не может выполняться ни для какого определения \haskinline|>>=|: правая часть зависит от \haskinline|x|, а левая нет.
@@ -216,7 +216,7 @@
   \begin{itemize}[<+->]
     \item Кроме уже виденных \haskinline|=<<| и \haskinline|>=>|, в \haskinline|Prelude| и \haskinline|Control.Monad| есть ещё функции, которые работают для любых монад (или аппликативов).
     \item \haskinline|join :: Monad m => m (m a) -> m a|. Эту функцию можно было бы взять как базовую и выразить \haskinline|>>=| через неё.
-    \item \haskinline|sequence :: Monad m => [m a] -> m [a]|. На самом деле, в библиотеке более общий вариант.
+    \item \haskinline|sequence :: Monad m => [m a] -> m [a]|. В библиотеке более общий вариант: \haskinline|sequenceA| из \haskinline|Traversable|.
     \item \haskinline[fontsize=\small]|mapM :: Monad m => (a -> m b) -> [a] -> m [b]|
     \item
           \begin{haskell}
@@ -277,6 +277,19 @@
             modify f = do x <- get
                           put (f x)
           \end{haskellsmall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Монада \haskinline|State| в библиотеках}
+  \begin{itemize}
+    \item В библиотеках \hackage{transformers} и \hackage{mtl} (модуль \haskinline|Control.Monad.State|) \haskinline|State s| определён как \haskinline|StateT s Identity| (трансформеры "--- в лекции 14).
+    \item Поэтому \emph{конструктора} \haskinline|State| там нет: вместо него функция
+          \begin{haskell}
+            state :: (s -> (a, s)) -> State s a
+          \end{haskell}
+    \item \haskinline|runState|, \haskinline|get|, \haskinline|put|, \haskinline|modify| есть, а также \haskinline|evalState| (только результат) и \haskinline|execState| (только состояние).
+    \item Типичная ошибка: написать \haskinline|State (\s -> ...)| после \haskinline|import Control.Monad.State| и получить \ghcinline|Data constructor not in scope: State|.
   \end{itemize}
 \end{frame}
 

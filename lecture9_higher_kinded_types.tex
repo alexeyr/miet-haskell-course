@@ -27,7 +27,7 @@
             \item \haskinline!Shape! (\haskinline|type Shape f = f ()|)
                   \pause
           \end{itemize}
-    \item В стандартном Haskell все роды строятся из \haskinline|*| и \haskinline|->|, в GHC всё сложнее (\href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#kind-polymorphism}{Kind polymorphism}, \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#unboxed-types-and-primitive-operations}{Unboxed type kinds}, \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#datatype-promotion}{Datatype promotion},  \href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#the-constraint-kind}{The \haskinline|Constraint| kind}).
+    \item В стандартном Haskell все роды строятся из \haskinline|*| и \haskinline|->|, в GHC всё сложнее (\href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/poly_kinds.html}{Kind polymorphism}, \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/primitives.html}{Unboxed type kinds}, \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/data_kinds.html}{Datatype promotion},  \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/constraint_kind.html}{The \haskinline|Constraint| kind}).
   \end{itemize}
 \end{frame}
 
@@ -168,7 +168,7 @@ fmap (g . h)    ==!\pause! fmap g . fmap h
           \end{haskell}
           \pause \haskinline|g :: a -> b| не к чему применить: у нас нет ничего типа \haskinline|a|!
           \pause
-    \item Общее правило: \haskinline|instance Functor F| можно определить, если \haskinline|a| не входит в определение \haskinline|F a| слева от нечётного числа \haskinline|->| (\href{https://downloads.haskell.org/~ghc/8.6.3/docs/html/users_guide/glasgow_exts.html#deriving-functor-instances}{объяснение}).
+    \item Общее правило: \haskinline|instance Functor F| можно определить, если \haskinline|a| не входит в определение \haskinline|F a| слева от нечётного числа \haskinline|->| (\href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/deriving_extra.html#deriving-functor-instances}{объяснение}).
           \pause
     \item По этому правилу, функтор ли ниже?
           \begin{haskell}
@@ -350,7 +350,7 @@ fmap (g . h)    ==!\pause! fmap g . fmap h
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Пример неаппликативного функтора}
+  \frametitle{Аппликативный функтор с ограничением}
   \begin{itemize}
     \item
           \begin{haskell}
@@ -386,7 +386,7 @@ fmap (g . h)    ==!\pause! fmap g . fmap h
             when :: Applicative f => Bool -> f () -> f ()    
             sequenceAL :: Applicative f => [f a] -> f [a]
           \end{haskell}
-    \item У второй есть обобщённая версия \href{http://hackage.haskell.org/package/base/docs/Data-Traversable.html#v:sequenceA}{\haskinline|sequenceA|}, определяющая ещё один класс \haskinline|Traversable|.
+    \item У второй есть обобщённая версия \href{http://hackage.haskell.org/package/base/docs/Data-Traversable.html#v:sequenceA}{\haskinline|sequenceA|} из класса \haskinline|Traversable| (через два слайда).
   \end{itemize}
 \end{frame}
 
@@ -416,20 +416,53 @@ fmap (g . h)    ==!\pause! fmap g . fmap h
   \includegraphics[width=\linewidth]{Typeclassopedia-diagram.png}
 \end{frame}
 
-% TODO восстановить слайды
-%\begin{frame}[fragile]
-%\frametitle{\haskinline|Foldable| и \haskinline|Traversable|}
-%\begin{itemize}
-%    \item TODO
-%\end{itemize}
-%\end{frame}
-%
-%\begin{frame}[fragile]
-%\frametitle{Вывод \haskinline|Functor|, \haskinline|Foldable|, \haskinline|Traversable|}
-%\begin{itemize}
-%    \item TODO
-%\end{itemize}
-%\end{frame}
+\begin{frame}[fragile]
+  \frametitle{\haskinline|Foldable|}
+  \begin{itemize}
+    \item В лекции 6 мы видели свёртки списков, \haskinline|Maybe| и деревьев. Обобщение "--- класс
+          \begin{haskellsmall}
+            class Foldable t where
+              foldr   :: (a -> b -> b) -> b -> t a -> b
+              foldMap :: Monoid m => (a -> m) -> t a -> m
+              -- достаточно определить одну из двух
+              toList, length, null, elem, sum, foldl', ...
+          \end{haskellsmall}
+    \item Поэтому у \haskinline|length|, \haskinline|null|, \haskinline|sum|, \haskinline|elem| в \haskinline|Prelude| \enquote{более общие типы, которые нам пока не были нужны}.
+          \pause
+    \item \haskinline|foldMap f = foldr (\x acc -> f x <> acc) mempty|, \\ \haskinline|sum = getSum . foldMap Sum| (вот и моноиды из лекции 4).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\haskinline|Foldable|: ловушки и \haskinline|deriving|}
+  \begin{itemize}
+    \item Ловушка: \haskinline|length (1, 2) == 1|, \haskinline|maximum (Just 3) == 3| "--- экземпляры для \haskinline|((,) c)| и \haskinline|Maybe| \enquote{видят} только последний параметр типа.
+          \pause
+    \item \haskinline|deriving (Functor, Foldable)| работает для большинства типов (расширения \haskinline|DeriveFunctor|, \haskinline|DeriveFoldable|; в GHC2021 включены).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\haskinline|Traversable|}
+  \begin{itemize}
+    \item \haskinline|sequenceAL| обобщается со списков на любую структуру:
+          \begin{haskelltiny}
+            class (Functor t, Foldable t) => Traversable t where
+              traverse  :: Applicative f => (a -> f b) -> t a -> f (t b)
+              sequenceA :: Applicative f => t (f a) -> f (t a)
+              -- traverse f = sequenceA . fmap f;  sequenceA = traverse id
+          \end{haskelltiny}
+    \item \haskinline|traverse| "--- \enquote{\haskinline|map| с эффектами} и главная причина, по которой аппликативные функторы нужны на практике:
+          \begin{haskellsmall}
+            ghci> traverse readMaybe ["1", "2"] :: Maybe [Int]
+            Just [1,2]
+            ghci> traverse readMaybe ["1", "x"] :: Maybe [Int]
+            Nothing
+          \end{haskellsmall}
+          \pause
+    \item \haskinline|deriving (Functor, Foldable, Traversable)| тоже работает; законы "--- в документации \haskinline|Data.Traversable|.
+  \end{itemize}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}

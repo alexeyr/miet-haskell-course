@@ -128,8 +128,8 @@
           \end{haskell}
     \item И ещё две в \haskinline|Data.Function|:
           \begin{haskell}
-            (&) = flip (.)
-            (&) ::!\pause! (a -> b) -> (b -> c) -> (a -> c)
+            (&) :: a -> (a -> b) -> b
+            x & f =!\pause! f x   -- то есть (\&) = flip (\$)
 
             on :: (b -> b -> c) -> (a -> b) -> 
                 (a -> a -> c)
@@ -173,7 +173,7 @@
           \end{haskell}
           для определения функций и \haskinline|foo (1, 2)| для вызова.\pause
     \item Но Haskell здесь следует традиции $\lambda$-исчисления.\pause
-    \item Эти подходы эквивалентны, так как множества $A \times B \to C$ и $A \to (B \to C)$ всегда изоморфны \pause ($C^{A \cdot B} = C^{B^A}$).
+    \item Эти подходы эквивалентны, так как множества $A \times B \to C$ и $A \to (B \to C)$ всегда изоморфны \pause ($C^{A \cdot B} = (C^B)^A$).
     \item В Haskell этот изоморфизм реализуют функции\pause
           \begin{haskell}
             curry :: ((a, b) -> c) -> a -> b -> c
@@ -247,7 +247,7 @@
     \item Рассмотрим два определения
           \begin{haskell}
             foo' x = foo x
-            -- или foo' = \x -> foo x 
+            -- или foo' = \textbackslash x -> foo x 
           \end{haskell}
     \item \haskinline|foo' y == foo y|, какое бы \haskinline|y| (и \haskinline|foo|) мы не взяли.\pause
     \item Поэтому мы можем упростить определение:
@@ -302,7 +302,7 @@
     \item Опять же, не перестарайтесь:
           \begin{haskell}
             > pl \x y -> compare (f x) (f y)
-            ((. f) . compare .)
+            (. f) . compare . f
           \end{haskell}
           \pause
     \item В языках семейств Forth и APL бесточечный стиль является основным.

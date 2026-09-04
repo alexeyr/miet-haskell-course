@@ -162,7 +162,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
           \haskinline|(a, b)| (или \haskinline|(,) a b|),\\ \haskinline|(a, b, c)| (или \haskinline|(,,) a b c|) и т.д.
     \item Синтаксис значений и образцов для них аналогичный:
           \haskinline|(True, Just 'a') :: |\pause\haskinline|(Bool, Maybe Char)|.
-    \item Максимальный размер 62.
+    \item Максимальный размер в GHC "--- 64 (стандарт языка требует поддержки только до 15).
   \end{itemize}
 \end{frame}
 
@@ -242,7 +242,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
           \begin{haskell}
             ghci> foo (_, x, y) = (y, x, x)
             ghci> :t foo !\pause!
-            id :: (a1, c, a2) -> (a2, c, c) 
+            foo :: (a1, c, a2) -> (a2, c, c) 
             -- или (a, b, c) -> (c, b, b)
           \end{haskell}
     \item \haskinline|Just :: a -> Maybe a|
@@ -353,7 +353,6 @@ ghci> googleDns = IPv4 "8.8.8.8"
             ghci> :set -XOverloadedRecordDot -XNamedFieldPuns -XRecordWildCards
             ghci> aPoint.xCoord
             0.0 !\pause!
-            ghci> :set 
             ghci> f (Point { xCoord, yCoord }) = xCoord + yCoord
             ghci> g (Point { .. }) = xCoord + yCoord
           \end{haskellsmall}

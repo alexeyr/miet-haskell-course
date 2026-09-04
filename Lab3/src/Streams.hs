@@ -140,13 +140,13 @@ instance Monad Stream where
     -- xs >>= f = join ... where join = ...
     (>>=) = undefined
 
--- https://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Foldable.html
+-- https://hackage.haskell.org/package/base/docs/Data-Foldable.html
 instance Foldable Stream where
     -- достаточно определить одну из них
     -- foldr = undefined
     -- foldMap = undefined
 
--- https://hackage.haskell.org/package/base-4.12.0.0/docs/Data-Traversable.html
+-- https://hackage.haskell.org/package/base/docs/Data-Traversable.html
 instance Traversable Stream where
     -- достаточно определить одну из них
     -- traverse = undefined
