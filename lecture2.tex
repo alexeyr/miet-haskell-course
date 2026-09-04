@@ -28,9 +28,9 @@
   \end{itemize}
 \end{frame}
 \begin{frame}[fragile]
-  \frametitle{Правило преобразования отступов}
+  \frametitle{Преобразование отступов: основные случаи}
   \begin{itemize}
-    \item Если после ключевых слов \haskinline|where|, \haskinline|let|, \haskinline|do|, \haskinline|of| нет открывающей фигурной скобки \haskinline|{|\footnote{Если она есть, то правило перестаёт действовать до соответствующей ей закрывающей.}, то такая скобка вставляется и начинается новый блок.
+    \item Если после ключевых слов \haskinline|where|, \haskinline|let|, \haskinline|do|, \haskinline|of| нет открывающей фигурной скобки \haskinline|{|\footnote{Если она есть, в этом блоке разделители задаются явно.}, то такая скобка вставляется и начинается новый блок.
     \item Его базовый отступ "--- столбец, содержащий следующий непробельный символ.
     \item После этого каждая строка, которая начинается:
           \begin{itemize}
@@ -38,6 +38,7 @@
             \item правее: продолжает предыдущую, перед ней ничего не ставится.
             \item левее: блок закончился, перед ней ставится \haskinline|}| (одновременно может закончиться несколько блоков).
           \end{itemize}
+    \item Блок может закончиться и по синтаксису: в \haskinline|let x = 1 in x| он закрывается перед \haskinline|in|.
   \end{itemize}
 \end{frame}
 
@@ -59,7 +60,7 @@
           \end{haskell}
     \item Тип \haskinline|условия| обязательно \haskinline|Bool|.
     \item Типы \haskinline|выражения1| и \haskinline|выражения2| должны совпадать.
-    \item Это же и тип всего  \haskinline|if ... then ... else ...|
+    \item Это же и тип всего \haskinline|if ... then ... else ...|.
     \item Ближе к \haskinline|?:|, чем к \haskinline|if| в C-подобных языках.
   \end{itemize}
 \end{frame}
@@ -67,7 +68,7 @@
 \begin{frame}[fragile]
   \frametitle{Сопоставление с образцом}
   \begin{itemize}
-    \item Синтаксис \haskinline|case|: \\
+    \item Синтаксис \haskinline|case|:
           \begin{haskell}
             case выражение of 
                 образец1 -> выражение1 
@@ -76,10 +77,9 @@
     \item Образец это \enquote{форма} для значений типа, которая может содержать несвязанные переменные. Для конкретного значения он либо подходит (и связывает эти переменные), либо не подходит.
     \item Процедура вычисления:
           \begin{itemize}
-            \item Вычислить значение \haskinline|выражения|.
-            \item Сопоставить его с каждым образцом по очереди.
+            \item Сопоставлять \haskinline|выражение| с образцами по порядку, вычисляя его по мере необходимости.
             \item Если первым подошёл \haskinline|образецN|, вычислить \haskinline|выражениеN| и вернуть его значение.
-            \item Если ни один не подошёл, выкинуть ошибку.
+            \item Если ни один не подошёл, выкинуть ошибку. С \ghcinline|-Wall| (как в лабораторных) GHC предупредит о такой возможности ещё при компиляции.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -91,7 +91,7 @@
     \item Аналогично \haskinline|LT|, \haskinline|EQ| и \haskinline|GT| для \haskinline|Ordering|, а числовые литералы для числовых типов.
     \item Переменная "--- образец для любого типа, который подходит для любого значения.
           \begin{itemize}
-            \item В Haskell все переменные в образцах \enquote{свежие} и перекрывают видимые снаружи переменные с тем же названием.
+            \item В Haskell все переменные в образцах \enquote{свежие} и перекрывают видимые снаружи переменные с тем же названием. С \ghcinline|-Wall| GHC предупреждает о таком перекрытии.
           \end{itemize}
     \item \haskinline|_| тоже подходит для любого значения любого типа и означает, что это значение не важно.
     \item Образцы похожи на выражения, но ими не являются: это новая синтаксическая категория!
@@ -143,47 +143,23 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Многоветвенные \haskinline|if|}
-    \begin{itemize}
-      \item Цепочка \haskinline|if ... else if ...|, оформленная по правилам отступа, напоминает лестницу:
-            \begin{haskell}
-              if условие1
-                  then результат1
-                  else if условие2
-                      then результат2
-                      else результат3
-            \end{haskell}
-    \item С расширением \haskinline|MultiWayIf| можем написать:
-          \begin{haskell}
-            if | условие1 -> результат1
-               | условие2 -> результат2
-               | otherwise -> результат3
-          \end{haskell}
-    \item Это можно сделать и с \haskinline|case| без расширений: \only<1>{как?} \pause
-          \begin{haskell}
-            case () of _ | условие1 -> ...
-          \end{haskell}
-    \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
   \frametitle{Определение функций по случаям}
   \begin{itemize}
-    \item Часто тело функции "--- \haskinline|case| по аргументу, например.
+    \item Часто тело функции "--- \haskinline|case| по аргументу, например (\haskinline|not'|, потому что \haskinline|not| уже есть в Prelude):
           \begin{haskell}
-            not x = case x of
+            not' x = case x of
                 True -> False
                 False -> True
           \end{haskell}
     \item Такие функции можно записать несколькими равенствами, по одному на ветвь \haskinline|case|:
           \begin{haskell}
-            not True = False
-            not False = True
+            not' True = False
+            not' False = True
           \end{haskell}
     \item Это работает и с охранными условиями:
           \begin{haskell}
-            not x | x = False
-                  | otherwise = True
+            not' x | x = False
+                   | otherwise = True
           \end{haskell}
     \item и для нескольких параметров:
           \begin{haskell}
@@ -224,13 +200,30 @@
                 where переменная1 = выражение1
                       функция2 x = выражение2
           \end{haskell}
-    \item Видимы в условиях и в правых частях (но не для других образцов).
-    \item Можно применить только к определениям.
-    \item В том числе к локальным.
+    \item Видимы в условиях и в правых частях (но не для других уравнений).
+    \item \haskinline|where| не является отдельным выражением: он относится к определению (в том числе локальному) или ветви \haskinline|case|.
     \item В GHCi многострочное определение вводится между \ghcinline|:{| и \ghcinline|:}| (каждое на своей строке).
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Одна функция с \haskinline|let| и \haskinline|where|}
+  \begin{haskell}
+    hypot a b =
+        let a2 = a * a
+            b2 = b * b
+        in sqrt (a2 + b2)
+  \end{haskell}
+  \begin{haskell}
+    hypot a b = sqrt (a2 + b2)
+      where a2 = a * a
+            b2 = b * b
+  \end{haskell}
+  \begin{itemize}
+    \item В обоих вариантах локальные определения могут ссылаться друг на друга, в том числе на записанные ниже.
+    \item Это не последовательность присваиваний: порядок определений не задаёт порядок вычислений.
+  \end{itemize}
+\end{frame}
 \begin{frame}[fragile]
   \frametitle{Модули}
   \begin{itemize}
@@ -247,7 +240,7 @@
             функция1 :: ...
             функция1 x = ...
           \end{haskell}
-    \item \haskinline|функция1| экспортирована, она доступна другим модулям и GHCi. Все остальные "--- нет.
+    \item \haskinline|функция1| экспортирована, она доступна другим модулям. Все остальные "--- нет.
     \item Можно экспортировать всё, опустив список экспортов (включая скобки).
   \end{itemize}
 \end{frame}
@@ -266,6 +259,10 @@
             import Модуль
           \end{haskell}
           импортирует всё, что возможно.
+    \item \begin{haskell}
+            import qualified Data.Map as M
+          \end{haskell}
+          импортирует всё, но только под именами вида \haskinline|M.функция| (пригодится в лекции 4).
     \item Импортированные функции доступны как \haskinline|функция| и как \haskinline|Модуль.функция|.
   \end{itemize}
 \end{frame}
@@ -277,7 +274,8 @@
           \begin{itemize}
             \item \href{http://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-load-scope}{The effect of :load on what is in scope}
           \end{itemize}
-    \item Под Windows можно просто дважды щёлкнуть на файл или нажать Enter в Проводнике.
+    \item При загрузке исходного модуля в интерпретируемом режиме GHCi доступны и его неэкспортированные определения.
+    \item Или открыть терминал в папке с файлом и запустить \ghcinline|ghci Модуль.hs| (в лабораторных "--- \ghcinline|stack repl|).
     \item Потом при изменениях файла повторить \haskinline|:load| или сделать \haskinline|:reload|.
     \item Многие редакторы позволяют это автоматизировать.
   \end{itemize}
@@ -291,9 +289,11 @@
     \item Обе ставятся вместе с Haskell через \ghcinline|ghcup|.
     \item Основные команды можно посмотреть в документации, но нам пока достаточно
           \begin{itemize}
+            \item \ghcinline|stack build| для сборки.
             \item \ghcinline|stack repl| для запуска GHCi с загруженными файлами проекта.
             \item \ghcinline|stack test| для запуска тестов.
           \end{itemize}
+    \item При первой сборке Stack сам скачает нужную версию GHC (несколько сотен мегабайт) "--- это займёт несколько минут.
   \end{itemize}
 \end{frame}
 
