@@ -124,10 +124,10 @@
     \item семейство Lisp: первый ФП-язык и один из первых языков высокого уровня вообще
     \item Erlang и Elixir: упор на многозадачность (модель акторов), надёжность
     \item Scala, Kotlin, F\#: гибриды с ООП для JVM и для CLR
-    \item Purescript, Elm, Ur/Web: для веба
+    \item Purescript, Elm: для веба
     \item Семейство ML: OCaml, SML, F\#
           \pause
-    \item \textbf{Haskell:}
+    \item \textbf{Haskell} (нижний узел схемы \enquote{От C к Haskell}):
           \begin{itemize}
             \item Чисто функциональный
                   \pause
@@ -175,13 +175,14 @@
           \begin{haskell}
             ghci> True + False
           \end{haskell}
-          \begin{ghci}
-            <interactive>:12:1: error:
-            No instance for (Num Bool) arising from a use of '+'
-            In the expression: True + False
-            In an equation for 'it': it = True + False
-          \end{ghci}
+          \begin{ghcismall}
+            <interactive>:1:6: error: [GHC-39999]
+                • No instance for ‘Num Bool’ arising from a use of ‘+’
+                • In the expression: True + False
+                  In an equation for ‘it’: it = True + False
+          \end{ghcismall}
     \item Это ошибка компиляции, а не выполнения.
+    \item По коду \ghcinline|[GHC-39999]| на \url{https://errors.haskell.org} есть объяснение ошибки и примеры.
   \end{itemize}
 \end{frame}
 
@@ -233,8 +234,8 @@
     \item Целые числа:
           \begin{itemize}
             \item \haskinline|Integer|: неограниченные (кроме размера памяти);
-            \item \haskinline|Int|: машинные\footnote{по cтандарту минимум 30 бит, но в GHC именно 32 или 64 бита}, \haskinline|Word|: машинные без знака;
-            \item \haskinline|Data.{Int.Int/Word.Word}{8/16/32/64}|: фиксированного размера в битах, со знаком и без.
+            \item \haskinline|Int|: машинные\footnote{по стандарту минимум 30 бит, но в GHC именно 32 или 64 бита}, \haskinline|Word|: машинные без знака;
+            \item \haskinline|Int8|\ldots\haskinline|Int64| (модуль \haskinline|Data.Int|) и \haskinline|Word8|\ldots\haskinline|Word64| (\haskinline|Data.Word|): фиксированного размера, со знаком и без.
           \end{itemize}
     \item \haskinline|Float| и \haskinline|Double|: 32- и 64-битные числа с плавающей точкой, по стандарту IEEE-754.
     \item \haskinline|Char|: символы Unicode.
@@ -268,7 +269,7 @@
     \item Это упрощённая версия.
     \item Полное объяснение требует понятия, которое будет введено позже.
     \item Например, команды \haskinline|:type 1| или \haskinline|:type (+)| дадут тип, который понимать пока не требуется.
-    \item То же относится к ошибкам вроде \ghcinline[breaklines=false]|No instance for (Num Bool)...|\\ на более раннем слайде.
+    \item То же относится к ошибкам вроде \ghcinline[breaklines=false]|No instance for ‘Num Bool’...|\\ на более раннем слайде.
     \item Пока достаточно понимать, что есть несколько числовых типов.
     \item Они делятся на целочисленные (\haskinline|Int|, \haskinline|Integer|) и дробные (\haskinline|Float|, \haskinline|Double|).
   \end{itemize}
@@ -289,13 +290,14 @@
   \begin{itemize}
     \item Используйте \haskinline|fromIntegral| для приведения из любого целочисленного типа в любой числовой. Тип-цель можно указать явно:
           \begin{haskell}
-            ghci> let {x :: Integer; x = 2}
+            ghci> x = 2 :: Integer
             ghci> x :: Double
           \end{haskell}
-          \begin{ghci}
-            <interactive>:22:1: error:
-            Couldn't match expected type 'Double' with actual type 'Integer' ...
-          \end{ghci}
+          \begin{ghcismall}
+            <interactive>:2:1: error: [GHC-83865]
+                • Couldn't match expected type ‘Double’
+                  with actual type ‘Integer’ ...
+          \end{ghcismall}
           \begin{haskell}
             ghci> fromIntegral x :: Double
             2.0
@@ -328,7 +330,7 @@
     \item Операции \haskinline|+|, \haskinline|-|, \haskinline|*| "--- как обычно (унарного \haskinline|+| нет).
     \item \haskinline|/| "--- деление \emph{дробных} чисел.
           \begin{itemize}
-            \item Использование \haskinline|/| для целых чисел даст ошибку \ghcinline|No instance... arising from a use of '/'|. Нужно сначала использовать \haskinline|fromIntegral|.
+            \item Использование \haskinline|/| для целых чисел даст ошибку \ghcinline|No instance... arising from a use of ‘/’|. Нужно сначала использовать \haskinline|fromIntegral|.
           \end{itemize}
     \item \haskinline|div| "--- деление нацело
     \item \haskinline|mod| "--- остаток
