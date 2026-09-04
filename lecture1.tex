@@ -1,5 +1,6 @@
 \documentclass[10pt]{beamer}
 \input{lecture_preamble.tex}
+\usepackage{tikz}
 
 \title{Лекция 1: введение и основы синтаксиса}
 
@@ -45,6 +46,40 @@
 \begin{frame}
   \includegraphics[trim={0 0 144mm -2mm},clip,width=\textwidth,height=\textheight,keepaspectratio]{paradigmsDIAGRAMeng108.pdf}
   \footnotesize  \href{https://www.info.ucl.ac.be/~pvr/paradigms.html}{Peter Van Roy, "Programming Paradigms for Dummies: What Every Programmer Should Know", 2009}
+\end{frame}
+
+\begin{frame}
+  \frametitle{От C к Haskell: что добавляется}
+  \centering
+  \begin{tikzpicture}[
+      x=1cm, y=1cm,
+      lang/.style={draw=mDarkTeal, thick, rounded corners=2pt, fill=mDarkTeal!8,
+          minimum width=17mm, minimum height=6.5mm, font=\small\bfseries},
+      feat/.style={draw=mLightBrown!60, fill=mLightBrown!10, rounded corners=2pt,
+          font=\scriptsize, align=center, inner sep=3pt},
+      arr/.style={-stealth, thick, black!55}]
+    \node[lang] (c)     at (0, 5.0)     {C};
+    \node[feat] (f1)    at (0, 4.1)     {+ функции первого класса (замыкания)};
+    \node[lang] (py)    at (-2.6, 3.2)  {Python};
+    \node[lang] (java)  at (2.6, 3.2)   {Java};
+    \node[feat] (f2)    at (0, 2.1)     {+ выражения вместо инструкций\\ + неизменяемость по умолчанию\\ + вывод типов};
+    \node[lang] (ocaml) at (-2.6, 1.0)  {OCaml};
+    \node[lang] (scala) at (2.6, 1.0)   {Scala};
+    \node[feat] (f3)    at (0, 0.0)     {+ ленивость\\ + чистота: эффекты видны в типах};
+    \node[lang, draw=mLightBrown, fill=mLightBrown!20] (hs) at (0, -1.0) {Haskell};
+    \draw[arr] (c) -- (f1);
+    \draw[arr] (f1) -- (py);
+    \draw[arr] (f1) -- (java);
+    \draw[arr] (py) -- (f2.north);
+    \draw[arr] (java) -- (f2.north);
+    \draw[arr] (f2.south) -- (ocaml);
+    \draw[arr] (f2.south) -- (scala);
+    \draw[arr] (ocaml) -- (f3.north);
+    \draw[arr] (scala) -- (f3.north);
+    \draw[arr] (f3) -- (hs);
+  \end{tikzpicture}
+
+  \footnotesize Упрощённо: у каждой стрелки есть оговорки (Java~8+, Scala~3, аннотации типов в Python).
 \end{frame}
 
 \begin{frame}
