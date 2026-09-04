@@ -21,7 +21,7 @@ main = hspec $ do
         it "coprime" pending
     describe "lists" $ do
         it "distance" pending
-        it "intersect" pending
+        it "removeFirst" pending
         it "zipN" pending
         it "find" pending
         it "findLast" pending

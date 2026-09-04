@@ -33,6 +33,7 @@ data CMYK = CMYK { cyan :: Double, magenta :: Double, yellow :: Double, black ::
 -- Magenta = (1-Green-Black) / (1-Black)
 -- Yellow  = (1-Blue-Black) / (1-Black) 
 -- где значения Red, Green и Blue нормализованы от 0 до 1).
+-- Для чёрного цвета (R=G=B=0) верните CMYK 0 0 0 1.
 
 -- Заметьте, что (/) для Int не работает, и неявного преобразования Int в Double нет.
 -- Это преобразование производится с помощью функции fromIntegral.

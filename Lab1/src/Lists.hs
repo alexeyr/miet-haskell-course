@@ -12,13 +12,16 @@ newtype Point = Point [Double] deriving (Eq, Show, Read)
 distance :: Point -> Point -> Double
 distance x y = error "todo"
 
--- intersect xs ys возвращает список, содержащий общие элементы двух списков.
--- intersect [1, 2, 4, 6] [5, 4, 2, 5, 7] == [2, 4] (или [4, 2]!)
--- intersect [1, 2, 4, 6] [3, 5, 7] == []
+-- removeFirst x xs удаляет первое вхождение x из списка xs.
+-- Если x не встречается в списке, список остаётся без изменений.
+-- Порядок остальных элементов сохраняется.
+-- removeFirst 2 [1, 2, 3, 2] == [1, 3, 2]
+-- removeFirst 4 [1, 2, 3] == [1, 2, 3]
+-- removeFirst 2 [] == []
 
 -- используйте рекурсию и сопоставление с образцом
-intersect :: [Integer] -> [Integer] -> [Integer]
-intersect xs ys = error "todo"
+removeFirst :: Integer -> [Integer] -> [Integer]
+removeFirst x xs = error "todo"
 
 -- zipN принимает список списков и возвращает список, который состоит из
 -- списка их первых элементов, списка их вторых элементов, и так далее.
