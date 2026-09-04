@@ -103,7 +103,7 @@
           \end{haskell}
     \item Списки тоже монада:
           \begin{haskell}
-            -- (>{}>=) ::\pause [a] -> (a -> [b]) -> [b]
+            -- (>{}>=) ::\pause{} [a] -> (a -> [b]) -> [b]
             []     >>= _ =!\pause! []
             (x:xs) >>= f =!\pause! f x ++ (xs >>= f)
           \end{haskell}
@@ -216,7 +216,7 @@
   \begin{itemize}[<+->]
     \item Кроме уже виденных \haskinline|=<<| и \haskinline|>=>|, в \haskinline|Prelude| и \haskinline|Control.Monad| есть ещё функции, которые работают для любых монад (или аппликативов).
     \item \haskinline|join :: Monad m => m (m a) -> m a|. Эту функцию можно было бы взять как базовую и выразить \haskinline|>>=| через неё.
-    \item \haskinline|sequence :: Monad m => [m a] -> m [a]|. В библиотеке более общий вариант: \haskinline|sequenceA| из \haskinline|Traversable|.
+    \item \haskinline|sequence :: Monad m => [m a] -> m [a]|. Обобщение "--- \haskinline|sequenceA| из \haskinline|Traversable|.
     \item \haskinline[fontsize=\small]|mapM :: Monad m => (a -> m b) -> [a] -> m [b]|
     \item
           \begin{haskell}
@@ -247,7 +247,7 @@
               pure x = State (\s1 ->!\pause! (x, s1))
               (State gf) <*> (State gx) = State (\s1 ->
                 let (f, s2) = gf s1!\pause!
-                (x, s3) = gx s2
+                    (x, s3) = gx s2
                 in!\pause! (f x, s3))
           \end{haskellsmall}
   \end{itemize}

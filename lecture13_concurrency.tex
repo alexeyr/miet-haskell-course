@@ -278,6 +278,7 @@ withStrategy s x = runEval (s x)
 \begin{frame}[fragile]
   \frametitle{Фибоначчи в \haskinline|Par|}
   \begin{itemize}
+    \item[]
     \begin{haskell}
       parFib :: Integer -> Par Integer
       parFib 0 = pure 1
@@ -407,7 +408,7 @@ withStrategy s x = runEval (s x)
             newTVar :: a -> STM (TVar a)
             readTVar :: TVar a -> STM a
             writeTVar :: TVar a -> a -> STM ()
-            retry :: STM a   -- ждать, пока какая-то TVar не изменится
+            retry :: STM a   -- ждать, пока не изменится TVar
             atomically :: STM a -> IO a
           \end{haskellsmall}
   \end{itemize}

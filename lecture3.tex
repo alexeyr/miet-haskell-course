@@ -350,7 +350,8 @@ ghci> googleDns = IPv4 "8.8.8.8"
             ghci> Point {xCoord = x'} = it
             ghci> x' !\pause!
             0.0 !\pause!
-            ghci> :set -XOverloadedRecordDot -XNamedFieldPuns -XRecordWildCards
+            ghci> :set -XOverloadedRecordDot -XNamedFieldPuns
+            ghci> :set -XRecordWildCards
             ghci> aPoint.xCoord
             0.0 !\pause!
             ghci> f (Point { xCoord, yCoord }) = xCoord + yCoord

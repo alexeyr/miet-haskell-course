@@ -228,6 +228,12 @@
           \end{haskellsmall}
           описывающий (чистые) генераторы псевдослучайных чисел.
     \item Есть тип \haskinline|StdGen| и \haskinline|instance RandomGen StdGen|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Случайные значения: глобальный генератор}
+  \begin{itemize}
     \item Глобальный генератор живёт в \haskinline|IORef| (в документации типы чуть общее):
           \begin{haskellsmall}
             getStdGen :: IO StdGen
