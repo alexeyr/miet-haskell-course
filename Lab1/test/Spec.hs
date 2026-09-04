@@ -22,7 +22,7 @@ main = hspec $ do
     describe "lists" $ do
         it "distance" pending
         it "removeFirst" pending
-        it "zipN" pending
+        it "interleave" pending
         it "find" pending
         it "findLast" pending
         it "mapFuncs" pending
