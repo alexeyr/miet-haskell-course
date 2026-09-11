@@ -126,9 +126,9 @@
     \item Здесь обязательно близкие типы и общий смысл.
     \item И функции могут быть использованы другими полиморфными функциями. \pause
     \item Не путайте классы типов и классы в ООП, общее только название!
-    \item В C++ есть близкое понятие концепций. \pause
-    \item До C++20 было только для документации, а теперь их можно объявлять и использовать в коде. \pause
-    \item Часто сравнивают с интерфейсами в Java/C\#, но это подходит хуже: \pause в классах типов есть \enquote{статические} и бинарные методы, совсем другой смысл функции, возвращающей такой тип.
+    \item В C++ близкое понятие "--- концепции: до C++20 только в документации, теперь и в коде. \pause
+    \item Часто сравнивают с интерфейсами Java/C\#, но это хуже: \pause у классов типов есть \enquote{статические} и бинарные методы. \pause
+    \item Ближайший аналог "--- трейты (traits) в Rust.
   \end{itemize}
 \end{frame}
 
@@ -237,6 +237,8 @@
           \begin{haskell}
             ghci> [1.2..2.0] !\pause!
             [1.2,2.2]
+            ghci> [0.1, 0.2 .. 1.0]
+            [0.1,0.2,0.30000000000000004,0.4,0.5,...]
           \end{haskell}
   \end{itemize}
 \end{frame}
@@ -352,17 +354,22 @@
   \end{itemize}
 \end{frame}
 
-% TODO Похоже, неверно: compare оптимально? Поискать пример лучше
-
-%\begin{frame}[fragile]
-%\frametitle{Определение функций внутри или вне класса:\\случай \haskinline|Ord|}
-%\begin{itemize}
-%    \item Ещё пример: в \haskinline|Ord| можно было бы оставить только \haskinline|(<=)| членом класса.
-%    \item Или только \haskinline|compare|.
-%    \item Но определение \haskinline|(<)| и других функций через них не всегда оптимально.
-%    \item (Подумайте, почему!)
-%\end{itemize}
-%\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Определение функций внутри или вне класса:\\случай \haskinline|Ord|}
+  \begin{itemize}
+    \item В \haskinline|Ord| можно было бы оставить членом класса только \haskinline|compare|, а \haskinline|(<)| и остальные определить через него.
+    \item Но у \haskinline|Double| есть \haskinline|NaN|, который не сравним ни с чем, а \haskinline|Ordering| не может этого выразить:
+          \begin{haskell}
+            ghci> nan = 0/0 :: Double
+            ghci> compare nan nan
+            GT
+            ghci> nan < nan  -- определено напрямую
+            False
+          \end{haskell}
+    \item Если бы \haskinline|(<)| определялось через \haskinline|compare|, получилось бы \haskinline|True|.
+    \item Поэтому все функции сравнения "--- члены \haskinline|Ord|, и экземпляр для \haskinline|Double| определяет каждую напрямую.
+  \end{itemize}
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Законы классов типов}
@@ -415,11 +422,11 @@
             \item Значения с одинаковым конструктором равны, если равны все их поля (или полей нет);
             \item Значения с разными конструкторами не равны;
           \end{itemize}
-    \item Почти, но не все: \pause например, для \haskinline|Data.Set| и \haskinline|Data.Map| (два сбалансированных дерева с одними и теми же элементами могут иметь разную форму) или для типов с кэшированными полями.\pause
+    \item Почти, но не все: \pause например, для \haskinline|Data.Set| и \haskinline|Data.Map| (деревья с одними и теми же элементами могут иметь разную форму) или для типов с кэшированными полями.\pause
     \item Чтобы не писать такие определения каждый раз, после \haskinline|data| или \haskinline|newtype| ставят \haskinline|deriving (Eq)|.
-    \item \haskinline|deriving| также работает для \haskinline|Ord|, \haskinline|Show|, \haskinline|Read|, \haskinline|Enum| и \haskinline|Bounded|.
+    \item \haskinline|deriving| также работает для \haskinline|Ord|, \haskinline|Show|, \haskinline|Read|, \haskinline|Enum|, \haskinline|Bounded| и \haskinline|Ix|.
     \item Порядок на значениях для \haskinline|Ord|, \haskinline|Enum| и \haskinline|Bounded| задаётся порядком конструкторов в определении.\pause
-    \item Разные расширения GHC позволяют \haskinline|deriving| для других классов.
+    \item В GHC2021 выводятся также \haskinline|Functor|, \haskinline|Foldable| и \haskinline|Traversable| (лекция 9).
   \end{itemize}
 \end{frame}
 
@@ -452,7 +459,7 @@
   \frametitle{Классы типов и \haskinline|newtype|}
   \begin{itemize}
     \item Если заметили, \haskinline|Num| не было в списке классов, для которых есть автоматический вывод экземпляров.
-    \item Для \haskinline|newtype| можно вывести любой класс с помощью расширения \haskinline|GeneralizedNewtypeDeriving|.\pause
+    \item Для \haskinline|newtype| можно вывести любой класс.\pause
     \item Выведенное определение каждой функции вызывает ту же функцию завёрнутого типа с вставкой и разбором конструкторов где нужно:
           \begin{haskell}
             instance Num a => Num (Sum a) where
@@ -484,24 +491,8 @@
     \item В стандартном Haskell есть несколько ограничений на объявления классов типов и экземпляров.
     \item А в GHC расширений, которые их снимают.
     \item Все перечислять не будем, они есть в \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/instances.html}{User's Guide (Instance declarations and resolution)}.
-    \item Сейчас достаточно знать, что если что-то не компилируется из-за отсутствия \haskinline|-XFlexibleInstances|, \haskinline|-XFlexibleContexts| или \haskinline|-XInstanceSigs|, их спокойно можно включить.
     \item \haskinline|-XUndecidableInstances| и прагмы \haskinline|{-# OVERLAPPING #-}|/\haskinline|{-# INCOHERENT #-}| у отдельных экземпляров (расширения \haskinline|OverlappingInstances|/\haskinline|IncoherentInstances| устарели с GHC 7.10) опаснее, но в этом курсе в любом случае не понадобятся.
   \end{itemize}
 \end{frame}
-
-% TODO восстановить слайды
-%\begin{frame}[fragile]
-%\frametitle{Классы с несколькими параметрами}
-%\begin{itemize}
-%    \item TODO
-%\end{itemize}
-%\end{frame}
-%
-%\begin{frame}[fragile]
-%\frametitle{Типы как члены классов}
-%\begin{itemize}
-%    \item TODO
-%\end{itemize}
-%\end{frame}
 
 \end{document}
