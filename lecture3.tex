@@ -1,5 +1,6 @@
 \documentclass[10pt]{beamer}
 \input{lecture_preamble.tex}
+\usepackage{booktabs}
 
 \title{Лекция 3: типы данных}
 
@@ -137,7 +138,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
   \frametitle{\haskinline|Maybe| и \haskinline|null|}
   \begin{itemize}
     \item \haskinline|Nothing| похоже на \haskinline|null| в C-подобных языках, но явно прописано в типах.
-    \item Не нужно для каждой функции документировать, как работает с \haskinline|null|, достаточно посмотрить на наличие \haskinline|Maybe| в сигнатуре.
+    \item Не нужно для каждой функции документировать, как работает с \haskinline|null|, достаточно посмотреть на наличие \haskinline|Maybe| в сигнатуре.
     \item И поэтому нет возможного несовпадения реализации с документацией.
     \item Нет типов, у которых \haskinline|null| нет и с отсутствием значения приходится что-то придумывать.
     \item Есть \haskinline|Maybe (Maybe a)| (бывает полезно).
@@ -202,9 +203,11 @@ ghci> googleDns = IPv4 "8.8.8.8"
           \pause
     \item Для \haskinline|FilePath| дело в том, что осмысленные операции над путями не те, что над строками:
           \begin{haskell}
-            ghci> isPrefixOf 
-                ("C:\\Program Files" :: FilePath) 
-                ("C:\\Program Files (x86)" :: FilePath)
+            ghci> import Data.List (isPrefixOf)
+            ghci> :{
+            ghci| isPrefixOf ("C:\\Program Files" :: FilePath)
+            ghci|            ("C:\\Program Files (x86)" :: FilePath)
+            ghci| :}
             True
           \end{haskell}
   \end{itemize}
@@ -233,7 +236,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
   \begin{itemize}
     \item Какой тип функции
           \begin{haskell}
-            ghci> id x = x
+            id x = x -- определение в Prelude
             ghci> :t id !\pause!
             id :: a -> a
           \end{haskell}
@@ -277,7 +280,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
             g :: forall a. [a] -> [a]
             g (x:xs) = xs ++ [x :: a]
           \end{haskell}
-    \item Точные правила можно найти в \href{https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/scoped_type_variables.html}{Lexically scoped type variables}.
+    \item Точные правила можно найти в \href{https://downloads.haskell.org/~ghc/latest/docs/users_guide/exts/scoped_type_variables.html}{Lexically scoped type variables}.
   \end{itemize}
 \end{frame}
 
@@ -295,34 +298,38 @@ ghci> googleDns = IPv4 "8.8.8.8"
     \item Натуральное число это либо $0$, либо $n + 1$, где $n$ "--- натуральное число.
     \item Соответственно, функции над ними тоже определяются рекурсивно:
           \begin{haskell}
-            replicate _ 0 = []
-            replicate x n = x : replicate x (n - 1)
+            replicate 0 _ = [] -- упрощённое определение из Prelude
+            replicate n x = x : replicate (n - 1) x
           \end{haskell}
-    \item Раньше \haskinline|n + 1| (и вообще \haskinline|+ константа|) было образцом, в Haskell 2010 их исключили.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Алгебраические типы}
   \begin{itemize}
-    \item Несколько полей у конструктора соответствуют операции декартова произведения в теории множеств.
-          \onslide<3->{\begin{itemize}
-              \item В логике конъюнкции, а в алгебре произведению.
-            \end{itemize}}
-    \item А несколько конструкторов\onslide<1>{?}\onslide<2->{операции дизъюнктного объединения $A_1 \sqcup A_2 \sqcup \ldots = \{1\} \times A_1 \cup \{2\} \times A_2 \cup \ldots$}
-          \onslide<3->{
-            \begin{itemize}
-              \item В логике дизъюнкции, а в алгебре сумме.
-            \end{itemize}
-          }
-          \onslide<2->{
-    \item Сравните помеченное объединение с непомеченным \haskinline|union| в C/C++.
-    \item И с \haskinline|std::variant|.
-          }
-          \onslide<3->{\item Тип функций "--- множество функций в теории множеств, импликация в логике и возведение в степень в алгебре.}
-          \onslide<4->{\item Обычные законы алгебры выполняются для типов с точностью до изоморфизма, как и для множеств.}
-          % TODO переделать в таблицу
+    \item Несколько полей у конструктора соответствуют декартову произведению множеств, а несколько конструкторов\only<1>{ "--- чему?}\only<2->{ "--- дизъюнктному объединению $A_1 \sqcup A_2 = \{1\} \times A_1 \cup \{2\} \times A_2$.}
+    \onslide<2->{\item Сравните помеченное объединение с непомеченным \haskinline|union| в C/C++ и с \haskinline|std::variant|.}
   \end{itemize}
+  \onslide<3->{
+    \centering\small
+    \begin{tabular}{llll}
+      \toprule
+      Тип & Множества & Логика & Алгебра \\
+      \midrule
+      \haskinline|(a, b)| & $A \times B$ & $A \wedge B$ & $a \cdot b$ \\
+      \haskinline|Either a b| & $A \sqcup B$ & $A \vee B$ & $a + b$ \\
+      \haskinline|a -> b| & $B^A$ & $A \to B$ & $b^a$ \\
+      \haskinline|()| & $\{\ast\}$ & истина & $1$ \\
+      \haskinline|Void| & $\varnothing$ & ложь & $0$ \\
+      \bottomrule
+    \end{tabular}
+    \par
+  }
+  \onslide<4->{
+    \begin{itemize}
+      \item Законы алгебры верны с точностью до изоморфизма: $c^{a+b} = c^a \cdot c^b$, т.е. \haskinline|Either a b -> c| $\cong$ \haskinline|(a -> c, b -> c)|.
+    \end{itemize}
+  }
 \end{frame}
 
 \begin{frame}[fragile]
@@ -350,8 +357,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
             ghci> Point {xCoord = x'} = it
             ghci> x' !\pause!
             0.0 !\pause!
-            ghci> :set -XOverloadedRecordDot -XNamedFieldPuns
-            ghci> :set -XRecordWildCards
+            ghci> :set -XOverloadedRecordDot -XRecordWildCards
             ghci> aPoint.xCoord
             0.0 !\pause!
             ghci> f (Point { xCoord, yCoord }) = xCoord + yCoord
@@ -362,7 +368,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Записи: минусы}\hypertarget{rec2}{}
+  \frametitle{Записи: минусы}
   \hyperlink{rec1}{\beamerreturnbutton{К определению записей}}
   \begin{itemize}
     \item
