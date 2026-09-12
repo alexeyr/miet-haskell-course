@@ -87,24 +87,24 @@ data Point = Point Double Double
   \begin{itemize}
     \item Может быть несколько конструкторов с полями:
           \begin{haskell}
-            data IpAddress = IPv4 String | IPv6 String
+            data Shape = Circle Double | Rectangle Double Double
           \end{haskell}
     \item Создание значения:
           \begin{haskell}
-ghci> googleDns = IPv4 "8.8.8.8"
+ghci> unitCircle = Circle 1
 \end{haskell}
-    \item Образцы: \haskinline|IPv4 образец_String| и \haskinline|IPv6 образец_String|.
+    \item Образцы: \haskinline|Circle r| и \haskinline|Rectangle w h| (\haskinline|r|, \haskinline|w|, \haskinline|h| "--- образцы для \haskinline|Double|).
     \item Функции часто определяются по уравнению на каждый конструктор:
           \begin{haskell}
-            asString (IPv4 ip4) = ip4
-            asString (IPv6 ip6) = ip6
+            area (Circle r) = pi * r * r
+            area (Rectangle w h) = w * h
           \end{haskell}
           \pause
     \item Но не обязательно:
           \begin{haskell}
-            isLocalhost (IPv4 "127.0.0.1") = True
-            isLocalhost (IPv6 "0:0:0:0:0:0:0:1") = True
-            isLocalhost _ = False
+            isUnitCircle (Circle 1) = True
+
+            isUnitCircle _ = False
           \end{haskell}
           \pause
     \item Ещё пример: \haskinline!data ImageFormat = JPG | PNG | IF String!
@@ -138,8 +138,8 @@ ghci> googleDns = IPv4 "8.8.8.8"
   \frametitle{\haskinline|Maybe| и \haskinline|null|}
   \begin{itemize}
     \item \haskinline|Nothing| похоже на \haskinline|null| в C-подобных языках, но явно прописано в типах.
-    \item Не нужно для каждой функции документировать, как работает с \haskinline|null|, достаточно посмотреть на наличие \haskinline|Maybe| в сигнатуре.
-    \item И поэтому нет возможного несовпадения реализации с документацией.
+    \item Возможность отсутствия значения отражена в типе: \haskinline|Maybe a|.
+    \item Документация объясняет, в каких случаях возвращается \haskinline|Nothing|.
     \item Нет типов, у которых \haskinline|null| нет и с отсутствием значения приходится что-то придумывать.
     \item Есть \haskinline|Maybe (Maybe a)| (бывает полезно).
           \pause
@@ -156,7 +156,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
             data Triple a b c = Triple a b c
             ...
           \end{haskell}
-          (заметьте разницу смыслов \haskinline|Pair|, \haskinline|a| и \haskinline|b| в левой и правой частях!)
+          Слева \haskinline|Pair| "--- имя типа, справа "--- конструктора данных. Параметры \haskinline|a| и \haskinline|b| слева объявляются, справа используются как типы полей.
     \item Это универсальные произведения.
           \pause
     \item Но определять их не нужно, так как такие типы уже есть, со специальным синтаксисом:\\
@@ -199,7 +199,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
             type String = [Char]
             type FilePath = String
           \end{haskell}
-    \item Оба определения теперь считаются плохими! Для \haskinline|String| подробности в будущих лекциях.
+    \item Синоним документирует назначение, но не создаёт отдельный тип. О недостатках представления \haskinline|String| поговорим позже.
           \pause
     \item Для \haskinline|FilePath| дело в том, что осмысленные операции над путями не те, что над строками:
           \begin{haskell}
@@ -258,31 +258,7 @@ ghci> googleDns = IPv4 "8.8.8.8"
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{Область видимости переменных типа}
-  \begin{itemize}
-    \item По умолчанию область видимости переменной типа "--- сигнатура, где она появилась. Например, в
-          \begin{haskell}
-            g :: [a] -> [a]
-            g (x:xs) = xs ++ [x :: a]
-          \end{haskell}
-          \pause
-          две переменные \haskinline|a| "--- разные и читаются как
-          \begin{haskell}
-            g :: forall a. [a] -> [a]
-            g (x:xs) = xs ++ [x :: forall a. a]
-          \end{haskell}
-          \pause
-          (так что функция не скомпилируется).
-          \pause
-    \item Но можно написать так:
-          \begin{haskell}
-            g :: forall a. [a] -> [a]
-            g (x:xs) = xs ++ [x :: a]
-          \end{haskell}
-    \item Точные правила можно найти в \href{https://downloads.haskell.org/~ghc/latest/docs/users_guide/exts/scoped_type_variables.html}{Lexically scoped type variables}.
-  \end{itemize}
-\end{frame}
+
 
 \begin{frame}[fragile]
   \frametitle{Структурно-рекурсивные функции}
@@ -293,12 +269,26 @@ ghci> googleDns = IPv4 "8.8.8.8"
             length [] = 0
             length (_ : xs) = length xs + 1
           \end{haskell}
+    \item Рекурсивный вызов получает более короткий хвост; на пустом списке рекурсия заканчивается:
+          \begin{haskell}
+            length [10, 20]
+              = length [20] + 1
+              = (length [] + 1) + 1
+              = (0 + 1) + 1 = 2
+          \end{haskell}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Рекурсия по числу}
+  \begin{itemize}
     \item Натуральные числа "--- \enquote{почётный} рекурсивный тип.
           \pause
     \item Натуральное число это либо $0$, либо $n + 1$, где $n$ "--- натуральное число.
     \item Соответственно, функции над ними тоже определяются рекурсивно:
           \begin{haskell}
-            replicate 0 _ = [] -- упрощённое определение из Prelude
+            replicate :: Int -> a -> [a]
+            replicate n _ | n <= 0 = []
             replicate n x = x : replicate (n - 1) x
           \end{haskell}
   \end{itemize}
@@ -389,4 +379,29 @@ ghci> Point { xCoord = 0 }
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Переменные типа: область видимости}
+  \begin{itemize}
+    \item Дополнительный материал. По умолчанию область видимости переменной типа "--- сигнатура, где она появилась. Например, в
+          \begin{haskell}
+            moveToEnd :: [a] -> [a]
+            moveToEnd (x:xs) = xs ++ [x :: a]
+          \end{haskell}
+          \pause
+          две переменные \haskinline|a| "--- разные и читаются как
+          \begin{haskell}
+            moveToEnd :: forall a. [a] -> [a]
+            moveToEnd (x:xs) = xs ++ [x :: forall a. a]
+          \end{haskell}
+          \pause
+          (так что функция не скомпилируется).
+          \pause
+    \item С \haskinline|ScopedTypeVariables| (входит в \haskinline|GHC2021|) можно написать так:
+          \begin{haskell}
+            moveToEnd :: forall a. [a] -> [a]
+            moveToEnd (x:xs) = xs ++ [x :: a]
+          \end{haskell}
+    \item Точные правила можно найти в \href{https://downloads.haskell.org/~ghc/latest/docs/users_guide/exts/scoped_type_variables.html}{Lexically scoped type variables}.
+  \end{itemize}
+\end{frame}
 \end{document}
