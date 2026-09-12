@@ -41,14 +41,14 @@
     \item При этом \haskinline|a| в сигнатуре членов заменяется на тип, для которого определяется экземпляр.
     \item Ещё пример:\pause
           \begin{haskell}
-            instance Eq IpAddress where
-                -- (==) :: IpAddress -> IpAddress -> Bool
-                IPv4 x == IPv4 y = x == y
-                IPv6 x == IPv6 y = x == y
+            instance Eq Shape where
+                -- (==) :: Shape -> Shape -> Bool
+                Circle r == Circle s = r == s
+                Rectangle w h == Rectangle v k = w == v && h == k
                 _ == _ = False
           \end{haskell}
           \only<3>{\item Рекурсивно ли это определение?}
-    \item<4-> Это не рекурсия: \haskinline|==| в правой части относится к другому типу (\haskinline|String|).
+    \item<4-> Это не рекурсия: \haskinline|==| в правой части относится к другому типу (\haskinline|Double|).
   \end{itemize}
 \end{frame}
 
@@ -63,7 +63,8 @@
     \item Читается \enquote{\haskinline|a -> a -> Bool| для любого \haskinline|a| из \haskinline|Eq|}.
     \item Часть перед \haskinline|=>| называется контекстом.
     \item Его элементы "--- ограничения. Когда их больше одного, они пишутся в скобках через запятую.\pause
-    \item Типы полиморфных функций, \emph{использующих} \haskinline|==| и \haskinline|/=|, пишутся аналогично. Определим:
+    \item В \haskinline|rest@(y : _)| имя \haskinline|rest| обозначает весь список, подходящий под образец \haskinline|y : _|.
+    \item Ограничение нужно и функциям, использующим \haskinline|==|:
           \begin{haskell}
             foo [] = True
             foo [x] = True
@@ -71,7 +72,7 @@
           \end{haskell}
           Какой у неё тип (и смысл)? \pause
     \item \haskinline|foo :: Eq a => [a] -> Bool| \pause
-    \item Функция проверяет, равны ли все элементы списка.
+    \item Все ли элементы равны? Подходящее имя "--- \haskinline|allEqual|.
   \end{itemize}
 \end{frame}
 
@@ -363,10 +364,10 @@
             ghci> nan = 0/0 :: Double
             ghci> compare nan nan
             GT
-            ghci> nan < nan  -- определено напрямую
+            ghci> nan > nan  -- определено напрямую
             False
           \end{haskell}
-    \item Если бы \haskinline|(<)| определялось через \haskinline|compare|, получилось бы \haskinline|True|.
+    \item Если бы \haskinline|(>)| определялось как \haskinline|compare x y == GT|, получилось бы \haskinline|True|.
     \item Поэтому все функции сравнения "--- члены \haskinline|Ord|, и экземпляр для \haskinline|Double| определяет каждую напрямую.
   \end{itemize}
 \end{frame}
@@ -425,11 +426,30 @@
     \item Почти, но не все: \pause например, для \haskinline|Data.Set| и \haskinline|Data.Map| (деревья с одними и теми же элементами могут иметь разную форму) или для типов с кэшированными полями.\pause
     \item Чтобы не писать такие определения каждый раз, после \haskinline|data| или \haskinline|newtype| ставят \haskinline|deriving (Eq)|.
     \item \haskinline|deriving| также работает для \haskinline|Ord|, \haskinline|Show|, \haskinline|Read|, \haskinline|Enum|, \haskinline|Bounded| и \haskinline|Ix|.
-    \item Порядок на значениях для \haskinline|Ord|, \haskinline|Enum| и \haskinline|Bounded| задаётся порядком конструкторов в определении.\pause
+
     \item В GHC2021 выводятся также \haskinline|Functor|, \haskinline|Foldable| и \haskinline|Traversable| (лекция 9).
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Вывод \haskinline|Ord|, \haskinline|Enum| и \haskinline|Bounded|}
+  \begin{haskell}
+    data Size = Small | Medium | Large
+        deriving (Eq, Ord, Enum, Bounded, Show)
+
+    ghci> Small < Medium
+    True
+    ghci> [Small .. Large]
+    [Small,Medium,Large]
+    ghci> maxBound :: Size
+    Large
+  \end{haskell}
+  \begin{itemize}
+    \item \haskinline|Ord| сравнивает сначала конструкторы в порядке объявления, затем поля слева направо (лексикографически).
+    \item Стандартный вывод \haskinline|Enum| требует конструкторов без полей.
+    \item \haskinline|Bounded| выводится для перечислений, а также для одного конструктора, если типы всех его полей имеют \haskinline|Bounded|.
+  \end{itemize}
+\end{frame}
 \begin{frame}[fragile]
   \frametitle{Классы типов и \haskinline|newtype|}
   \begin{itemize}
@@ -459,7 +479,7 @@
   \frametitle{Классы типов и \haskinline|newtype|}
   \begin{itemize}
     \item Если заметили, \haskinline|Num| не было в списке классов, для которых есть автоматический вывод экземпляров.
-    \item Для \haskinline|newtype| можно вывести любой класс.\pause
+    \item \haskinline|GeneralizedNewtypeDeriving| (входит в \haskinline|GHC2021|) позволяет переносить многие экземпляры завёрнутого типа на \haskinline|newtype|.\pause
     \item Выведенное определение каждой функции вызывает ту же функцию завёрнутого типа с вставкой и разбором конструкторов где нужно:
           \begin{haskell}
             instance Num a => Num (Sum a) where
