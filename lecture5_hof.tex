@@ -42,17 +42,17 @@
   \begin{itemize}
     \item В \haskinline|foo| с прошлого слайда можем также передать свою новую функцию, определив её локально:
           \begin{haskell}
-            foo isCyrillic where 
+            bar = foo isCyrillic where
                 isCyrillic c = let lc = toLower c
-                              in 'а' <= lc && lc <= 'я'
+                               in 'а' <= lc && lc <= 'я'
           \end{haskell}
 \pause
     \item Но имя этой функции на самом деле не нужно.
     \item Как и вообще функциям, которые создаются только как аргументы для других (или как результаты).\pause
     \item Вместо этого зададим её через \emph{лямбда-выражение}
           \begin{haskell}
-            foo (\c -> let lc = toLower c 
-                      in 'а' <= lc && lc <= 'я')
+            bar = foo (\c -> let lc = toLower c
+                             in 'а' <= lc && lc <= 'я')
           \end{haskell}
           \pause
     \item[]
@@ -93,19 +93,12 @@
   \begin{itemize}
     \item Если в обычном определении функции несколько уравнений, например
           \begin{haskell}
-            not True  = False
-            not False = True
+            not' True  = False
+            not' False = True
           \end{haskell}
           то в лямбда-выражении придётся использовать \haskinline|case|:\pause
           \begin{haskell}
-            not = \x -> case x of
-                True  -> False
-                False -> True
-          \end{haskell}
-          \pause
-          или с расширением \haskinline|LambdaCase|
-          \begin{haskell}
-            not = \case
+            not' = \x -> case x of
                 True  -> False
                 False -> True
           \end{haskell}
@@ -223,20 +216,21 @@
             ghci> (/ 2) 4 !\pause!
             2.0
           \end{haskell}
+          \pause
+    \item Ловушка: \haskinline|(- 2)| "--- это число $-2$, а не сечение. Для вычитания есть \haskinline|subtract 2|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Сечения кортежей}
   \begin{itemize}
-    \item Расширение \haskinline|TupleSections| позволяет частично применять конструкторы кортежей:
+    \item Конструкторы кортежей тоже можно применять частично (\haskinline|TupleSections|, входит в GHC2021):
           \begin{haskell}
-            ghci> :set -XTupleSections
             ghci> (, "I", , "Love", True) 1 False !\pause!
             (1,"I",False,"Love",True)
             ghci> :t (, "I", , "Love", True) !\pause!
             (, "I", , "Love", True)
-              :: t1 -> t2 -> (t1, [Char], t2, [Char], Bool)
+              :: t1 -> t2 -> (t1, String, t2, String, Bool)
           \end{haskell}
   \end{itemize}
 \end{frame}
@@ -315,7 +309,7 @@
     \item При реализации полиморфных функций очень часто их тип подсказывает реализацию.
     \item Пример:
           \begin{haskell}
-            foo :: (a -> b, b -> Int) -> (a -> Int)
+            foo :: (a -> b, b -> c) -> (a -> c)
           \end{haskell}
           Какую часть реализации можно написать сразу?
           \begin{haskell}
@@ -323,7 +317,7 @@
           \end{haskell}
           Типы переменных:\pause
           \begin{haskell}
-            f :: a -> b, g :: b -> Int, !\pause!x :: a, ? :: Int
+            f :: a -> b, g :: b -> c, !\pause!x :: a, ? :: c
           \end{haskell}
           Можно увидеть, что \haskinline|?| может быть \haskinline|g ??|, где \haskinline|?? :: |\pause\haskinline|b = |\pause\haskinline|f x|.
   \end{itemize}
@@ -333,20 +327,21 @@
   \frametitle{Типизированные дыры в коде}
   \begin{itemize}
     \item Эти рассуждения не обязательно делать вручную.
-    \item Если в выражении (а не в образце) использовать дыру \haskinline|_| (или \haskinline|_название|), то увидим ожидаемый в этом месте тип.
+    \item Если в выражении (а не в образце) использовать дыру \haskinline|_| (или \haskinline|_название|; дыр может быть несколько), то увидим ожидаемый в этом месте тип.
     \item
           \begin{haskell}
-            foo :: (a -> b, b -> Int) -> (a -> Int)
+            foo :: (a -> b, b -> c) -> (a -> c)
             foo (f, g) = \x -> g _
           \end{haskell}
           выдаст сообщение
-          \begin{ghci}
-            Found hole `_' with type: b
-            Where: `b' is a rigid type variable bound by
-            the type signature for foo :: (a -> b, b -> Int) -> (a -> Int)
-            Relevant bindings include ...
-          \end{ghci}
-    \item Дыр может быть несколько.
+          \begin{ghcismall}
+            • Found hole: _ :: b
+              Where: ‘b’ is a rigid type variable bound by
+                     the type signature for foo
+            • Relevant bindings include
+                x :: a, g :: b -> c, f :: a -> b, ...
+          \end{ghcismall}
+    \item \emph{Rigid} (жёсткая) переменная типа "--- из сигнатуры: тип выбирает вызывающий, и внутри определения её нельзя заменить конкретным. Та же фраза будет в ошибке, если вернуть \haskinline|Int| вместо \haskinline|a|.
   \end{itemize}
 \end{frame}
 
