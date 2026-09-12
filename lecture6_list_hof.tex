@@ -82,7 +82,8 @@
     \item \haskinline!x <- [1..5]! "--- \emph{генератор}, \haskinline|even x| "--- \emph{фильтр}.
           \pause
     \item Тех и других может быть много.
-    \item Генераторы могут использовать переменные, введённые в предыдущих. Пример:
+    \item \haskinline!let y = x*x! среди них вводит переменную.
+    \item Генераторы могут использовать предыдущие переменные:
           \begin{haskell}
             [(x, y) | x <- [1..5], y <- [1..x], odd (x - y)] == !\pause!
               [(2,1), (3,2), (4,1), (4,3), (5,2), (5,4)]
@@ -99,14 +100,16 @@
   \frametitle{Правая свёртка списков и структурная рекурсия}
   \begin{itemize}
     \item При \emph{структурной рекурсии} рекурсивный вызов делается на подтерме одного из аргументов функции (например, хвосте списка).
-    \item Большинство наших рекурсивных определений выглядели именно так.
     \pause
-    \item Оказывается, что есть универсальная функция, через которую выражаются такие определения:
+    \item Есть универсальная функция для таких определений:
           \begin{haskell}
             foldr :: (a -> b -> b) -> b -> [a] -> b
             foldr f z [x1, x2, ..., xn] == 
               x1 `f` (x2 `f` ... (xn `f` z)...)
           \end{haskell}
+          \begin{itemize}
+            \item Настоящий тип более общий: \haskinline|Foldable t => ... -> t a -> b| (лекция 9).
+          \end{itemize}
     \item Правая свёртка проходит по структуре списка и заменяет \haskinline{[]} на \haskinline{z} и \haskinline{(:)} на \haskinline{f}.
     \item Например, \haskinline|sum| получится, если взять \haskinline{f =!\pause! (+)} и \haskinline{z =!\pause! 0}.
     \item Упражнение: реализовать \haskinline|length|.
@@ -132,7 +135,7 @@
           \begin{haskellsmall}
             (...((z `f` x1) `f` x2) `f`...) `f` xn
           \end{haskellsmall}
-    \item Хвостовая рекурсия может быть скомпилирована в цикл и в других языках ФП очень важна. В Haskell ленивость всё усложняет.
+    \item Хвостовая рекурсия компилируется в цикл и в других языках ФП очень важна; в Haskell её усложняет ленивость (лекция 8).
   \end{itemize}
 \end{frame}
 
@@ -153,7 +156,7 @@
             foldMaybe ::   b      -> (a -> b) -> Maybe a -> b
           \end{haskellsmall}
           \pause
-    \item Это \haskinline|Data.Maybe.maybe| с обратным порядком аргументов.
+    \item Это в точности \haskinline|maybe| из \haskinline|Prelude|.
   \end{itemize}
 \end{frame}
 
@@ -174,8 +177,8 @@
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
-    \item \href{https://habr.com/ru/post/667058/}{Применение обобщённой свёртки для обработки синтаксических деревьев}
-    \item \href{http://www.cs.nott.ac.uk/~pszgmh/fold.pdf}{A tutorial on the universality and expressiveness of fold}
+    \item \href{https://habr.com/ru/articles/667058/}{Применение обобщённой свёртки для обработки синтаксических деревьев}
+    \item \href{https://people.cs.nott.ac.uk/pszgmh/fold.pdf}{A tutorial on the universality and expressiveness of fold}
     \item \href{https://wiki.haskell.org/wikiupload/1/14/TMR-Issue6.pdf}{Getting a Fix from the Right Fold} (реализация \haskinline{dropWhile} через \haskinline{foldr})
   \end{itemize} 
 \end{frame}
