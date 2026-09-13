@@ -13,7 +13,7 @@
   \begin{itemize}
     \item Поговорим о списках подробнее.
     \item Это структура данных, которая постоянно встречается в программах.
-    \item Но по поведению и характеристикам \emph{очень сильно} отличается от списков в Java и C\# (или \haskinline|std::vector| в C++).
+    \item Но по поведению и характеристикам \emph{очень сильно} отличается от \haskinline|ArrayList| в Java, \haskinline|List<T>| в C\# и \haskinline|std::vector| в C++.
           \pause
     \item Списки в Haskell и множестве других языков, начиная с Lisp "--- односвязные.
           \pause
@@ -26,17 +26,18 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Некоторые функции первого порядка над\\ списками}
+  \frametitle{Основные операции над списками}
   \begin{itemize}
-    \item \haskinline|(++) :: [a] -> [a] -> [a]| \pause"--- объединение.
+    \item \haskinline|(++) :: [a] -> [a] -> [a]| \pause"--- конкатенация.
     \item \haskinline[escapeinside=``]|(!!) :: [a] -> Int -> a| \pause"--- элемент по индексу.
-    \item \haskinline|null :: [a] -> Bool| \pause"--- проверка на пустоту (лучше, чем \haskinline|length xs == 0|! Но сопоставление ещё лучше).
+    \item \haskinline|null :: [a] -> Bool| \pause"--- проверка на пустоту.
+    \item Если для непустых списков нужны голова и хвост, используйте сопоставление с образцом вместо \haskinline|null|, \haskinline|head| и \haskinline|tail|.
     \item \haskinline|elem :: Eq a => a -> [a] -> Bool| \pause"--- проверка на вхождение элемента.
     \item \haskinline|and, or :: [Bool] -> Bool| \pause"--- все ли элементы \haskinline|True| (или есть ли такой).
           \pause
-    \item У части из них тип на самом деле более общий, но пока нам не нужен.
+    \item У части из них тип на самом деле более общий.
           \pause
-    \item Все основные в \href{https://hackage.haskell.org/package/base/docs/Data-List.html}{Data.List}. \pause И ещё пакет \hackage{safe}.
+    \item Все основные в \href{https://hackage.haskell.org/package/base/docs/Data-List.html}{Data.List}. И ещё пакет \hackage{safe}.
   \end{itemize}
 \end{frame}
 
@@ -45,7 +46,7 @@
   \begin{itemize}
     \item \haskinline|map :: (a -> b) -> [a] -> [b]| \pause"--- применяет функцию ко всем элементам.
     \item \haskinline|filter :: (a -> Bool) -> [a] -> [a]| \pause"--- выбирает элементы, удовлетворяющие условию.
-    \item \haskinline|concatMap :: (a -> [b]) -> [a] -> [b]| \pause"--- применяет функцию ко всем элементам и объединяет результаты.
+    \item \haskinline|concatMap :: (a -> [b]) -> [a] -> [b]| \pause"--- применяет функцию ко всем элементам и конкатенирует результаты.
     \item \haskinline|all, any :: (a -> Bool) -> [a] -> Bool| \pause"--- все ли элементы удовлетворяют условию (или есть ли такой).
           \pause
     \item[]
@@ -58,7 +59,7 @@
   \begin{itemize}
     \item Базовые операции "--- конструирование списков и их разбор через \haskinline|:|.
           \pause
-    \item Поэтому \haskinline|length| (а значит, и \haskinline|length xs == 0|) проходит весь список целиком, а \haskinline|null| нет.
+    \item Поэтому \haskinline|length| (а значит, и \haskinline|length xs == 0| без оптимизации) проходит весь список целиком, а \haskinline|null| нет.
           \pause
     \item \haskinline[escapeinside=``]|xs !! n| "--- цена пропорциональна \pause\haskinline|n|.
           \pause
@@ -117,9 +118,23 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Правая свёртка: реализация}
+  \begin{haskell}
+    foldr :: (a -> b -> b) -> b -> [a] -> b
+    foldr f z [] = !\pause!z
+    foldr f z (x:xs) = !\pause!f x !\pause!(foldr f z xs)
+  \end{haskell}
+  \begin{itemize}
+    \item Пустой список заменяем на \haskinline|z|.
+    \item Для \haskinline|x:xs| сворачиваем хвост и передаём \haskinline|f| голову и результат свёртки хвоста.
+    \item Та же схема работает для других типов данных: каждому конструктору соответствует своя функция.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Левая свёртка и хвостовая рекурсия}
   \begin{itemize}
-    \item При \emph{хвостовой рекурсии} рекурсивный вызов делается в самом конце вычисления. Например,
+    \item При \emph{хвостовой рекурсии} результат рекурсивного вызова сразу становится результатом текущего вызова. Например,
     \item \begin{haskellsmall}
             sum xs = sum' 0 xs where
               sum' acc [] = acc
@@ -169,11 +184,32 @@
             foldTree   :: ? ->        ?             -> Tree a -> b !\pause!
             foldTree   :: (a -> b) -> (b -> b -> b) -> Tree a -> b !\pause!
 
+            sumTree :: Num a => Tree a -> a
             sumTree = foldTree!\pause! id (+)
           \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Свёртка деревьев: реализация и пример}
+  \begin{haskellsmall}
+    foldTree :: (a -> b) -> (b -> b -> b) -> Tree a -> b
+    foldTree leaf node (Leaf x) = leaf x
+    foldTree leaf node (Node left right) =
+        node (foldTree leaf node left)
+             (foldTree leaf node right)
+
+    sumTree :: Num a => Tree a -> a
+    sumTree = foldTree id (+)
+
+    ghci> sumTree (Node (Leaf 2) (Node (Leaf 3) (Leaf 5)))
+    10
+  \end{haskellsmall}
+  \begin{itemize}
+    \item Заменяем \haskinline|Leaf| на \haskinline|id|, а \haskinline|Node| на \haskinline|(+)|: получаем \haskinline|2 + (3 + 5)|.
+    \item Два рекурсивных поля узла дают два результата типа \haskinline|b|, которые объединяет функция \haskinline|node|.
+  \end{itemize}
+\end{frame}
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
