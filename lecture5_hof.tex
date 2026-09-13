@@ -21,10 +21,11 @@
 \begin{frame}[fragile]
   \frametitle{Функции высших порядков}
   \begin{itemize}
-    \item В частности, функции могут принимать на вход функции.
-    \item То есть тип параметра сам может быть функциональным типом.
+    \item Функции могут принимать на вход функции.
     \item Тривиальный пример:
           \begin{haskell}
+            import Data.Char (isLetter, toLower)
+
             foo :: (Char -> Bool) -> Bool
             foo f = f 'a'
 
@@ -32,8 +33,9 @@
             True
           \end{haskell}
     \item Скобки вокруг типа параметра здесь необходимы.\pause
-    \item Функции, параметры которых "--- функции, называются \emph{функциями высших порядков (ФВП)}.\pause
-    \item Часто ими также считают функции, возвращающие функции, но не в Haskell (скоро увидим почему).
+    \item В других языках \emph{функциями высших порядков (ФВП)} называют функции, аргументы или результаты которых тоже функции.\pause
+    \item Функция второго порядка принимает или возвращает обычную функцию (первого порядка) и так далее.\pause
+    \item В этой лекции ФВП называем только функции, принимающие функции. Почему "--- увидим позже.
   \end{itemize}
 \end{frame}
 
@@ -81,7 +83,9 @@
           \pause
     \item Например,
           \begin{haskell}
-            Data.List.sortBy (\x y -> compare y x) list
+            import Data.List (sortBy)
+
+            sortBy (\x y -> compare y x) list
           \end{haskell}
     \item Что делает это выражение?\pause
     \item Сортирует список по убыванию.
@@ -126,6 +130,7 @@
 
             on :: (b -> b -> c) -> (a -> b) -> 
                 (a -> a -> c)
+            on op f x y = op (f x) (f y)
           \end{haskell}
   \end{itemize}
 \end{frame}
@@ -243,13 +248,14 @@
             foo' x = foo x
             -- или foo' = \textbackslash x -> foo x 
           \end{haskell}
-    \item \haskinline|foo' y == foo y|, какое бы \haskinline|y| (и \haskinline|foo|) мы не взяли.\pause
-    \item Поэтому мы можем упростить определение:
+    \item Применение обоих определений к одному аргументу задаёт одно и то же вычисление.\pause
+    \item Поэтому обычно можно сократить аргумент:
           \begin{haskell}
             foo' = foo
           \end{haskell}
 \pause
-    \item Это также относится к случаям, когда совпадают часть аргументов в конце:
+    \item Оговорка: удаление лямбды может изменить поведение при использовании \haskinline|seq| (подробнее в лекции о ленивости).
+    \item Можно сокращать и несколько аргументов в конце:
           \begin{haskell}
             foo' x y z w = foo (y + x) z w
           \end{haskell}
@@ -265,9 +271,10 @@
   \begin{itemize}
     \item И когда само определение такой формы не имеет, но может быть к ней преобразовано
           \begin{haskell}
+            root4 :: Floating a => a -> a
             root4 x = sqrt (sqrt x)
           \end{haskell}
-          можно переписать как
+          можно переписать (сохраняя сигнатуру) как
           \begin{haskell}
             root4 x = (sqrt . sqrt) x
 
@@ -289,16 +296,21 @@
 \begin{frame}[fragile]
   \frametitle{Бесточечный стиль}
   \begin{itemize}
-    \item Как видим, с помощью композиции и других операций можно дать определение некоторых функций без использования переменных.
+    \item Композиция и другие операции позволяют определять функции без явного указания аргументов.
     \item Это называется \emph{бесточечным стилем} (переменные рассматриваются как точки в пространстве значений).\pause
-    \item Оказывается, что очень многие выражения в Haskell имеют бесточечный эквивалент.
-    \item На \href{https://wiki.haskell.org/Pointfree}{Haskell Wiki} можно найти инструменты, позволяющие переводить между стилями.
+    \item Многие выражения имеют бесточечный эквивалент.
+    \item На \href{https://wiki.haskell.org/Pointfree}{Haskell Wiki} есть инструменты для перевода между стилями.
     \item Опять же, не перестарайтесь:
           \begin{haskell}
             > pl \x y -> compare (f x) (f y)
             (. f) . compare . f
           \end{haskell}
           \pause
+    \item Яснее выразить тот же смысл через \haskinline|on|:
+          \begin{haskell}
+            import Data.Function (on)
+            compare `on` f
+          \end{haskell}
     \item В языках семейств Forth и APL бесточечный стиль является основным.
   \end{itemize}
 \end{frame}
