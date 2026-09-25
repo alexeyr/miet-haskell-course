@@ -194,21 +194,74 @@
   \end{itemize}
 \end{frame}
 
+\newcommand{\lst}[1]{\mathtt{[}#1\mathtt{]}}
+\newcommand{\tInt}{\mathtt{Int}}
+\newcommand{\tMaybe}{\mathtt{Maybe}}
 \begin{frame}[fragile]
-  \frametitle{Алгоритм унификации: правила}
+  \frametitle{Алгоритм унификации: правила (1)}
   \begin{itemize}
-    \item $C~t_1~t_2~\ldots~t_k = C~s_1~s_2~\ldots~s_k$ (одинаковые конструкторы): \pause заменяется на $t_1 = s_1, t_2 = s_2, \ldots$
+    \item $C~t_1~\ldots~t_k = C~s_1~\ldots~s_k$ (одинаковые конструкторы): \pause заменяется на $t_1 = s_1, \ldots, t_k = s_k$.
+          \pause
+          \begin{itemize}
+            \item $\tMaybe~\alpha = \tMaybe~\lst{\tInt}$ даёт $\alpha = \lst{\tInt}$.
+            \item $\alpha \to \beta = \tInt \to \mathtt{Bool}$ даёт $\alpha = \tInt$, $\beta = \mathtt{Bool}$: $\to$ "--- тоже конструктор с двумя аргументами.
+          \end{itemize}
           \pause
     \item $C~\ldots = D~\ldots$ (разные конструкторы): \pause унификатора не существует.
           \pause
-    \item $x=x$: \pause оно удаляется, переходим к следующему (можно обобщить и на $t=t$).
+          \begin{itemize}
+            \item $\tMaybe~\alpha = \lst{\beta}$, $\tInt \to \tInt = \tInt$.
+          \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Алгоритм унификации: правила (2)}
+  \begin{itemize}
+    \item $x=x$: \pause удаляется (можно обобщить и на $t=t$).
           \pause
     \item $x=t$ или $t=x$: два случая. \pause
           \begin{itemize}
-            \item Если в $t$ нет переменной $x$: \pause во всех остальных уравнениях делаем замену $x \mapsto t$, переходим к следующему.
-            \item Если есть\pause, то унификатора не существует (иначе результат будет бесконечным)! В GHC это ошибка вида \ghcinline|Couldn't match expected type ‘t1’ with actual type ‘t1 -> t2’|.
+            \item Если в $t$ нет переменной $x$: \pause во всех остальных уравнениях делаем замену $x \mapsto t$. Например, $\alpha = \lst{\beta}$.
+            \item Если есть\pause, то унификатора не существует: $\alpha = \lst{\alpha}$ требовало бы $\alpha = \mathtt{[[[}\ldots\mathtt{]]]}$. В GHC это ошибка вида \ghcinline|Couldn't match expected type ‘t1’ with actual type ‘t1 -> t2’|.
           \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Унификация: пример}
+  \renewcommand{\arraystretch}{1.2}\small
+  \begin{tabular}{@{}l@{}}
+    $\{\,\alpha \to \beta = (\gamma \to \gamma) \to \lst{\gamma},\quad \beta = \lst{\tInt}\,\}$ \\
+    \onslide<2->{\quad\small одинаковые конструкторы ($\to$)} \\
+    \onslide<3->{$\{\,\alpha = \gamma \to \gamma,\quad \beta = \lst{\gamma},\quad \beta = \lst{\tInt}\,\}$} \\
+    \onslide<4->{\quad\small $\alpha = t$, $\alpha$ не входит в $t$: $\sigma = \{\alpha \mapsto \gamma \to \gamma\}$} \\
+    \onslide<5->{$\{\,\beta = \lst{\gamma},\quad \beta = \lst{\tInt}\,\}$} \\
+    \onslide<6->{\quad\small $\beta = t$: подстановка в остальные; $\sigma = \{\alpha \mapsto \gamma \to \gamma,\ \beta \mapsto \lst{\gamma}\}$} \\
+    \onslide<7->{$\{\,\lst{\gamma} = \lst{\tInt}\,\}$} \\
+    \onslide<8->{\quad\small одинаковые конструкторы ($\mathtt{[]}$)} \\
+    \onslide<9->{$\{\,\gamma = \tInt\,\}$} \\
+    \onslide<10->{\quad\small $\gamma \mapsto \tInt$, подставляем и в $\sigma$} \\
+    \onslide<11->{$\sigma = \{\,\alpha \mapsto \tInt \to \tInt,\quad \beta \mapsto \lst{\tInt},\quad \gamma \mapsto \tInt\,\}$} \\
+    \onslide<12->{\quad\small Проверка:} \onslide<13->{\small $(\tInt \to \tInt) \to \lst{\tInt}$ и $\lst{\tInt}$ с обеих сторон.} \\
+  \end{tabular}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Унификация: пример без решения}
+  \renewcommand{\arraystretch}{1.25}
+  \begin{tabular}{@{}l@{}}
+    $\{\,\alpha = \lst{\beta},\quad \beta = \tMaybe~\alpha\,\}$ \\
+    \onslide<2->{\quad\small $\alpha \mapsto \lst{\beta}$, подставляем во второе уравнение} \\
+    \onslide<3->{$\{\,\beta = \tMaybe~\lst{\beta}\,\}$} \\
+    \onslide<4->{\quad\small $\beta$ входит в правую часть: решения нет.} \\
+  \end{tabular}
+  \onslide<5->{
+    \begin{itemize}
+      \item Occurs check срабатывает не сразу, а после подстановки.
+      \item Это в миниатюре \haskinline|f3 x = x x| со слайда с примерами.
+    \end{itemize}
+  }
 \end{frame}
 
 \newcommand{\fresh}{\mathord{\mathit{fresh}}()}
