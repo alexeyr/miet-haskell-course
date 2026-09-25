@@ -525,10 +525,37 @@
   \end{itemize}
 \end{frame}
 
+\newcommand{\Malg}{\mathcal{M}}
+\begin{frame}[fragile]
+  \frametitle{Алгоритм $\Malg$: сверху вниз}
+  \begin{itemize}
+    \item Алгоритм $\Malg$ (\href{https://ropas.snu.ac.kr/~kwang/paper/98-toplas-leyi.pdf}{Lee, Yi, 1998}) идёт сверху вниз: $\Malg(\Gamma; e; \rho)$ получает \emph{ожидаемый} тип $\rho$ и передаёт его подвыражениям; унификация выполняется для переменных и лямбд.
+          \pause
+    \item Переменная $x$: унифицируем $\rho$ с типом $x$ из $\Gamma$ (после замены переменных под $\forall$ на свежие).
+    \item Применение $e_1~e_2$: свежая $\beta$; $\Malg(\Gamma; e_1; \beta \to \rho)$, затем $\Malg(\Gamma; e_2; \beta)$.
+    \item Лямбда $\lambda x.e_1$: свежие $\alpha$, $\beta$; унифицируем $\rho = \alpha \to \beta$; $\Malg(\Gamma, x : \alpha; e_1; \beta)$.
+    \item \haskinline|let !$x$! = !$e_1$! in !$e_2$!|: свежая $\beta$; $\Malg(\Gamma; e_1; \beta)$; обобщаем $\phi(\beta)$ как в $\J$; $\Malg(\Gamma, x : \sigma; e_2; \rho)$.
+    \item Для всего выражения: $\Malg(\Gamma; e; \alpha)$ со свежей $\alpha$; ответ "--- $\phi(\alpha)$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Алгоритм $\Malg$: пример и следствия}
+  \begin{itemize}
+    \item \haskinline|not id| с ожидаемым $\rho$: для \haskinline|not| унифицируем $\tBool \to \tBool = \beta \to \rho$, получаем $\beta = \tBool$; для \haskinline|id| унифицируем $\alpha_1 \to \alpha_1 = \tBool$ "--- ошибка \emph{на} \haskinline|id|.
+          \pause
+    \item Ошибка обнаруживается раньше, чем в $\J$ (доказано в статье); здесь "--- при проверке \haskinline|id|.
+    \item Так же устроены сообщения GHC: \emph{expected type} "--- тип, переданный сверху, \emph{actual type} "--- выведенный для подвыражения.
+          \pause
+    \item Типы и множество принимаемых программ те же, что у $\J$ и $\mathcal{W}$.
+    \item «Ожидаемый тип как вход» "--- начало двунаправленного вывода типов (см. дополнительное чтение).
+  \end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
-    \item Более известна альтернатива $\J$, избегающая \enquote{глобальной} $\phi$ "--- алгоритм $\mathcal{W}$. Пример реализации со ссылками на дополнительные материалы: \href{https://github.com/mgrabmueller/AlgorithmW}{Algorithm W Step by Step}
+    \item Более известна альтернатива $\J$, избегающая \enquote{глобальной} $\phi$ "--- алгоритм $\mathcal{W}$. Пример реализации со ссылками на дополнительные материалы: \href{https://github.com/mgrabmueller/AlgorithmW}{Algorithm W Step by Step}; оба алгоритма с union-find коротко разобраны в \href{https://bernsteinbear.com/blog/type-inference/}{Damas-Hindley-Milner inference two ways}.
     \item \href{https://smunix.github.io/dev.stephendiehl.com/fun/006_hindley_milner.html}{Глава Hindley-Milner Inference в незаконченной книге Write You a Haskell}
     \item Реализация системы типов всего (!) стандарта Haskell 98 с выводом, основанная на $\J$, есть в \href{https://gist.github.com/chrisdone/0075a16b32bfd4f62b7b}{Typing Haskell in Haskell}.
     \item \href{https://compsciclub.ru/courses/types/2019-spring/classes/}{Курс лекций В.~Н.~Брагилевского "Вывод типов от Хиндли — Милнера до GHC 8.8"  (есть видео)}
@@ -538,10 +565,10 @@
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение: современный взгляд}
   \begin{itemize}
-    \item \href{https://cambium.inria.fr/~fpottier/publis/fpottier-appsem-2005.pdf}{F.~Pottier, A modern eye on ML type inference (2005)}: вывод типов как порождение и решение ограничений; уровни для быстрого обобщения.
-    \item \href{https://okmij.org/ftp/ML/generalization.html}{O.~Kiselyov, How OCaml type checker works}: те же уровни на примере реального компилятора.
-    \item \href{https://simon.peytonjones.org/outsideinx/}{OutsideIn(X) (2011)}: как устроен вывод в GHC (ограничения и импликации) и почему локальные \haskinline|let| там не обобщаются (\haskinline|MonoLocalBinds|).
-    \item \href{https://arxiv.org/abs/1908.05839}{J.~Dunfield, N.~Krishnaswami, Bidirectional Typing (2021)}: что делать, когда без аннотаций не обойтись (например, полиморфизм ранга 2 и выше).
+    \item \href{https://cambium.inria.fr/~fpottier/publis/fpottier-appsem-2005.pdf}{F.~Pottier, A modern eye on ML type inference (2005)}: вывод типов как решение ограничений; уровни для быстрого обобщения.
+    \item \href{https://okmij.org/ftp/ML/generalization.html}{O.~Kiselyov, How OCaml type checker works}: уровни в реальном компиляторе.
+    \item \href{https://simon.peytonjones.org/outsideinx/}{OutsideIn(X) (2011)}: вывод в GHC (ограничения и импликации); когда и почему ограничивается обобщение локальных \haskinline|let|.
+    \item \href{https://arxiv.org/abs/1908.05839}{J.~Dunfield, N.~Krishnaswami, Bidirectional Typing (2021)}: когда без аннотаций не обойтись (полиморфизм высших рангов).
   \end{itemize}
 \end{frame}
 
