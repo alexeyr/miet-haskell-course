@@ -152,48 +152,55 @@
   \end{itemize}
 \end{frame}
 
+\newcommand{\lst}[1]{\mathtt{[}#1\mathtt{]}}
+\newcommand{\tInt}{\mathtt{Int}}
+\newcommand{\tMaybe}{\mathtt{Maybe}}
+\newcommand{\tBool}{\mathtt{Bool}}
 \begin{frame}[fragile]
-  \frametitle{Унификация типов}
+  \frametitle{Подстановки}
   \begin{itemize}
-    \item Для вывода типов в системе Хиндли "--- Милнера случай один из самых простых: унификация первого порядка.
     \item Подстановки $\sigma$ сопоставляют переменным типов $\alpha, \beta, \ldots$ монотипы (без $\forall$). Например,
           \[ \sigma=\{\alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{[}\gamma\mathtt{]} \} \]
     \item Подстановку можно применить к типу:
           \[ \sigma(\mathtt{Maybe}~\beta)=\mathtt{Maybe}~\mathtt{[}\gamma\mathtt{]} \]
-    \item Композиция подстановок "--- подстановка.
-    \item Монотипы равны, если они совпадают синтаксически.
+    \item Композиция подстановок "--- подстановка (сначала применяем правую, потом левую): $\{\beta \mapsto \tInt\} \circ \{\alpha \mapsto \tInt\} =\pause{} \{\alpha \mapsto \tInt,\ \beta \mapsto \tInt\}$.
+    \item Договоримся, что переменные из левых частей не встречаются в правых (как в $\sigma$ выше). Тогда $\sigma(\sigma(t)) = \sigma(t)$: подстановки \emph{идемпотентны}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Более общие типы и подстановки}
+  \begin{itemize}
+    \item Монотип $t_1$ \emph{более общий}, чем $t_2$ ($t_2$ "--- \emph{частный случай} $t_1$), если $t_2 = \sigma(t_1)$ для некоторой $\sigma$.
           \pause
-          \begin{itemize}
-            \item Т.е. синонимы типов должны быть уже раскрыты!
-          \end{itemize}
+    \item $(\alpha, \alpha)$ более общий, чем $(\tInt, \tInt)$, а $(\alpha, \beta)$ "--- чем $(\alpha, \alpha)$.
+          \pause
+    \item Вопрос: когда два типа более общи друг друга? \pause Когда они отличаются только названиями переменных.
+          \pause
+    \item Монотип $t'$ "--- \emph{экземпляр} политипа $\forall\bar\alpha.\,t$, если $t' = \sigma(t)$ для $\sigma$, меняющей только $\bar\alpha$: $\tInt \to \tInt$ и $\beta \to \beta$ "--- экземпляры $\forall\alpha.\,\alpha \to \alpha$.
+          \pause
+    \item Так же для подстановок: $\sigma_1$ более общая, чем $\sigma_2$, если $\sigma_2 = \sigma \circ \sigma_1$ для некоторой $\sigma$.
+          \pause
+    \item $\{\alpha \mapsto \beta\}$ более общая, чем $\{\alpha \mapsto \tInt,\ \beta \mapsto \tInt\} = \{\beta \mapsto \tInt\} \circ \{\alpha \mapsto \beta\}$.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Унификация типов}
   \begin{itemize}
-    \item Тип \haskinline|(!$\alpha$!, !$\alpha$!)| более общий, чем \haskinline|(Int, Int)|, так как  \haskinline|!$\exists \sigma\ \sigma($!(!$\alpha$!, !$\alpha$!)!$)=$!(Int, Int)|.
-    \item Второй "--- частный случай первого.
+    \item В системе Хиндли "--- Милнера унифицируются монотипы: они равны, если совпадают синтаксически (синонимы уже раскрыты!).
+    \item Задача унификации: система уравнений $t_1 = s_1, \ldots$; решение "--- подстановка, после которой обе части каждого уравнения совпадают.
           \pause
-    \item \haskinline|(!$\alpha$!, !$\beta$!)| более общий, чем \haskinline|(!$\alpha$!, !$\alpha$!)|.
+    \item Пример: $(\alpha, \beta) = (\beta, \tInt)$. \pause $\{\alpha \mapsto \tInt,\ \beta \mapsto \tInt\}$ "--- решение, \pause и наиболее общее: все остальные "--- его частные случаи.
           \pause
-    \item Вопрос: когда два типа более общи друг друга?
-          \pause
-    \item Когда они отличаются только названиями переменных.
-          \pause
-    \item Можем рассмотреть задачу унификации \haskinline|(!$\alpha$!, !$\beta$!)!$=$!(!$\beta$!, Int)|.
-          \pause
-    \item $\{ \alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{Int} \}$ это одно из её решений.
-          \pause
-    \item Наиболее общее (все остальные "--- его частные случаи).
+    \item У каждой задачи унификации типов есть наиболее общее решение (или нет вообще). \pause Именно поэтому $\mathcal{J}$ находит наиболее общий тип.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Алгоритм унификации}
   \begin{itemize}
-    \item Вообще, у каждой задачи унификации типов есть наиболее общее решение (или нет вообще).
-    \item Оно находится следующим алгоритмом:
+    \item Наиболее общее решение находится так:
           \pause
     \item На каждом шаге есть система уравнений. Выбираем любое из них и упрощаем.
     \item Закончим, когда не останется упрощаемых уравнений (оставшиеся опишут подстановку).
@@ -201,10 +208,6 @@
   \end{itemize}
 \end{frame}
 
-\newcommand{\lst}[1]{\mathtt{[}#1\mathtt{]}}
-\newcommand{\tInt}{\mathtt{Int}}
-\newcommand{\tMaybe}{\mathtt{Maybe}}
-\newcommand{\tBool}{\mathtt{Bool}}
 \begin{frame}[fragile]
   \frametitle{Алгоритм унификации: правила (1)}
   \begin{itemize}
@@ -321,7 +324,7 @@
   \frametitle{Алгоритм $\J$: переменная}
   \begin{itemize}
     \item Переменная $x$: тип берётся из окружения (если $x$ там нет, это ошибка типизации).
-    \item Если это политип, переменные под кванторами заменяются на свежие (новые): получаем монотип.
+    \item Если это политип, берём его экземпляр со свежими переменными (самый общий из экземпляров).
           \pause
     \item Примеры (в $\Gamma$: $\mathtt{not} : \tBool \to \tBool$, $\mathtt{id} : \forall\alpha.\,\alpha \to \alpha$; числовые литералы до обсуждения классов типов считаем $\tInt$):
           \begin{itemize}
