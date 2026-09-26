@@ -106,24 +106,28 @@
   \frametitle{Виды выражений и типов}
   \begin{itemize}
     \setlength{\itemsep}{0pt}
-    \item В нашей системе 5 видов выражений:
-          \pause
-    \item Названия переменных (в том числе функций) $x$
-    \item Применение функции к аргументу
-    \item Лямбда-выражения
-    \item \haskinline|let|-выражения
-    \item \haskinline|case|-выражения
+    \item В нашей системе 5 видов выражений:\pause
+    \begin{itemize}
+      \item Названия переменных (в том числе функций) $x$
+      \item Применение функции к аргументу
+      \item Лямбда-выражения
+      \item \haskinline|let|-выражения
+      \item \haskinline|case|-выражения
+    \end{itemize}
       \pause
     \item Типы $t$:
           \pause
-    \item Базовые типы \haskinline|Int|, \ldots
-    \item Переменные типов (греческие буквы $\alpha, \beta, \ldots$)
-    \item Тип функций $t_1 \to t_2$
-    \item Применение конструктора типов: $\mathtt{Maybe}~t$, $[t]$, $(t_1, t_2)$
-      \pause
+    \begin{itemize}
+      \item Базовые типы \haskinline|Int|, \ldots
+      \item Переменные типов (греческие буквы $\alpha, \beta, \ldots$)
+      \item Тип функций $t_1 \to t_2$
+      \item Применение конструктора типов: $\mathtt{Maybe}~t$, $[t]$, $(t_1, t_2)$
+        \pause
+    \end{itemize}
     \item Полиморфные типы: $\forall \alpha_1 \ldots \alpha_k~t$
-          \pause
-    \item $\forall$ только на внешнем уровне, не под $\to$!
+    \begin{itemize}
+      \item $\forall$ только на внешнем уровне, не под $\to$!
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -321,7 +325,7 @@
           \begin{itemize}
             \item \haskinline|not|: $\tBool \to \tBool$ как есть.
                   \pause
-            \item \haskinline|id|: $\alpha_1 \to \alpha_1$; второе вхождение \haskinline|id| в том же выражении "--- $\alpha_2 \to \alpha_2$. Каждое использование типизируется независимо.
+            \item \haskinline|id|: \pause $\alpha_1 \to \alpha_1$; второе вхождение \haskinline|id| в том же выражении "--- $\alpha_2 \to \alpha_2$. Каждое использование типизируется независимо.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -338,11 +342,11 @@
           \pause
     \item Примеры:
           \begin{itemize}
-            \item \haskinline|not True|: $t_1 = \tBool \to \tBool$, $t_2 = \tBool$; унифицируем $\tBool \to \tBool = \tBool \to \alpha$: $\alpha = \tBool$.
+            \item \haskinline|not True|: \pause $t_1 = \tBool \to \tBool$, $t_2 = \tBool$; унифицируем $\tBool \to \tBool = \tBool \to \alpha$: \pause $\alpha = \tBool$.
                   \pause
-            \item \haskinline|id id|: $t_1 = \alpha_1 \to \alpha_1$, $t_2 = \alpha_2 \to \alpha_2$; унифицируем $\alpha_1 \to \alpha_1 = (\alpha_2 \to \alpha_2) \to \alpha$: $\alpha_1 = \alpha_2 \to \alpha_2$, $\alpha = \alpha_2 \to \alpha_2$. Результат $\alpha_2 \to \alpha_2$.
+            \item \haskinline|id id|: \pause $t_1 = \alpha_1 \to \alpha_1$, $t_2 = \alpha_2 \to \alpha_2$; унифицируем $\alpha_1 \to \alpha_1 = (\alpha_2 \to \alpha_2) \to \alpha$:\pause $\alpha_1 = \alpha_2 \to \alpha_2$, $\alpha = \alpha_2 \to \alpha_2$. Результат\pause $\alpha_2 \to \alpha_2$.
                   \pause
-            \item \haskinline|not id|: унифицируем $\tBool \to \tBool = (\alpha_2 \to \alpha_2) \to \alpha$; нужно $\tBool = \alpha_2 \to \alpha_2$, а это разные конструкторы: ошибка типа.
+            \item \haskinline|not id|: \pause унифицируем $\tBool \to \tBool = (\alpha_2 \to \alpha_2) \to \alpha$; \pause нужно $\tBool = \alpha_2 \to \alpha_2$, а это разные конструкторы: ошибка типа.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -359,9 +363,9 @@
           \pause
     \item Примеры:
           \begin{itemize}
-            \item \haskinline|\x -> not x|: $x : \alpha$; для \haskinline|not x| унифицируем $\tBool \to \tBool = \alpha \to \beta$: $\alpha = \tBool$, $\beta = \tBool$. Результат $\alpha \to \beta = \tBool \to \tBool$.
+            \item \haskinline|\x -> not x|: \pause $x : \alpha$; для \haskinline|not x| унифицируем $\tBool \to \tBool = \alpha \to \beta$: $\alpha = \tBool$, $\beta = \tBool$. Результат \pause $\alpha \to \beta = \tBool \to \tBool$.
                   \pause
-            \item \haskinline|\x -> x|: $x : \alpha$, результат $\alpha \to \alpha$. Без $\forall$: обобщение делает только \haskinline|let|.
+            \item \haskinline|\x -> x|: \pause $x : \alpha$, результат $\alpha \to \alpha$. Без $\forall$: обобщение делает только \haskinline|let|.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -372,7 +376,7 @@
     \item \haskinline|let|-выражение \haskinline|let !$x$! = !$e_1$! in !$e_2$!|:
           \begin{itemize}
             \item $t_1 = \J(\Gamma; e_1)$.
-            \item Тип $x$ получается навешиванием $\forall$ на свободные переменные $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$; обозначим его $\sigma$.
+            \item Тип $x$ получается навешиванием $\forall$ на свободные переменные (те, что не под кванторами) $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$; обозначим его $\sigma$.
             \item $t_2 = \J(\Gamma, x : \sigma; e_2)$.
             \item Результат: \pause $t_2$.
           \end{itemize}
@@ -381,9 +385,9 @@
           \begin{itemize}
             \item $t_1 = \alpha \to \alpha$, $\alpha$ нет в $\Gamma$, поэтому $f : \forall\alpha.\,\alpha \to \alpha$.
                   \pause
-            \item В теле \haskinline|f 1| даёт $\tInt$, \haskinline|f True| "--- $\tBool$; результат $(\tInt, \tBool)$.
+            \item В теле \haskinline|f 1| даёт \pause $\tInt$, \haskinline|f True| "--- $\tBool$; результат \pause $(\tInt, \tBool)$.
                   \pause
-            \item А \haskinline|(\f -> (f 1, f True)) (\x -> x)| не типизируется: $f : \beta$ (тип \haskinline|x|) мономорфна, и $\beta$ пришлось бы унифицировать и с $\tInt \to \gamma_1$, и с $\tBool \to \gamma_2$.
+            \item А \haskinline|(\f -> (f 1, f True)) (\x -> x)| \pause не типизируется: $f : \beta$ мономорфна, и $\beta$ пришлось бы унифицировать и с $\tInt \to \gamma_1$, и с $\tBool \to \gamma_2$.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -394,14 +398,14 @@
     \item Особый случай: рекурсивный \haskinline|let| ($x$ входит в $e_1$). \pause
           \begin{itemize}
             \item \haskinline|fix f| возвращает неподвижную точку \haskinline|f| (т.е. \haskinline|f (fix f)| $=$ \haskinline|fix f|). \pause
-            \item Соответственно, её тип \pause \haskinline|fix :: forall a. (a -> a) -> a|. \pause
+            \item Соответственно, её тип \haskinline|fix ::!\pause! forall a. (a -> a) -> a|. \pause
             \item \haskinline|let x = !$e_1$! in !$e_2$!| превращается в \haskinline|let x = fix (\x -> !$e_1$!) in !$e_2$!|.
             \item Этот \haskinline|let| не рекурсивный: \pause \haskinline|x| в \haskinline|let x = ...| и в \haskinline|\x -> !$e_1$!| "--- разные!
           \end{itemize}
           \pause
-    \item Пример: \haskinline|let ones = 1 : ones in ...| $\leadsto$ \haskinline|fix (\ones -> 1 : ones)|.
+    \item Пример: \haskinline|let ones = 1 : ones in ...| $\leadsto$ \pause \haskinline|fix (\ones -> 1 : ones)|.
           \begin{itemize}
-            \item Внутри лямбды $\mathit{ones} : \alpha$; с $(:) : \forall\beta.\,\beta \to \lst{\beta} \to \lst{\beta}$ в $\Gamma$ тип \haskinline|1 : ones| "--- $\lst{\tInt}$, причём $\alpha = \lst{\tInt}$.
+            \item Внутри лямбды $\mathit{ones} : \alpha$; с $(:) : \forall\beta.\,\beta \to \lst{\beta} \to \lst{\beta}$ в $\Gamma$ тип \haskinline|1 : ones| \pause "--- $\lst{\tInt}$, причём $\alpha = \lst{\tInt}$.
                   \pause
             \item Лямбда: $\lst{\tInt} \to \lst{\tInt}$; \haskinline|fix| даёт $\lst{\tInt}$.
           \end{itemize}
@@ -428,11 +432,11 @@
           \hphantom{Пример: }\haskinline|  Nothing -> 1|\\
           \hphantom{Пример: }\haskinline|  Just x  -> x|
           \begin{itemize}
-            \item $m : \alpha$. Ветвь 1: \haskinline|Nothing| имеет тип $\tMaybe~\beta_1$, унифицируем с $\alpha$; тело "--- $\tInt$.
+            \item $m : \alpha$. Ветвь 1: \pause \haskinline|Nothing| имеет тип $\tMaybe~\beta_1$, унифицируем с $\alpha$; тело "--- $\tInt$.
                   \pause
-            \item Ветвь 2: $x : \beta_2$, образец \haskinline|Just x| "--- $\tMaybe~\beta_2$, унифицируем с $\tMaybe~\beta_1$: $\beta_1 = \beta_2$; тело "--- $\beta_2$.
+            \item Ветвь 2: \pause $x : \beta_2$, образец \haskinline|Just x| "--- $\tMaybe~\beta_2$, унифицируем с $\tMaybe~\beta_1$: $\beta_1 = \beta_2$; тело "--- $\beta_2$.
                   \pause
-            \item Унифицируем тела: $\beta_2 = \tInt$, значит $\alpha = \tMaybe~\tInt$; итог "--- $\tMaybe~\tInt \to \tInt$.
+            \item Унифицируем тела: \pause $\beta_2 = \tInt$, значит $\alpha = \tMaybe~\tInt$; итог "--- \pause $\tMaybe~\tInt \to \tInt$.
           \end{itemize}
   \end{itemize}
 \end{frame}
