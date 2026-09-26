@@ -163,12 +163,10 @@
 \begin{frame}[fragile]
   \frametitle{Подстановки}
   \begin{itemize}
-    \item Подстановки $\sigma$ сопоставляют переменным типов $\alpha, \beta, \ldots$ монотипы (без $\forall$). Например,
-          \[ \sigma=\{\alpha \mapsto \tInt, \beta \mapsto \lst{\gamma} \} \]
-    \item Подстановку можно применить к типу:
-          \[ \sigma(\tMaybe~\beta)=\tMaybe~\lst{\gamma} \]
-    \item Композиция подстановок "--- подстановка (сначала применяем правую, потом левую): $\{\beta \mapsto \tInt\} \circ \{\alpha \mapsto \tInt\} =\pause{} \{\alpha \mapsto \tInt,\ \beta \mapsto \tInt\}$.
-    \item Договоримся, что переменные из левых частей не встречаются в правых (как в $\sigma$ выше). Тогда $\sigma(\sigma(t)) = \sigma(t)$: подстановки \emph{идемпотентны}.
+    \item Подстановки $\sigma$ сопоставляют переменным типов $\alpha, \beta, \ldots$ монотипы (без $\forall$). Например, $\sigma_1 = \{\alpha \mapsto \tInt,\ \beta \mapsto \lst{\gamma}\}$, $\sigma_2 = \{\alpha \mapsto \beta,\ \beta \mapsto \tInt\}$.
+    \item Подстановку можно применить к монотипу (все замены сразу): $\sigma_1(\tMaybe~\beta) = \tMaybe~\lst{\gamma}$, $\sigma_2(\alpha, \beta) = (\beta, \tInt)$.
+    \item Композиция подстановок "--- подстановка (сначала применяем правую, потом левую): $\{\beta \mapsto \tInt\} \circ \{\alpha \mapsto \beta\} =\pause{} \{\alpha \mapsto \tInt,\ \beta \mapsto \tInt\}$.
+    \item Решения задач унификации будем записывать так, чтобы переменные слева не встречались справа: такие подстановки \emph{идемпотентны}, $\sigma(\sigma(t)) = \sigma(t)$.
   \end{itemize}
 \end{frame}
 
@@ -181,7 +179,8 @@
           \pause
     \item Вопрос: когда два типа более общи друг друга? \pause Когда они отличаются только названиями переменных.
           \pause
-    \item Монотип $t'$ "--- \emph{экземпляр} политипа $\forall\bar\alpha.\,t$, если $t' = \sigma(t)$ для $\sigma$, меняющей только $\bar\alpha$: $\tInt \to \tInt$ и $\beta \to \beta$ "--- экземпляры $\forall\alpha.\,\alpha \to \alpha$.
+    \item Монотип $t'$ "--- \emph{экземпляр} политипа $\forall\bar\alpha.\,t$, если $t' = \sigma(t)$ для $\sigma$, меняющей только $\bar\alpha$.
+    \item $\tInt \to \tInt$ и $\beta \to \beta$ "--- экземпляры $\forall\alpha.\,\alpha \to \alpha$.
           \pause
     \item Так же для подстановок: $\sigma_1$ более общая, чем $\sigma_2$, если $\sigma_2 = \sigma \circ \sigma_1$ для некоторой $\sigma$.
           \pause
