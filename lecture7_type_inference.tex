@@ -1,5 +1,13 @@
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
+\newcommand{\lst}[1]{\mathtt{[}#1\mathtt{]}}
+\newcommand{\tInt}{\mathtt{Int}}
+\newcommand{\tBool}{\mathtt{Bool}}
+\newcommand{\tMaybe}{\mathtt{Maybe}}
+\newcommand{\tNum}{\mathtt{Num}}
+\newcommand{\fresh}{\mathord{\mathit{fresh}}()}
+\newcommand{\J}{\mathcal{J}}
+\newcommand{\Malg}{\mathcal{M}}
 
 \title{Лекция 7: вывод типов}
 
@@ -121,7 +129,7 @@
       \item Базовые типы \haskinline|Int|, \ldots
       \item Переменные типов (греческие буквы $\alpha, \beta, \ldots$)
       \item Тип функций $t_1 \to t_2$
-      \item Конструкторы типов: $\mathtt{Maybe}~t$, $[t]$, $(t_1, t_2)$
+      \item Конструкторы типов: $\tMaybe~t$, $[t]$, $(t_1, t_2)$
         \pause
     \end{itemize}
     \item \emph{Полиморфные типы} (\emph{политипы}): $\forall \alpha_1 \ldots \alpha_k~t$
@@ -152,17 +160,13 @@
   \end{itemize}
 \end{frame}
 
-\newcommand{\lst}[1]{\mathtt{[}#1\mathtt{]}}
-\newcommand{\tInt}{\mathtt{Int}}
-\newcommand{\tMaybe}{\mathtt{Maybe}}
-\newcommand{\tBool}{\mathtt{Bool}}
 \begin{frame}[fragile]
   \frametitle{Подстановки}
   \begin{itemize}
     \item Подстановки $\sigma$ сопоставляют переменным типов $\alpha, \beta, \ldots$ монотипы (без $\forall$). Например,
-          \[ \sigma=\{\alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{[}\gamma\mathtt{]} \} \]
+          \[ \sigma=\{\alpha \mapsto \tInt, \beta \mapsto \lst{\gamma} \} \]
     \item Подстановку можно применить к типу:
-          \[ \sigma(\mathtt{Maybe}~\beta)=\mathtt{Maybe}~\mathtt{[}\gamma\mathtt{]} \]
+          \[ \sigma(\tMaybe~\beta)=\tMaybe~\lst{\gamma} \]
     \item Композиция подстановок "--- подстановка (сначала применяем правую, потом левую): $\{\beta \mapsto \tInt\} \circ \{\alpha \mapsto \tInt\} =\pause{} \{\alpha \mapsto \tInt,\ \beta \mapsto \tInt\}$.
     \item Договоримся, что переменные из левых частей не встречаются в правых (как в $\sigma$ выше). Тогда $\sigma(\sigma(t)) = \sigma(t)$: подстановки \emph{идемпотентны}.
   \end{itemize}
@@ -215,7 +219,7 @@
           \pause
           \begin{itemize}
             \item $\tMaybe~\alpha = \tMaybe~\lst{\tInt}$ даёт $\alpha = \lst{\tInt}$.
-            \item $\alpha \to \beta = \tInt \to \mathtt{Bool}$ даёт $\alpha = \tInt$, $\beta = \mathtt{Bool}$: $\to$ "--- тоже конструктор с двумя аргументами.
+            \item $\alpha \to \beta = \tInt \to \tBool$ даёт $\alpha = \tInt$, $\beta = \tBool$: $\to$ "--- тоже конструктор с двумя аргументами.
           \end{itemize}
           \pause
     \item $C~\ldots = D~\ldots$ (разные конструкторы): \pause унификатора не существует.
@@ -275,8 +279,6 @@
   }
 \end{frame}
 
-\newcommand{\fresh}{\mathord{\mathit{fresh}}()}
-\newcommand{\J}{\mathcal{J}}
 \begin{frame}[fragile]
   \frametitle{Алгоритм $\J$ вывода типов}
   \begin{itemize}
@@ -536,21 +538,21 @@
 \begin{frame}[fragile]
   \frametitle{Классы типов: пример}
   \begin{itemize}
-    \item Выведем тип \haskinline|\x -> x + 1|. В $\Gamma$: $(+) : \forall\alpha.\,\mathtt{Num}~\alpha \Rightarrow \alpha \to \alpha \to \alpha$, $1 : \forall\alpha.\,\mathtt{Num}~\alpha \Rightarrow \alpha$.
+    \item Выведем тип \haskinline|\x -> x + 1|. В $\Gamma$: $(+) : \forall\alpha.\,\tNum~\alpha \Rightarrow \alpha \to \alpha \to \alpha$, $1 : \forall\alpha.\,\tNum~\alpha \Rightarrow \alpha$.
           \pause
           \begin{itemize}
-            \item $(+)$: $\alpha_1 \to \alpha_1 \to \alpha_1$, в набор ограничений $C$ добавляется $\mathtt{Num}~\alpha_1$.
+            \item $(+)$: $\alpha_1 \to \alpha_1 \to \alpha_1$, в набор ограничений $C$ добавляется $\tNum~\alpha_1$.
                   \pause
             \item $x : \beta$; \haskinline|x + 1| это \haskinline|(+) x 1|. Унифицируем $\alpha_1 \to \alpha_1 \to \alpha_1 = \beta \to \gamma$: $\beta = \alpha_1$, $\gamma = \alpha_1 \to \alpha_1$.
                   \pause
-            \item $1$: $\alpha_2$, в $C$ добавляется $\mathtt{Num}~\alpha_2$. Унифицируем $\alpha_1 \to \alpha_1 = \alpha_2 \to \delta$: $\alpha_2 = \alpha_1$, $\delta = \alpha_1$.
+            \item $1$: $\alpha_2$, в $C$ добавляется $\tNum~\alpha_2$. Унифицируем $\alpha_1 \to \alpha_1 = \alpha_2 \to \delta$: $\alpha_2 = \alpha_1$, $\delta = \alpha_1$.
                   \pause
-            \item Лямбда: $\alpha_1 \to \alpha_1$; после подстановки $C = \{\mathtt{Num}~\alpha_1\}$.
+            \item Лямбда: $\alpha_1 \to \alpha_1$; после подстановки $C = \{\tNum~\alpha_1\}$.
                   \pause
             \item Обобщение: ограничения на $\alpha_1$ уходят в контекст "--- \haskinline|Num a => a -> a|.
           \end{itemize}
           \pause
-    \item А для \haskinline|True + 1| получаем $\alpha_1 = \tBool$ и $\mathtt{Num}~\tBool$ без экземпляра "--- ошибка \ghcinline|No instance for ‘Num Bool’| из лекции 1.
+    \item А для \haskinline|True + 1| получаем $\alpha_1 = \tBool$ и $\tNum~\tBool$ без экземпляра "--- ошибка \ghcinline|No instance for ‘Num Bool’| из лекции 1.
   \end{itemize}
 \end{frame}
 
@@ -565,7 +567,6 @@
   \end{itemize}
 \end{frame}
 
-\newcommand{\Malg}{\mathcal{M}}
 \begin{frame}[fragile]
   \frametitle{Алгоритм $\Malg$: сверху вниз}
   \begin{itemize}
