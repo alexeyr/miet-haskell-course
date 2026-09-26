@@ -282,7 +282,7 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Алгоритм $\J$: приведение $e$ к стандартному виду}
+  \frametitle{Алгоритм $\J$: приведение определений и выражений к стандартному виду}
   \begin{itemize}
     \item Переименуем связанные переменные с одинаковыми именами.
     \item Заменим \haskinline|where| на \haskinline|let|.
@@ -291,9 +291,31 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Приведение к стандартному виду: пример}
+  \begin{itemize}
+    \item Пример:
+          \begin{haskellsmall}
+            not' True  = False
+            not' False = True
+
+            g x = h x where h x = not' x
+          \end{haskellsmall}
+          \pause
+          превращается в
+          \begin{haskellsmall}
+            not' = \x -> case x of
+                True  -> False
+                False -> True
+
+            g = \x -> let h = \y -> not' y in h x
+          \end{haskellsmall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Алгоритм $\J$: переменная}
   \begin{itemize}
-    \item Переменная $x$: тип берётся из окружения (он всегда там есть).
+    \item Переменная $x$: тип берётся из окружения (если $x$ там нет, это ошибка типизации).
     \item Если он полиморфный, то переменные под кванторами заменяются на свежие (новые).
           \pause
     \item Примеры (в $\Gamma$: $\mathtt{not} : \tBool \to \tBool$, $\mathtt{id} : \forall\alpha.\,\alpha \to \alpha$; числовые литералы до обсуждения классов типов считаем $\tInt$):
@@ -393,17 +415,24 @@
           \pause
           \begin{itemize}
             \item Выводим тип $t$ для $e$.
-            \item Для $i$-той ветви: вводим переменные типов для переменных в $pat_i$, выводим тип $pat_i$ и унифицируем его с $t$, выводим тип $t_i$ для $body_i$.
-            \item Унифицируем все $t_i$. Результат: \pause $t_1$ (или любой другой $t_i$).
+            \item Для каждой ветви:
+                  \begin{itemize}
+                    \item свежие переменные типов для переменных в $pat_i$;
+                    \item тип $pat_i$ унифицируем с $t$;
+                    \item выводим тип $t_i$ для $body_i$.
+                  \end{itemize}
+            \item Унифицируем все $t_i$. Результат: \pause $t_1$.
           \end{itemize}
           \pause
-    \item Пример: \haskinline|\m -> case m of Nothing -> 1; Just x -> x|
+    \item Пример: \haskinline|\m -> case m of|\\
+          \hphantom{Пример: }\haskinline|  Nothing -> 1|\\
+          \hphantom{Пример: }\haskinline|  Just x  -> x|
           \begin{itemize}
             \item $m : \alpha$. Ветвь 1: \haskinline|Nothing| имеет тип $\tMaybe~\beta_1$, унифицируем с $\alpha$; тело "--- $\tInt$.
                   \pause
             \item Ветвь 2: $x : \beta_2$, образец \haskinline|Just x| "--- $\tMaybe~\beta_2$, унифицируем с $\tMaybe~\beta_1$: $\beta_1 = \beta_2$; тело "--- $\beta_2$.
                   \pause
-            \item Унифицируем тела: $\beta_2 = \tInt$. Результат $\tInt$, а вся лямбда "--- $\tMaybe~\tInt \to \tInt$.
+            \item Унифицируем тела: $\beta_2 = \tInt$, значит $\alpha = \tMaybe~\tInt$; итог "--- $\tMaybe~\tInt \to \tInt$.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -456,6 +485,8 @@
 \begin{frame}[fragile]
   \frametitle{Примеры}
   \begin{itemize}
+    \item Определения уровня модуля обрабатываем как $e_1$ в \haskinline|let| $e_1$ \haskinline|in| $e_2$: выводим тип, обобщаем, добавляем в $\Gamma$ для следующих определений.
+          \pause
     \item Разберём несколько примеров
           \pause
     \item Без \haskinline|let|:
