@@ -344,7 +344,7 @@
           \begin{itemize}
             \item \haskinline|not True|: \pause $t_1 = \tBool \to \tBool$, $t_2 = \tBool$; унифицируем $\tBool \to \tBool = \tBool \to \alpha$: \pause $\alpha = \tBool$.
                   \pause
-            \item \haskinline|id id|: \pause $t_1 = \alpha_1 \to \alpha_1$, $t_2 = \alpha_2 \to \alpha_2$; унифицируем $\alpha_1 \to \alpha_1 = (\alpha_2 \to \alpha_2) \to \alpha$:\pause $\alpha_1 = \alpha_2 \to \alpha_2$, $\alpha = \alpha_2 \to \alpha_2$. Результат\pause $\alpha_2 \to \alpha_2$.
+            \item \haskinline|id id|: \pause $t_1 = \alpha_1 \to \alpha_1$, $t_2 = \alpha_2 \to \alpha_2$; унифицируем $\alpha_1 \to \alpha_1 = (\alpha_2 \to \alpha_2) \to \alpha$: \pause $\alpha_1 = \alpha_2 \to \alpha_2$, $\alpha = \alpha_2 \to \alpha_2$. Результат \pause $\alpha_2 \to \alpha_2$.
                   \pause
             \item \haskinline|not id|: \pause унифицируем $\tBool \to \tBool = (\alpha_2 \to \alpha_2) \to \alpha$; \pause нужно $\tBool = \alpha_2 \to \alpha_2$, а это разные конструкторы: ошибка типа.
           \end{itemize}

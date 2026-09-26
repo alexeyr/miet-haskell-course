@@ -97,7 +97,7 @@
     \item \haskinline|Maybe| "--- монада. Определим:
           \begin{haskell}
             instance Monad Maybe where
-              -- (>{}>=) ::\pause Maybe a -> (a -> Maybe b) -> Maybe b
+              -- (>{}>=) ::\pause{} Maybe a -> (a -> Maybe b) -> Maybe b
               Nothing >>= _ =!\pause! Nothing
               Just x  >>= f =!\pause! f x
           \end{haskell}
