@@ -115,18 +115,20 @@
       \item \haskinline|case|-выражения
     \end{itemize}
       \pause
-    \item Типы $t$:
+    \item \emph{Типы} $t$ (\emph{мономорфные типы}, \emph{монотипы}):
           \pause
     \begin{itemize}
       \item Базовые типы \haskinline|Int|, \ldots
       \item Переменные типов (греческие буквы $\alpha, \beta, \ldots$)
       \item Тип функций $t_1 \to t_2$
-      \item Применение конструктора типов: $\mathtt{Maybe}~t$, $[t]$, $(t_1, t_2)$
+      \item Конструкторы типов: $\mathtt{Maybe}~t$, $[t]$, $(t_1, t_2)$
         \pause
     \end{itemize}
-    \item Полиморфные типы: $\forall \alpha_1 \ldots \alpha_k~t$
+    \item \emph{Полиморфные типы} (\emph{политипы}): $\forall \alpha_1 \ldots \alpha_k~t$
     \begin{itemize}
       \item $\forall$ только на внешнем уровне, не под $\to$!
+      \item Переменные под $\forall$ \emph{связаны}, остальные \emph{свободны}.
+      \item При $k = 0$ "--- монотип, то есть все монотипы "--- политипы.
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -154,12 +156,12 @@
   \frametitle{Унификация типов}
   \begin{itemize}
     \item Для вывода типов в системе Хиндли "--- Милнера случай один из самых простых: унификация первого порядка.
-    \item Подстановки $\sigma$ сопоставляют переменным типов $\alpha, \beta, \ldots$ \emph{мономорфные} типы (без $\forall$). Например,
+    \item Подстановки $\sigma$ сопоставляют переменным типов $\alpha, \beta, \ldots$ монотипы (без $\forall$). Например,
           \[ \sigma=\{\alpha \mapsto \mathtt{Int}, \beta \mapsto \mathtt{[}\gamma\mathtt{]} \} \]
     \item Подстановку можно применить к типу:
           \[ \sigma(\mathtt{Maybe}~\beta)=\mathtt{Maybe}~\mathtt{[}\gamma\mathtt{]} \]
     \item Композиция подстановок "--- подстановка.
-    \item Мономорфные типы равны, если они совпадают синтаксически.
+    \item Монотипы равны, если они совпадают синтаксически.
           \pause
           \begin{itemize}
             \item Т.е. синонимы типов должны быть уже раскрыты!
@@ -275,12 +277,12 @@
 \begin{frame}[fragile]
   \frametitle{Алгоритм $\J$ вывода типов}
   \begin{itemize}
-    \item $\Gamma$ "--- окружение типов (набор переменных с их типами).
-    \item $\J(\Gamma; e)$ возвращает наиболее общий тип для $e$ с окружением $\Gamma$ или выдаёт ошибку.
+    \item $\Gamma$ "--- окружение: переменные с их политипами.
+    \item $\J(\Gamma; e)$ возвращает наиболее общий монотип для $e$ в $\Gamma$ или ошибку (обобщение "--- только в \haskinline|let|).
           \pause
-    \item $\phi$ "--- глобальная изменяемая переменная, содержащая уже сделанные подстановки. Так что $\J$ "--- не чистая функция!\pause
+    \item $\phi$ "--- глобальная изменяемая переменная с уже сделанными подстановками, так что $\J$ "--- не чистая функция!\pause
     \item Можем её избежать, возвращая подстановки явно. Это алгоритм $\mathcal{W}$ (ссылки в конце презентации).
-    \item Функция $\fresh$ (в правилах: «свежая переменная») возвращает свежую переменную типа (т.е. такую, которой ещё нигде не было). Тоже не чистая функция.
+    \item Функция $\fresh$ («свежая переменная» в правилах) возвращает переменную типа, которой ещё нигде не было. Тоже не чистая.
   \end{itemize}
 \end{frame}
 
@@ -319,7 +321,7 @@
   \frametitle{Алгоритм $\J$: переменная}
   \begin{itemize}
     \item Переменная $x$: тип берётся из окружения (если $x$ там нет, это ошибка типизации).
-    \item Если он полиморфный, то переменные под кванторами заменяются на свежие (новые).
+    \item Если это политип, переменные под кванторами заменяются на свежие (новые): получаем монотип.
           \pause
     \item Примеры (в $\Gamma$: $\mathtt{not} : \tBool \to \tBool$, $\mathtt{id} : \forall\alpha.\,\alpha \to \alpha$; числовые литералы до обсуждения классов типов считаем $\tInt$):
           \begin{itemize}
@@ -376,8 +378,8 @@
     \item \haskinline|let|-выражение \haskinline|let !$x$! = !$e_1$! in !$e_2$!|:
           \begin{itemize}
             \item $t_1 = \J(\Gamma; e_1)$.
-            \item Тип $x$ получается навешиванием $\forall$ на свободные переменные (те, что не под кванторами) $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$; обозначим его $\sigma$.
-            \item $t_2 = \J(\Gamma, x : \sigma; e_2)$.
+            \item Политип $x$ получается навешиванием $\forall$ на свободные переменные $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$; обозначим их $\bar\alpha$.
+            \item $t_2 = \J(\Gamma, x : \forall\bar\alpha.\,\phi(t_1); e_2)$.
             \item Результат: \pause $t_2$.
           \end{itemize}
           \pause
@@ -569,7 +571,7 @@
     \item Переменная $x$: унифицируем $\rho$ с типом $x$ из $\Gamma$ (после замены переменных под $\forall$ на свежие).
     \item Применение $e_1~e_2$: свежая $\beta$; $\Malg(\Gamma; e_1; \beta \to \rho)$, затем $\Malg(\Gamma; e_2; \beta)$.
     \item Лямбда $\lambda x.e_1$: свежие $\alpha$, $\beta$; унифицируем $\rho = \alpha \to \beta$; $\Malg(\Gamma, x : \alpha; e_1; \beta)$.
-    \item \haskinline|let !$x$! = !$e_1$! in !$e_2$!|: свежая $\beta$; $\Malg(\Gamma; e_1; \beta)$; обобщаем $\phi(\beta)$ как в $\J$; $\Malg(\Gamma, x : \sigma; e_2; \rho)$.
+    \item \haskinline|let !$x$! = !$e_1$! in !$e_2$!|: свежая $\beta$; $\Malg(\Gamma; e_1; \beta)$; обобщаем $\phi(\beta)$ как в $\J$; $\Malg(\Gamma, x : \forall\bar\alpha.\,\phi(\beta); e_2; \rho)$.
     \item Для всего выражения: $\Malg(\Gamma; e; \alpha)$ со свежей $\alpha$; ответ "--- $\phi(\alpha)$.
   \end{itemize}
 \end{frame}
