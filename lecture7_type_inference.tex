@@ -332,7 +332,7 @@
   \begin{itemize}
     \item Применение функции $e_1~e_2$:
           \begin{itemize}
-            \item Выводим тип $t_1$ для $e_1$ и тип $t_2$ для $e_2$.
+            \item Пусть $t_1 = \J(\Gamma; e_1)$ и $t_2 = \J(\Gamma; e_2)$ (то есть выводим типы для $e_1$ и $e_2$ и так их обозначаем).
             \item $t_1$ должен иметь вид $t_2 \to \alpha$ (где $\alpha$ "--- свежая переменная). Унифицируем их.
             \item Результат (тип $e_1~e_2$): \pause $\alpha$ (после подстановок).
           \end{itemize}
@@ -353,8 +353,8 @@
   \begin{itemize}
     \item Лямбда-выражение $\lambda x.e_1$:
           \begin{itemize}
-            \item Тип $x$ "--- свежая переменная $\alpha$. $x : \alpha$ добавляется в окружение (на время этого вывода).
-            \item Выводится тип $t_1$ для $e_1$.
+            \item Тип $x$ "--- свежая переменная $\alpha$.
+            \item $t_1 = \J(\Gamma, x : \alpha; e_1)$.
             \item Результат: \pause $\alpha \to t_1$.
           \end{itemize}
           \pause
@@ -372,9 +372,10 @@
   \begin{itemize}
     \item \haskinline|let|-выражение \haskinline|let !$x$! = !$e_1$! in !$e_2$!|:
           \begin{itemize}
-            \item Выводим тип $t_1$ для $e_1$.
-            \item Тип $x$ получается навешиванием $\forall$ на свободные переменные $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$. Добавляем его в окружение (тоже на время этого вывода).
-            \item Выводим тип $t_2$ для $e_2$. Результат: \pause $t_2$.
+            \item $t_1 = \J(\Gamma; e_1)$.
+            \item Тип $x$ получается навешиванием $\forall$ на свободные переменные $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$; обозначим его $\sigma$.
+            \item $t_2 = \J(\Gamma, x : \sigma; e_2)$.
+            \item Результат: \pause $t_2$.
           \end{itemize}
           \pause
     \item Пример: \haskinline|let f = \x -> x in (f 1, f True)|.
@@ -383,7 +384,7 @@
                   \pause
             \item В теле \haskinline|f 1| даёт $\tInt$, \haskinline|f True| "--- $\tBool$; результат $(\tInt, \tBool)$.
                   \pause
-            \item А \haskinline|(\f -> (f 1, f True)) (\x -> x)| не типизируется: $f : \beta$ мономорфна, и $\beta$ пришлось бы унифицировать и с $\tInt \to \gamma_1$, и с $\tBool \to \gamma_2$.
+            \item А \haskinline|(\f -> (f 1, f True)) (\x -> x)| не типизируется: $f : \beta$ (тип \haskinline|x|) мономорфна, и $\beta$ пришлось бы унифицировать и с $\tInt \to \gamma_1$, и с $\tBool \to \gamma_2$.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -414,12 +415,12 @@
     \item \haskinline|case !$e$! of !$pat_1$! -> !$body_1$!; !$pat_2$! -> !$body_2$!; ...|
           \pause
           \begin{itemize}
-            \item Выводим тип $t$ для $e$.
+            \item $t = \J(\Gamma; e)$.
             \item Для каждой ветви:
                   \begin{itemize}
-                    \item свежие переменные типов для переменных в $pat_i$;
+                    \item $\Gamma_i$ "--- $\Gamma$ со свежими типами для переменных $pat_i$;
                     \item тип $pat_i$ унифицируем с $t$;
-                    \item выводим тип $t_i$ для $body_i$.
+                    \item $t_i = \J(\Gamma_i; body_i)$.
                   \end{itemize}
             \item Унифицируем все $t_i$. Результат: \pause $t_1$.
           \end{itemize}
