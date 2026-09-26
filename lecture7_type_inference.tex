@@ -93,7 +93,7 @@
   \begin{itemize}
     \item Сравните \haskinline|let x = e!$_1$! in e!$_2$!| и \haskinline|(\x -> e!$_2$!) e!$_1$!|.
           \pause
-    \item Значения всегда одинаковы (для любых \haskinline|e!$_1$!| и \haskinline|e!$_2$!|).
+    \item Для нерекурсивного \haskinline|let|, если оба выражения типизируются, их значения одинаковы.
           \pause
     \item Но есть разница при типизации: \pause \haskinline|x| в лямбде всегда мономорфна, а в \haskinline|let| может быть полиморфной.
           \pause
@@ -104,6 +104,7 @@
 \begin{frame}[fragile]
   \frametitle{Виды выражений и типов}
   \begin{itemize}
+    \setlength{\itemsep}{0pt}
     \item В нашей системе 5 видов выражений:
           \pause
     \item Названия переменных (в том числе функций) $x$
@@ -111,14 +112,13 @@
     \item Лямбда-выражения
     \item \haskinline|let|-выражения
     \item \haskinline|case|-выражения
-    \item[]
       \pause
     \item Типы $t$:
           \pause
     \item Базовые типы \haskinline|Int|, \ldots
     \item Переменные типов (греческие буквы $\alpha, \beta, \ldots$)
     \item Тип функций $t_1 \to t_2$
-    \item[]
+    \item Применение конструктора типов: $\mathtt{Maybe}~t$, $[t]$, $(t_1, t_2)$
       \pause
     \item Полиморфные типы: $\forall \alpha_1 \ldots \alpha_k~t$
           \pause
@@ -351,7 +351,7 @@
     \item \haskinline|let|-выражение \haskinline|let !$x$! = !$e_1$! in !$e_2$!|:
           \begin{itemize}
             \item Выводим тип $t_1$ для $e_1$.
-            \item Тип $x$ получается навешиванием $\forall$ на свободные переменные $t_1$, не входящие в окружение. Добавляем его в окружение (тоже на время этого вывода).
+            \item Тип $x$ получается навешиванием $\forall$ на свободные переменные $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$. Добавляем его в окружение (тоже на время этого вывода).
             \item Выводим тип $t_2$ для $e_2$. Результат: \pause $t_2$.
           \end{itemize}
           \pause
@@ -371,7 +371,7 @@
   \begin{itemize}
     \item Особый случай: рекурсивный \haskinline|let| ($x$ входит в $e_1$). \pause
           \begin{itemize}
-            \item \haskinline|fix f| возвращает неподвижную точку \haskinline|f| (т.е. \haskinline|f (fix f) == fix f|). \pause
+            \item \haskinline|fix f| возвращает неподвижную точку \haskinline|f| (т.е. \haskinline|f (fix f)| $=$ \haskinline|fix f|). \pause
             \item Соответственно, её тип \pause \haskinline|fix :: forall a. (a -> a) -> a|. \pause
             \item \haskinline|let x = !$e_1$! in !$e_2$!| превращается в \haskinline|let x = fix (\x -> !$e_1$!) in !$e_2$!|.
             \item Этот \haskinline|let| не рекурсивный: \pause \haskinline|x| в \haskinline|let x = ...| и в \haskinline|\x -> !$e_1$!| "--- разные!
@@ -521,7 +521,7 @@
           \pause
     \item Для числовых классов есть правило умолчания (defaulting): пробуются \haskinline|Integer|, затем \haskinline|Double|. Отсюда предупреждение \ghcinline|Defaulting the type variable ‘a0’ to type ‘Integer’ in the following constraints| и то, что \haskinline|2^64| в GHCi "--- \haskinline|Integer|, а не \haskinline|Int|.
           \pause
-    \item В GHCi правила расширены (\haskinline|ExtendedDefaultRules|, для прочих классов подставляется \haskinline|()|), поэтому \haskinline|print []| там работает, а в файле "--- ошибка \ghcinline|Ambiguous type variable|.
+    \item В GHCi действуют расширенные правила умолчания (\href{https://downloads.haskell.org/~ghc/latest/docs/users_guide/ghci.html#extension-ExtendedDefaultRules}{\haskinline|ExtendedDefaultRules|}): например, для \haskinline|print []| тип элементов выбирается как \haskinline|()|, а в файле это ошибка \ghcinline|Ambiguous type variable|.
   \end{itemize}
 \end{frame}
 
