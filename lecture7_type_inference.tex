@@ -587,7 +587,12 @@
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
-    \item Более известна альтернатива $\J$, избегающая \enquote{глобальной} $\phi$ "--- алгоритм $\mathcal{W}$. Пример реализации со ссылками на дополнительные материалы: \href{https://github.com/mgrabmueller/AlgorithmW}{Algorithm W Step by Step}; оба алгоритма с union-find коротко разобраны в \href{https://bernsteinbear.com/blog/type-inference/}{Damas-Hindley-Milner inference two ways}.
+    \item Алгоритм $\mathcal{W}$ "--- то же без глобальной $\phi$ (подстановки возвращаются явно); он известнее и удобнее для доказательств.
+    \begin{itemize}
+      \item Реализация на Haskell: \href{https://github.com/mgrabmueller/AlgorithmW}{Algorithm W Step by Step}.
+      \item Оба алгоритма на Python: \href{https://bernsteinbear.com/blog/type-inference/}{Damas-Hindley-Milner inference two ways}.
+      \item В обоих есть ещё дополнительные материалы.
+    \end{itemize}
     \item \href{https://smunix.github.io/dev.stephendiehl.com/fun/006_hindley_milner.html}{Глава Hindley-Milner Inference в незаконченной книге Write You a Haskell}
     \item Реализация системы типов всего (!) стандарта Haskell 98 с выводом, основанная на $\J$, есть в \href{https://gist.github.com/chrisdone/0075a16b32bfd4f62b7b}{Typing Haskell in Haskell}.
     \item \href{https://compsciclub.ru/courses/types/2019-spring/classes/}{Курс лекций В.~Н.~Брагилевского "Вывод типов от Хиндли — Милнера до GHC 8.8"  (есть видео)}
