@@ -295,6 +295,9 @@
   \frametitle{Алгоритм $\J$: приведение определений и выражений к стандартному виду}
   \begin{itemize}
     \item Переименуем связанные переменные с одинаковыми именами.
+          \begin{itemize}
+            \item Переменная, введённая $\lambda$, \haskinline|let| или образцом, "--- \emph{связанная}; остальные "--- \emph{свободные}, их типы берутся из $\Gamma$.
+          \end{itemize}
     \item Заменим \haskinline|where| на \haskinline|let|.
     \item Заменим \haskinline|if| и сопоставления с образцом в уравнениях на \haskinline|case|.
   \end{itemize}
@@ -383,7 +386,7 @@
     \item \haskinline|let|-выражение \haskinline|let !$x$! = !$e_1$! in !$e_2$!|:
           \begin{itemize}
             \item $t_1 = \J(\Gamma; e_1)$.
-            \item Политип $x$ получается навешиванием $\forall$ на свободные переменные $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$; обозначим их $\bar\alpha$.
+            \item Политип $x$ получается навешиванием $\forall$ на свободные переменные типов $\phi(t_1)$, не входящие свободно в $\phi(\Gamma)$; обозначим их $\bar\alpha$.
             \item $t_2 = \J(\Gamma, x : \forall\bar\alpha.\,\phi(t_1); e_2)$.
             \item Результат: \pause $t_2$.
           \end{itemize}
@@ -396,6 +399,27 @@
                   \pause
             \item А \haskinline|(\f -> (f 1, f True)) (\x -> x)| \pause не типизируется: $f : \beta$ мономорфна, и $\beta$ пришлось бы унифицировать и с $\tInt \to \gamma_1$, и с $\tBool \to \gamma_2$.
           \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Алгоритм $\J$: \haskinline|let| и переменные из $\Gamma$}
+  \begin{itemize}
+    \item Пример:
+          \begin{haskell}
+            \x -> let f = \y -> (y, x)
+                  in (f 1, f True)
+          \end{haskell}
+          \pause
+          \begin{itemize}
+            \item $x : \alpha$ попадает в $\Gamma$ для \haskinline|let ...|; $t_1 = \beta \to (\beta, \alpha)$.
+                  \pause
+            \item Свободные переменные типов $t_1$ "--- \pause $\alpha$ и $\beta$, но $\alpha$ входит в $\phi(\Gamma)$: обобщаем только \pause $\beta$, $f : \forall\beta.\,\beta \to (\beta, \alpha)$.
+                  \pause
+            \item \haskinline|f 1| $: (\tInt, \alpha)$, \haskinline|f True| $: (\tBool, \alpha)$; вся лямбда "--- $\alpha \to ((\tInt, \alpha), (\tBool, \alpha))$.
+          \end{itemize}
+          \pause
+    \item Если бы обобщили и $\alpha$, \haskinline|f| могла бы вернуть \haskinline|x| любого типа, хотя тип \haskinline|x| задан снаружи.
   \end{itemize}
 \end{frame}
 
