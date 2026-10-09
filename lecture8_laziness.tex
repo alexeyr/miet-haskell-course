@@ -190,7 +190,7 @@ twice({ println("evaluating"); 2 }) !\pause!
 \begin{frame}[fragile]
   \frametitle{Отложенные вычисления}
   \begin{itemize}
-    \item Отложенное вычисление (thunk) хранит выражение и окружение, необходимые для получения его значения.
+    \item Отложенное вычисление (thunk) хранит выражение и окружение; в схемах обозначим его $\langle e\rangle$.
     \item Если мы напишем
           \begin{haskell}
             x = (length [1,3], undefined)
@@ -203,8 +203,8 @@ twice({ println("evaluating"); 2 }) !\pause!
           \end{haskell}
           требует привести \haskinline|x| к WHNF. Схематически: \pause
           \begin{haskell}
-            x: (*thunk1*, *thunk2*)  *thunk1*: length [1,3]
-            y: *thunk1*              *thunk2*: undefined
+            x: (*thunk1*, *thunk2*)  *thunk1*: !$\langle$!length [1,3]!$\rangle$!
+            y: *thunk1*              *thunk2*: !$\langle$!undefined!$\rangle$!
             z: *thunk2*
           \end{haskell}
 
@@ -222,7 +222,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           то \haskinline|y| тоже потребуется вычислить, и получим \pause
           \begin{haskell}
             x: (2, *thunk2*)         *thunk1*: 2
-            y: 2                     *thunk2*: undefined
+            y: 2                     *thunk2*: !$\langle$!undefined!$\rangle$!
             z: *thunk2*
           \end{haskell}
   \end{itemize}
@@ -306,9 +306,9 @@ twice({ println("evaluating"); 2 }) !\pause!
             sum (x:xs) acc = sum xs (x + acc)
 
             sum [1..100] 0!$\pause \rightsquigarrow$! sum (1:[2..100]) 0!$\pause \rightsquigarrow$!
-            sum [2..100] (1 + 0)!$\pause \rightsquigarrow$! sum (2:[3..100]) (1 + 0)!$\pause \rightsquigarrow$!
-            sum [3..100] (2 + (1 + 0))!$\pause \rightsquigarrow \ \ldots\ \rightsquigarrow$!
-            (100 + ... + (1 + 0))!$\pause \rightsquigarrow $! 5050
+            sum [2..100] !$\langle$!1 + 0!$\rangle$!!$\pause \rightsquigarrow$! sum (2:[3..100]) !$\langle$!1 + 0!$\rangle$!!$\pause \rightsquigarrow$!
+            sum [3..100] !$\langle$!2 + !$\langle$!1 + 0!$\rangle$!!$\rangle$!!$\pause \rightsquigarrow \ \ldots\ \rightsquigarrow$!
+            !$\langle$!100 + ... + !$\langle$!1 + 0!$\rangle$!!$\rangle$!!$\pause \rightsquigarrow $! 5050
           \end{haskellsmall}
   \end{itemize}
 \end{frame}
@@ -363,9 +363,9 @@ twice({ println("evaluating"); 2 }) !\pause!
     \item И процесс вычисления:
           \begin{haskell}
             sum [1..100] 0 !$\rightsquigarrow$! sum (1:[2..100]) 0 !$\pause \rightsquigarrow$!
-            let a1 = 1 + 0 in a1 `seq` sum [2..100] a1 !$\pause \rightsquigarrow$!
+            let a1 = !$\langle$!1 + 0!$\rangle$! in a1 `seq` sum [2..100] a1 !$\pause \rightsquigarrow$!
             sum [2..100] 1 !$\rightsquigarrow$! sum (2:[3..100]) 1 !$\pause \rightsquigarrow$!
-            let a1 = 2 + 1 in a1 `seq` sum [3..100] a1 !$\pause \rightsquigarrow$!
+            let a1 = !$\langle$!2 + 1!$\rangle$! in a1 `seq` sum [3..100] a1 !$\pause \rightsquigarrow$!
             !$\rightsquigarrow\ \ldots\ \rightsquigarrow\ $!5050
           \end{haskell}
     \item Заметьте, что список \haskinline|[1..100]| никогда не появляется целиком в памяти!
@@ -407,8 +407,8 @@ twice({ println("evaluating"); 2 }) !\pause!
           то в \haskinline|s| и \haskinline|l| снова накапливаются вычисления! \pause
           \begin{haskell}
             foldl' step (0, 0) [1, 2] !$\pause \rightsquigarrow$!
-            foldl' step (0 + 1, 0 + 1) [2] !$\pause \rightsquigarrow$!
-            foldl' step (0 + 1 + 2, 0 + 1 + 1) []
+            foldl' step (!$\langle$!0 + 1!$\rangle$!, !$\langle$!0 + 1!$\rangle$!) [2] !$\pause \rightsquigarrow$!
+            foldl' step (!$\langle$!!$\langle$!0 + 1!$\rangle$! + 2!$\rangle$!, !$\langle$!!$\langle$!0 + 1!$\rangle$! + 1!$\rangle$!) []
           \end{haskell}
     \item Здесь аккумулятор "--- пара, и её вычисление до WHNF не вычисляет компонент.
   \end{itemize}
