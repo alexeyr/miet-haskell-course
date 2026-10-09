@@ -318,15 +318,26 @@ twice({ println("evaluating"); 2 }) !\pause!
   \begin{itemize}
     \item Такой \haskinline|sum| "--- по сути \haskinline|foldl (flip (+))|.
     \item Из-за этого \haskinline|foldl| "--- ловушка, практически всегда нужно либо \haskinline|foldr|, либо \haskinline|foldl'| (будет позже).
-          \pause
-    \item Ещё один интересный пример: \haskinline|length (take 2 (filter (< 1) [1..]))|.
-    \item[]
-      \pause
-    \item Что же можно сделать?
-          \pause
-    \item Часто компилятор может оптимизировать ленивые вычисления (если знает, что это не изменит результата).
-    \item Или...
+    \item<2-> Что произойдёт в этом примере?
   \end{itemize}
+  \begin{overlayarea}{\textwidth}{3.7cm}
+    \begin{onlyenv}<2-6>
+      \begin{haskellsmall}
+        length !$\langle$!take 2 !$\langle$!filter (< 2) [1..]!$\rangle$!!$\rangle$! !\onslide<3->! !$\rightsquigarrow$!
+        length (1 : !$\langle$!take 1 !$\langle$!filter (< 2) [2..]!$\rangle$!!$\rangle$!) !\onslide<4->! !$\rightsquigarrow$!
+        1 + !$\langle$!length !$\langle$!take 1 !$\langle$!filter (< 2) [2..]!$\rangle$!!$\rangle$!!$\rangle$! !\onslide<5->! !$\rightsquigarrow$!
+        1 + !$\langle$!length !$\langle$!take 1 !$\langle$!filter (< 2) [3..]!$\rangle$!!$\rangle$!!$\rangle$! !\onslide<6->! !$\rightsquigarrow\ \ldots$! !\onslide<1->!
+      \end{haskellsmall}
+      \uncover<6->{\small \haskinline|filter| выдаёт \haskinline|1|, но второго элемента не будет: все последующие числа не меньше \haskinline|2|. Поиск продолжается бесконечно; \haskinline|length| не возвращает даже \haskinline|1|.}
+    \end{onlyenv}
+    \begin{onlyenv}<7->
+      \begin{itemize}
+        \item Что же можно сделать?
+        \item Часто компилятор может оптимизировать ленивые вычисления (если знает, что это не изменит результата).
+        \item Или...
+      \end{itemize}
+    \end{onlyenv}
+  \end{overlayarea}
 \end{frame}
 
 \begin{frame}[fragile]
