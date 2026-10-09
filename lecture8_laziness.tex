@@ -34,8 +34,6 @@
     \item Это передача по имени (почти).
           \pause
     \item У настоящей передачи по имени нет таких проблем со скобками, как в макросах C.
-          \pause
-    \item Аналогичное поведение переменных в командной строке и скриптах Windows и Linux.
   \end{itemize}
 \end{frame}
 
@@ -65,9 +63,9 @@
   \begin{itemize}
     \item
           \begin{haskell}
-            if1(x, y, z) = if x then y else z
+            if1 x y z = if x then y else z
 
-            if1(true, 1, 1 / 0)
+            if1 True 1 (1 `div` 0)
           \end{haskell}
           Что случится при передаче по значению? А по имени?
           \pause
@@ -85,7 +83,7 @@
           \begin{itemize}
             \item Можно избежать ошибок.
             \item Можно избежать лишних вычислений
-                  \pause (представьте, что в предыдущем примере вместо \haskinline|1 / 0| вызов сложной функции).
+                  \pause (представьте, что в предыдущем примере вместо \haskinline|1 `div` 0| вызов сложной функции).
           \end{itemize}
           \pause
     \item Главный минус:
@@ -109,7 +107,7 @@
           \pause
     \item При этом значения тоже не обязательно вычислять \enquote{до конца}: мы хотим, чтобы
           \begin{haskell}
-            length [1/0, 1/0, 1/0]
+            length [1 `div` 0, 1 `div` 0, 1 `div` 0]
           \end{haskell}
           возвращало \haskinline|3|.
           \pause
@@ -145,7 +143,9 @@
     \item В лямбда-исчислении можно доказать:
     \item Два порядка вычисления одного выражения не могут привести к разным значениям (нормальным формам).
     \item Но может случиться, что один из них даёт значение, а другой "--- нет.
-    \item Если какой-то порядок приводит к значению, то передача по имени и по необходимости тоже к нему приведут.
+    \item Если нормальная форма существует, нормальный порядок редукции найдёт её.
+    \item Нормальный порядок: сначала самый левый внешний редекс, в том числе под лямбдами.
+    \item Ленивое вычисление останавливается раньше: когда получена нужная часть результата. Под лямбдами оно не вычисляет.
   \end{itemize}
 \end{frame}
 
@@ -157,7 +157,7 @@
             \item Лямбда.
             \item Литерал.
             \item Конструктор данных, возможно с аргументами.
-            \item Функция от $n$ аргументов c $m<n$ аргументами.
+            \item Частичное применение функции, которому для выполнения её тела ещё нужны аргументы.
           \end{itemize}
           Аргументы здесь "--- любые выражения \pause
           (а для НФ они тоже должны быть в НФ).
@@ -165,7 +165,7 @@
           \begin{haskell}
             (1 + 1, 2 + 2)       -- (,) (1 + 1) (2 + 2)
             \x -> 2 + 2 + x
-            (1/0) : take 4 [1..]
+            (1 `div` 0) : take 4 [1..]
             (+) 1
           \end{haskell}
   \end{itemize}
@@ -177,18 +177,18 @@
     \item В Haskell во время исполнения переменная может указывать не только на значение, а на невычисленное выражение (thunk).
     \item Если мы напишем
           \begin{haskell}
-            x = (length [1,3], 1/0)
+            x = (length [1,3], 1 `div` 0)
           \end{haskell}
-          то \haskinline|x| вначале указывает именно на thunk.
+          то \haskinline|x| может указывать на thunk или уже на пару с отложенными полями: это зависит от компиляции и оптимизаций.
     \item После этого
           \begin{haskell}
             case x of
               (y, z) -> ...
           \end{haskell}
-          требует вычислить внешний конструктор \haskinline|x| (привести к WHNF), и в памяти будет \pause
+          требует привести \haskinline|x| к WHNF. Схематически: \pause
           \begin{haskell}
             x: (*thunk1*, *thunk2*)  *thunk1*: length [1,3]
-            y: *thunk1*              *thunk2*: 1/0
+            y: *thunk1*              *thunk2*: 1 `div` 0
             z: *thunk2*
           \end{haskell}
 
@@ -206,32 +206,52 @@
           то \haskinline|y| тоже потребуется вычислить, и получим \pause
           \begin{haskell}
             x: (2, *thunk2*)         *thunk1*: 2
-            y: 2                     *thunk2*: 1/0
+            y: 2                     *thunk2*: 1 `div` 0
             z: *thunk2*
           \end{haskell}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\haskinline|:print|}
+  \frametitle{\haskinline|:sprint| и \haskinline|:print|}
   \begin{itemize}
-    \item Мы можем увидеть частично вычисленные выражения в GHCi с помощью команд \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-cmd-:print}{\haskinline|:print|} и \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-cmd-:sprint}{\haskinline|:sprint|}:
+    \item Обе команды показывают значение, не вычисляя thunks.
+    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-cmd-:sprint}{\haskinline|:sprint|} заменяет их на \haskinline|_|; \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-cmd-:print}{\haskinline|:print|} даёт имена, которыми можно воспользоваться.
           \begin{haskell}
-            ghci> x = (length [1,3], 1/0 :: Double)
-            ghci> :sprint x
-            x = _
-            ghci> case x of (y, z) -> 0
-            0
+            ghci> x = (length [1,3], 1 `div` 0 :: Int)
             ghci> :sprint x
             x = (_,_)
-            ghci> case x of (y, z) -> y
+            ghci> :print x
+            x = ((_t1::Int),(_t2::Int))
+            ghci> _t1
             2
             ghci> :sprint x
             x = (2,_)
           \end{haskell}
-          \pause
-    \item Также посмотрите \href{http://felsin9.de/nnis/ghc-vis/}{ghc-vis} (для старых GHC).
+    \item Имена \haskinline|_t1|, \haskinline|_t2| генерируются автоматически. Вычисление \haskinline|_t1| обновило общее с \haskinline|x| значение.
   \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{ghc-vis-ds: ленивость в браузере}
+  \begin{columns}[c,onlytextwidth]
+    \begin{column}{0.44\textwidth}
+      \begin{itemize}
+        \small
+        \item \href{https://github.com/carlohamalainen/ghc-vis-ds}{ghc-vis-ds}: значения из GHCi в браузере.
+        \item Щелчок по thunk вычисляет его до WHNF.
+        \item Видны thunks и общие ссылки.
+        \item \href{https://ghc-vis-ds.hamalainen.dev}{Онлайн-демо с примерами}.
+      \end{itemize}
+      \medskip
+      {\scriptsize Кадр из README проекта.}
+    \end{column}
+    \begin{column}{0.54\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=0.79\textheight,keepaspectratio]{ghc-vis-ds-ones.png}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -261,16 +281,16 @@
 \begin{frame}[fragile]
   \frametitle{Минусы ленивости}
   \begin{itemize}
-    \item Вроде бы можно гарантировать, что ленивые вычисления всегда делают не больше шагов, чем энергичные.
-    \item Но каждый шаг занимает больше времени.
+    \item Ленивость позволяет избежать ненужных вычислений.
+    \item Но хранение и обработка отложенных вычислений требуют дополнительных затрат.
     \item Thunks могут занимать больше памяти, чем результат их вычисления (а могут и меньше).
     \item Классический пример:
           \begin{haskell}
             sum [] acc = acc
             sum (x:xs) acc = sum xs (x + acc)
 
-            sum [1..100] 0!$\pause \rightsquigarrow$! sum 1:[2..100] 0!$\pause \rightsquigarrow$!
-            sum [2..100] (1 + 0)!$\pause \rightsquigarrow$! sum 2:[3..100] (1 + 0)!$\pause \rightsquigarrow$!
+            sum [1..100] 0!$\pause \rightsquigarrow$! sum (1:[2..100]) 0!$\pause \rightsquigarrow$!
+            sum [2..100] (1 + 0)!$\pause \rightsquigarrow$! sum (2:[3..100]) (1 + 0)!$\pause \rightsquigarrow$!
             sum [3..100] (2 + (1 + 0))!$\pause \rightsquigarrow \ \ldots\ \rightsquigarrow$!
             (100 + ... + (1 + 0))!$\pause \rightsquigarrow $! 5050
           \end{haskell}
@@ -300,9 +320,9 @@
     \item Мы можем управлять ленивостью явно.
     \item Базовый инструмент для этого: \enquote{волшебная} (её нельзя реализовать на самом Haskell) функция \haskinline|seq :: a -> b -> b|.
           \pause
-    \item \haskinline|seq !$e_1$! !$e_2$!| сначала приводит $e_1$ к WHNF, а после этого возвращает $e_2$.
+    \item \haskinline|seq !$e_1$! !$e_2$!| возвращает $e_2$, но требует вычисления $e_1$ до WHNF. Порядок вычисления аргументов не гарантируется.
           \pause
-    \item На практике всегда $e_1$ "--- переменная в $e_2$.
+    \item Обычно $e_1$ "--- переменная в $e_2$.
     \item Пример использования:
           \begin{haskell*}{escapeinside=||}
             f $! x = seq x (f x)
@@ -327,9 +347,9 @@
           \end{haskell}
     \item И процесс вычисления:
           \begin{haskell}
-            sum [1..100] 0 !$\rightsquigarrow$! sum 1:[2..100] 0 !$\pause \rightsquigarrow$!
+            sum [1..100] 0 !$\rightsquigarrow$! sum (1:[2..100]) 0 !$\pause \rightsquigarrow$!
             let a1 = 1 + 0 in a1 `seq` sum [2..100] a1 !$\pause \rightsquigarrow$!
-            sum [2..100] 1 !$\rightsquigarrow$! sum 2:[3..100] 1 !$\pause \rightsquigarrow$!
+            sum [2..100] 1 !$\rightsquigarrow$! sum (2:[3..100]) 1 !$\pause \rightsquigarrow$!
             let a1 = 2 + 1 in a1 `seq` sum [3..100] a1 !$\pause \rightsquigarrow$!
             !$\rightsquigarrow\ \ldots\ \rightsquigarrow\ $!5050
           \end{haskell}
@@ -408,6 +428,7 @@
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
+    \item \href{https://opendsa-server.cs.vt.edu/ODSA/Books/uwosh/cs-331/spring-2020/PL_Book_Spr_2020/html/SLang2ParameterPassing.html}{Parameter-Passing Mechanisms (OpenDSA)}: способы передачи параметров, включая макроподстановку, передачу по имени и по необходимости.
     \item \href{https://blog.acolyer.org/2016/09/14/why-functional-programming-matters/}{Why Functional Programming Matters} (статья, написанная до появления собственно Haskell)
     \item \href{https://www.fpcomplete.com/blog/2017/09/all-about-strictness}{All About Strictness}
     \item \href{https://apfelmus.nfshost.com/articles/lazy-eval.html}{The Incomplete Guide to Lazy Evaluation}
