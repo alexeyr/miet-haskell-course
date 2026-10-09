@@ -82,8 +82,10 @@ twice({ println("evaluating"); 2 }) !\pause!
           \begin{haskell}
             if1 x y z = if x then y else z
 
-            if1 True 1 (1 `div` 0)
+            if1 True 1 undefined
           \end{haskell}
+          \haskinline|undefined :: a| вызывает ошибку при вычислении; \haskinline|error "сообщение"| позволяет задать её текст.
+          \pause
           Что случится при передаче по значению? А по имени?
           \pause
     \item По значению: ошибка.
@@ -100,7 +102,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           \begin{itemize}
             \item Можно избежать ошибок.
             \item Можно избежать лишних вычислений
-                  \pause (представьте, что в предыдущем примере вместо \haskinline|1 `div` 0| вызов сложной функции).
+                  \pause (представьте, что в предыдущем примере вместо \haskinline|undefined| вызов сложной функции).
           \end{itemize}
           \pause
     \item Главный минус:
@@ -124,7 +126,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           \pause
     \item При этом значения тоже не обязательно вычислять \enquote{до конца}: мы хотим, чтобы
           \begin{haskell}
-            length [1 `div` 0, 1 `div` 0, 1 `div` 0]
+            length [undefined, undefined, undefined]
           \end{haskell}
           возвращало \haskinline|3|.
           \pause
@@ -182,7 +184,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           \begin{haskell}
             (1 + 1, 2 + 2)       -- (,) (1 + 1) (2 + 2)
             \x -> 2 + 2 + x
-            (1 `div` 0) : take 4 [1..]
+            undefined : take 4 [1..]
             (+) 1
           \end{haskell}
   \end{itemize}
@@ -194,7 +196,7 @@ twice({ println("evaluating"); 2 }) !\pause!
     \item Отложенное вычисление (thunk) хранит выражение и окружение, необходимые для получения его значения.
     \item Если мы напишем
           \begin{haskell}
-            x = (length [1,3], 1 `div` 0)
+            x = (length [1,3], undefined)
           \end{haskell}
           то \haskinline|x| может указывать на отложенное вычисление или уже на пару: это зависит от оптимизаций.
     \item После этого
@@ -205,7 +207,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           требует привести \haskinline|x| к WHNF. Схематически: \pause
           \begin{haskell}
             x: (*thunk1*, *thunk2*)  *thunk1*: length [1,3]
-            y: *thunk1*              *thunk2*: 1 `div` 0
+            y: *thunk1*              *thunk2*: undefined
             z: *thunk2*
           \end{haskell}
 
@@ -223,7 +225,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           то \haskinline|y| тоже потребуется вычислить, и получим \pause
           \begin{haskell}
             x: (2, *thunk2*)         *thunk1*: 2
-            y: 2                     *thunk2*: 1 `div` 0
+            y: 2                     *thunk2*: undefined
             z: *thunk2*
           \end{haskell}
   \end{itemize}
@@ -235,7 +237,7 @@ twice({ println("evaluating"); 2 }) !\pause!
     \item Обе команды показывают значение, не выполняя отложенные вычисления.
     \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-cmd-:sprint}{\haskinline|:sprint|} заменяет их на \haskinline|_|; \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/ghci.html#ghci-cmd-:print}{\haskinline|:print|} даёт имена, которыми можно воспользоваться.
           \begin{haskell}
-            ghci> x = (length [1,3], 1 `div` 0 :: Int)
+            ghci> x = (length [1,3], undefined :: Int)
             ghci> :sprint x
             x = (_,_)
             ghci> :print x
@@ -450,6 +452,15 @@ twice({ println("evaluating"); 2 }) !\pause!
     \item \href{https://www.fpcomplete.com/blog/2017/09/all-about-strictness}{All About Strictness}
     \item \href{https://apfelmus.nfshost.com/articles/lazy-eval.html}{The Incomplete Guide to Lazy Evaluation}
     \item \href{https://en.wikibooks.org/wiki/Haskell/Laziness}{Laziness в Haskell Wikibook}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}[fragile]
+  \frametitle{Дополнительное чтение: память}
+  \begin{itemize}
+    \item \href{https://www.youtube.com/watch?v=I4lnCG18TaY}{Joachim Breitner, Thunks, Sharing, Laziness: The Haskell Heap Visualized}: видеодемонстрация отложенных вычислений, общих ссылок и циклических структур с помощью ghc-vis.
+    \item \href{https://haskell.foundation/hs-opt-handbook.github.io/src/Preliminaries/what_makes_fast_hs.html}{The Programs of Consistent Lethargy (Haskell Optimization Handbook)}: ленивость и расход памяти; почему \haskinline|foldl'| не вычисляет поля пары до конца.
   \end{itemize}
 \end{frame}
 
