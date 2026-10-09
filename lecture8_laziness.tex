@@ -340,6 +340,38 @@ twice({ println("evaluating"); 2 }) !\pause!
   \end{overlayarea}
 \end{frame}
 
+
+\begin{frame}[fragile,t]
+  \frametitle{\haskinline|foldr|: ленивый шаг}
+  \begin{itemize}
+    \item Запишем \haskinline|map (*2)| через \haskinline|foldr|:
+          \begin{haskellsmall}
+            step x ys = (x * 2) : ys
+          \end{haskellsmall}
+  \end{itemize}
+    \begin{onlyenv}<1-3>
+      \begin{haskellsmall}
+        foldr step [] [1..] !\onslide<2->! !$\rightsquigarrow$!
+        !$\langle$!1 * 2!$\rangle$! : !$\langle$!foldr step [] [2..]!$\rangle$! !\onslide<1->!
+      \end{haskellsmall}
+      \uncover<3->{Это уже WHNF: \haskinline|(:)| не требует вычисления головы и хвоста.}
+    \end{onlyenv}
+    \begin{onlyenv}<4->
+      Можно потребить только часть результата:
+      \begin{haskellsmall}
+        sum (take 2 (foldr step [] [1..])) !\onslide<5->! !$\rightsquigarrow$!
+        sum (!$\langle$!1 * 2!$\rangle$! : !$\langle$!take 1 !$\langle$!foldr step [] [2..]!$\rangle$!!$\rangle$!) !\onslide<6->! !$\rightsquigarrow$!
+        sum [!$\langle$!1 * 2!$\rangle$!, !$\langle$!2 * 2!$\rangle$!] !\onslide<7->! !$\rightsquigarrow$!
+        sum [2, 4] !\onslide<8->! !$\rightsquigarrow$! 6 !\onslide<1->!
+      \end{haskellsmall}
+      \begin{itemize}
+        \item<6-> При раскрытии \haskinline|take| произведения остаются отложенными; \haskinline|sum| требует их значения.
+        \item<8-> Вызов \haskinline|foldr step [] [3..]| не потребуется.
+        \item<9-> А \haskinline|foldr (*) 0 [1..]| не возвращает результат: \haskinline|(*)| требует вычислить рекурсивный результат.
+      \end{itemize}
+    \end{onlyenv}
+\end{frame}
+
 \begin{frame}[fragile]
   \frametitle{Строгие вычисления в Haskell: \haskinline|seq|}
   \begin{itemize}
