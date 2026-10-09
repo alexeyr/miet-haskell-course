@@ -47,7 +47,7 @@ twice({ println("evaluating"); 2 }) !\pause!
   \frametitle{Передача путём макроподстановки}
   \begin{itemize}
     \item Макросы в C "--- каждое использование аргумента заменяется на переданное выражение (а не на его значение).
-    \item И это рекурсивно: макросы в этом определении тоже будут заменены на своё определение.
+    \item И это повторяется: макросы в результате подстановки тоже будут заменены на свои определения.
     \item Это \emph{передача путём макроподстановки (call-by-macro-expansion)}.
           \pause
     \item Похожа на передачу по имени, но подстановка может менять смысл выражения из-за приоритетов операций и захвата имён.
@@ -59,18 +59,15 @@ twice({ println("evaluating"); 2 }) !\pause!
   \begin{itemize}
     \item Если рассмотреть
           \begin{haskell}
-            x = 2 + 2
-            y = x + x
+            (\x -> x + x) (2 + 2)
           \end{haskell}
           то при передаче по значению будет вычислено \pause
           \begin{haskell}
-            x = 4
-            y = 4 + 4
+            (\x -> x + x) 4  !$\rightsquigarrow$!  4 + 4
           \end{haskell}
           а при передаче по имени "--- \pause
           \begin{haskell}
-            x = 2 + 2
-            y = (2 + 2) + (2 + 2)
+            (2 + 2) + (2 + 2)
           \end{haskell}
   \end{itemize}
 \end{frame}
@@ -181,12 +178,12 @@ twice({ println("evaluating"); 2 }) !\pause!
           Аргументы здесь "--- любые выражения \pause
           (а для НФ они тоже должны быть в НФ).
     \item Примеры: \pause
-          \begin{haskell}
+          \begin{haskellsmall}
             (1 + 1, 2 + 2)       -- (,) (1 + 1) (2 + 2)
-            \x -> 2 + 2 + x
+            \x -> 2 + 2 + x      -- не НФ: 2 + 2 под лямбдой
             undefined : take 4 [1..]
             (+) 1
-          \end{haskell}
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -215,7 +212,7 @@ twice({ println("evaluating"); 2 }) !\pause!
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Отложенные вычисления}
+  \frametitle{Отложенные вычисления (продолжение)}
   \begin{itemize}
     \item Если это
           \begin{haskell}
@@ -304,7 +301,7 @@ twice({ println("evaluating"); 2 }) !\pause!
     \item Но хранение и обработка отложенных вычислений требуют дополнительных затрат.
     \item Отложенные вычисления могут занимать больше памяти, чем их результат (а могут и меньше).
     \item Классический пример:
-          \begin{haskell}
+          \begin{haskellsmall}
             sum [] acc = acc
             sum (x:xs) acc = sum xs (x + acc)
 
@@ -312,16 +309,15 @@ twice({ println("evaluating"); 2 }) !\pause!
             sum [2..100] (1 + 0)!$\pause \rightsquigarrow$! sum (2:[3..100]) (1 + 0)!$\pause \rightsquigarrow$!
             sum [3..100] (2 + (1 + 0))!$\pause \rightsquigarrow \ \ldots\ \rightsquigarrow$!
             (100 + ... + (1 + 0))!$\pause \rightsquigarrow $! 5050
-          \end{haskell}
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Минусы ленивости}
   \begin{itemize}
+    \item Такой \haskinline|sum| "--- по сути \haskinline|foldl (flip (+))|.
     \item Из-за этого \haskinline|foldl| "--- ловушка, практически всегда нужно либо \haskinline|foldr|, либо \haskinline|foldl'| (будет позже).
-          \pause
-    \item С другой стороны, заметьте, что в этом примере список \haskinline|[1..100]| никогда не появился целиком в памяти!
           \pause
     \item Ещё один интересный пример: \haskinline|length (take 2 (filter (< 1) [1..]))|.
     \item[]
@@ -361,8 +357,8 @@ twice({ println("evaluating"); 2 }) !\pause!
     \item Или так:\pause
           \begin{haskell}
             sum [] acc = acc
-            sum (x:xs) acc = let a1 = x + acc in 
-                            a1 `seq` sum xs a1
+            sum (x:xs) acc = let a1 = x + acc in
+                             a1 `seq` sum xs a1
           \end{haskell}
     \item И процесс вычисления:
           \begin{haskell}
@@ -372,6 +368,7 @@ twice({ println("evaluating"); 2 }) !\pause!
             let a1 = 2 + 1 in a1 `seq` sum [3..100] a1 !$\pause \rightsquigarrow$!
             !$\rightsquigarrow\ \ldots\ \rightsquigarrow\ $!5050
           \end{haskell}
+    \item Заметьте, что список \haskinline|[1..100]| никогда не появляется целиком в памяти!
   \end{itemize}
 \end{frame}
 
@@ -380,45 +377,56 @@ twice({ println("evaluating"); 2 }) !\pause!
   \begin{itemize}
     \item Мы знаем, что сумма списка "--- частный случай свёртки.
     \item Для функций \haskinline|product|, \haskinline|minimum|, \haskinline|maximum| имеем ровно те же проблемы!
-    \item Можем определить вариант \haskinline|foldl| (в библиотеке он есть в \haskinline|Data.List|/\haskinline|Data.Foldable|, а с GHC 9.10 и в \haskinline|Prelude|):
-          \begin{haskell}
+    \item Можем определить вариант \haskinline|foldl| (с GHC 9.10 он уже есть в \haskinline|Prelude|):
+          \begin{haskellsmall}
             foldl' :: (a -> b -> a) -> a -> [b] -> a
-            foldl' f a []     = a
-            foldl' f a (x:xs) = let a' = f a x
-                                in a' `seq` foldl' f a' xs
-          \end{haskell}
+            foldl' f acc []     = acc
+            foldl' f acc (x:xs) = let acc' = f acc x
+                                  in acc' `seq` foldl' f acc' xs
+          \end{haskellsmall}
     \item \pause
-          \begin{haskell}
+          \begin{haskellsmall}
             sum xs = foldl' (+) 0 xs
             product xs = foldl' (*) 1 xs
-            minimum xs = foldl1' min xs
+            minimum xs = foldl1' min xs  -- foldl1' из Data.List
             ...
-          \end{haskell}
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Строгие переменные в образцах}
   \begin{itemize}
-    \item В \haskinline|foldl'| параметр \haskinline|acc| вычисляется только до WHNF. Если мы вычисляем среднее так
+    \item В \haskinline|foldl'| аккумулятор вычисляется только до WHNF. Если мы вычисляем среднее так
           \begin{haskell}
             mean :: [Double] -> Double
             mean xs = s' / fromIntegral l'
               where (s', l') = foldl' step (0, 0) xs
-                    step (s, l) a = (s + a, l + 1)
+                    step (s, l) x = (s + x, l + 1)
           \end{haskell}
-          то в \haskinline|s| и \haskinline|l| снова накапливаются вычисления!
-          \pause
-    \item Включив \haskinline|BangPatterns|, сделаем их строгими:
+          то в \haskinline|s| и \haskinline|l| снова накапливаются вычисления! \pause
+          \begin{haskell}
+            foldl' step (0, 0) [1, 2] !$\pause \rightsquigarrow$!
+            foldl' step (0 + 1, 0 + 1) [2] !$\pause \rightsquigarrow$!
+            foldl' step (0 + 1 + 2, 0 + 1 + 1) []
+          \end{haskell}
+    \item Здесь аккумулятор "--- пара, и её вычисление до WHNF не вычисляет компонент.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Строгие переменные в образцах (продолжение)}
+  \begin{itemize}
+    \item Сделаем \haskinline|s| и \haskinline|l| строгими:
           \begin{haskell*}{escapeinside=||}
-            step (!s, !l) a = (s + a, l + 1)
+            step (!s, !l) x = (s + x, l + 1)
           \end{haskell*}
     \item Это превращается в
           \begin{haskell}
-            step (s, l) a = s `seq` l `seq` (s + a, l + 1)
+            step (s, l) x = s `seq` l `seq` (s + x, l + 1)
           \end{haskell}
-          т.е. \texttt{!} вычисляет значение при сопоставлении. Этого хватает: \haskinline|foldl'| приводит каждую пару к WHNF, а это вычисляет \haskinline|s| и \haskinline|l|.
-    \item Правила перевода \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/strict.html#bang-patterns-informal}{довольно сложные}.
+          т.е. \texttt{!} вычисляет значение (до WHNF) при сопоставлении. Этого хватает: \haskinline|foldl'| приводит результат \haskinline|step| к WHNF, а для этого \haskinline|step| сопоставляет предыдущую пару с образцом и вычисляет \haskinline|s| и \haskinline|l|.
+    \item Полные правила перевода \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/strict.html#bang-patterns-informal}{довольно сложные}.
   \end{itemize}
 \end{frame}
 
@@ -431,8 +439,8 @@ twice({ println("evaluating"); 2 }) !\pause!
 
             mean :: [Double] -> Double
             mean xs = s' / fromIntegral l'
-            where SPair s' l' = foldl' step (SPair 0 0) xs
-                  step (SPair s l) a = SPair (s + a) (l + 1)
+              where SPair s' l' = foldl' step (SPair 0 0) xs
+                    step (SPair s l) x = SPair (s + x) (l + 1)
           \end{haskellsmall*}
           \pause
     \item Восклицательный знак означает, что любое вычисление значения с этим конструктором вычислит и эти поля (до WHNF).
@@ -448,8 +456,8 @@ twice({ println("evaluating"); 2 }) !\pause!
   \frametitle{Дополнительное чтение}
   \begin{itemize}
     \item \href{https://opendsa-server.cs.vt.edu/ODSA/Books/uwosh/cs-331/spring-2020/PL_Book_Spr_2020/html/SLang2ParameterPassing.html}{Parameter-Passing Mechanisms (OpenDSA)}: способы передачи параметров, включая макроподстановку, передачу по имени и по необходимости.
-    \item \href{https://blog.acolyer.org/2016/09/14/why-functional-programming-matters/}{Why Functional Programming Matters} (статья, написанная до появления собственно Haskell)
-    \item \href{https://www.fpcomplete.com/blog/2017/09/all-about-strictness}{All About Strictness}
+    \item \href{https://blog.acolyer.org/2016/09/14/why-functional-programming-matters/}{Why Functional Programming Matters} (обзор статьи, написанной до появления собственно Haskell)
+    \item \href{https://web.archive.org/web/20230322115320/https://www.fpcomplete.com/blog/2017/09/all-about-strictness/}{All About Strictness}
     \item \href{https://apfelmus.nfshost.com/articles/lazy-eval.html}{The Incomplete Guide to Lazy Evaluation}
     \item \href{https://en.wikibooks.org/wiki/Haskell/Laziness}{Laziness в Haskell Wikibook}
   \end{itemize}
