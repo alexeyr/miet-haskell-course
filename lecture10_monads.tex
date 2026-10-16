@@ -23,14 +23,21 @@
               mx >> my =!\pause! mx >>=!\pause! \_ -> my
           \end{haskell}
           \pause
-    \item По историческим причинам есть ещё \haskinline|return = pure|.
-          \pause
-    \item Больше похоже на знакомые типы, если поменять аргументы местами:
-          \begin{haskell}
+    \item Для законных экземпляров \haskinline|mx >> my| $=$ \haskinline|mx *> my|.
+    \item Историческое имя \haskinline|pure| "--- \haskinline|return|.
+          \haskinline|return| не завершает функцию или \haskinline|do|-блок.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{От функторов к монадам}
+  \begin{itemize}
+    \item Больше похоже на знакомые типы, если поменять аргументы \haskinline|(>>=)| местами:
+          \begin{haskellsmall}
             fmap  ::   (a -> b) -> f a -> f b
             (<*>) :: f (a -> b) -> f a -> f b
             (=<<) :: (a -> m b) -> m a -> m b
-          \end{haskell}
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -38,15 +45,14 @@
   \frametitle{Что можно сделать с монадами}
   \begin{itemize}
     \item В прошлой лекции:
-          \begin{displayquote}
-            Структура результата аппликативного вычисления зависит только от структуры аргументов, а не от значений внутри них
-          \end{displayquote}
+          \emph{\enquote{Структура результата аппликативного вычисления зависит только от структуры аргументов, а не от значений внутри них.}}
     \item Монады снимают это ограничение. Теперь можно написать
-          \begin{haskell}
+          \begin{haskellsmall}
             ifM :: Monad m => m Bool -> m a -> m a -> m a
-            ifM mCond mThen mElse = mCond >>=!\pause! \cond ->!\pause!
-              if cond then mThen else mElse
-          \end{haskell}
+            ifM mCond mThen mElse =
+              mCond >>=!\pause! \cond ->!\pause!
+                if cond then mThen else mElse
+          \end{haskellsmall}
           и проверить:
           \begin{haskell}
             ghci> ifM [True] [1] [2,3]
@@ -69,38 +75,57 @@
                                 (a -> m c)
             f >=> g = \x ->!\pause! f x >>=!\pause! g
           \end{haskellsmall}
-    \item Есть и аналоги \haskinline|filter|, \haskinline|map| и т.д., работающие со стрелками Клейсли. Их можно найти в \href{https://hackage.haskell.org/package/base-4.18.0.0/docs/Control-Monad.html}{документации \haskinline{Control.Monad}}.
+    \item Есть и аналоги \haskinline|filter|, \haskinline|map| и т.д., работающие со стрелками Клейсли. Их можно найти в \href{https://hackage.haskell.org/package/base/docs/Control-Monad.html}{документации \haskinline{Control.Monad}}.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Законы монад}
   \begin{itemize}
-    \item \haskinline|pure x >>= f| $\equiv$ \haskinline|f x|
-    \item \haskinline|mx >>= pure| $\equiv$ \haskinline|mx|
-    \item \haskinline|(mx >>= f) >>= g| $\equiv$ \haskinline|mx >>= (\x -> f x >>= g)|
+    \item Левая единица:
+          \begin{haskell}
+            pure x >>= f !$=$! f x
+          \end{haskell}
+    \item Правая единица:
+          \begin{haskell}
+            mx >>= pure !$=$! mx
+          \end{haskell}
+    \item Ассоциативность:
+          \begin{haskellsmall}
+            (mx >>= f) >>= g !$=$! mx >>= (\x -> f x >>= g)
+          \end{haskellsmall}
+    \item Кроме этого, должно быть согласование с \haskinline|<*>|:
+          \begin{haskellsmall}
+            mf <*> mx !$=$!
+              mf >>= (\f -> mx >>= (\x -> pure (f x)))
+          \end{haskellsmall}
+          Удобная запись немного позже.
     \item Может быть, они не совсем интуитивны.
-          \pause
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Законы монад: композиция}
+  \begin{itemize}
     \item С помощью монадической композиции они записываются естественнее:
-    \item \haskinline|pure >=> f| $\equiv$ \haskinline|f|
-    \item \haskinline|f >=> pure| $\equiv$ \haskinline|f|
-    \item \haskinline|(f >=> g) >=> h| $\equiv$ \haskinline|f >=> (g >=> h)| \pause
-    \item Кроме этого, должно быть согласование с \haskinline|<*>|: \\
-          \haskinline|mf <*> mx| $\equiv$ \haskinline|mf >>= (\f -> mx >>= (\x -> pure (f x)))|
-          (тоже громоздко, но удобная запись немного позже)
+    \item \haskinline|pure >=> f| $=$ \haskinline|f| \quad (левая единица)
+    \item \haskinline|f >=> pure| $=$ \haskinline|f| \quad (правая единица)
+    \item \haskinline|(f >=> g) >=> h| $=$ \haskinline|f >=> (g >=> h)| \\
+          (ассоциативность)
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Примеры монад}
-  \begin{itemize}[<+->]
+  \begin{itemize}
     \item \haskinline|Maybe| "--- монада. Определим:
-          \begin{haskell}
+          \begin{haskell*}{texcomments=false}
             instance Monad Maybe where
-              -- (>{}>=) ::\pause{} Maybe a -> (a -> Maybe b) -> Maybe b
+              -- (>>=) :: Maybe a -> (a -> Maybe b) ->
+              --          Maybe b
               Nothing >>= _ =!\pause! Nothing
               Just x  >>= f =!\pause! f x
-          \end{haskell}
+          \end{haskell*}
     \item Списки тоже монада:
           \begin{haskell}
             -- (>{}>=) ::\pause{} [a] -> (a -> [b]) -> [b]
@@ -127,7 +152,7 @@
 \begin{frame}[fragile]
   \frametitle{\ldots и не монад}
   \begin{itemize}
-    \item Есть и примеры аппликативных функторов, для которых нельзя определить экземпляр монады:
+    \item Есть и примеры аппликативных функторов, для которых нельзя определить экземпляр монады, удовлетворяющий законам:
     \item
           \begin{haskell}
             newtype ConstInt a = ConstInt Int
@@ -135,7 +160,7 @@
             pure _ = ConstInt 0
             ConstInt x <*> ConstInt y = ConstInt (x + y)
           \end{haskell}
-    \item Легко увидеть, что \haskinline|pure x >>= f| $\equiv$ \haskinline|f x| не может выполняться ни для какого определения \haskinline|>>=|: правая часть зависит от \haskinline|x|, а левая нет.
+    \item Легко увидеть, что \haskinline|pure x >>= f| $=$ \haskinline|f x| не может выполняться ни для какого определения \haskinline|>>=|: правая часть зависит от \haskinline|x|, а левая нет.
           \pause
     \item Ещё пример "--- \haskinline|ZipList| (если не допускать \emph{только} бесконечные списки, как в домашнем задании, или активное использование $\bot$).
   \end{itemize}
@@ -175,25 +200,25 @@
     \item Законы монад также можно записать через \haskinline|do|:
     \item
           \begin{haskell}
-            do y <- pure x    !$\mathtt{\equiv}$!    f x
+            do y <- pure x    !$\mathtt{=}$!    f x
                f y
           \end{haskell}
     \item
           \begin{haskell}
-            do x <- mx        !$\mathtt{\equiv}$!    mx
+            do x <- mx        !$\mathtt{=}$!    mx
                pure x
           \end{haskell}
     \item
           \begin{haskell}
-            do x <- mx        !$\mathtt{\equiv}$!    do y <- do x <- mx
-               y <- f x       !\textcolor{white}{$\mathtt{\equiv}$}!               f x
-               g y            !\textcolor{white}{$\mathtt{\equiv}$}!       g y
+            do x <- mx        !$\mathtt{=}$!    do y <- do x <- mx
+               y <- f x       !\textcolor{white}{$\mathtt{=}$}!               f x
+               g y            !\textcolor{white}{$\mathtt{=}$}!       g y
           \end{haskell}
     \item
           \begin{haskell}
-            mf <*> mx         !$\mathtt{\equiv}$!    do f <- mf
-                              !\textcolor{white}{$\mathtt{\equiv}$}!       x <- mx
-                              !\textcolor{white}{$\mathtt{\equiv}$}!       pure (f x)
+            mf <*> mx         !$\mathtt{=}$!    do f <- mf
+                              !\textcolor{white}{$\mathtt{=}$}!       x <- mx
+                              !\textcolor{white}{$\mathtt{=}$}!       pure (f x)
           \end{haskell}
   \end{itemize}
 \end{frame}
@@ -206,24 +231,64 @@
     \item \haskinline|м_выражение| должно иметь тип \haskinline|m a| для какой-то монады \haskinline|m| и типа \haskinline|a|.
     \item \haskinline|m| одна для всех строк, \haskinline|a| могут различаться.
     \item \haskinline|образец| в строке с \haskinline|<-| имеет тип \haskinline|a|.
-    \item Если \haskinline|m| "--- экземпляр \haskinline|MonadFail|, то \haskinline|образец| может не быть обязательным для всех значений типа \haskinline|a|, например \haskinline|Just x <- pure Nothing|.
-    \item Подробности в документации \haskinline|MonadFail|, но у нас в курсе такой необходимости нет.
+    \item Если образец после \haskinline|<-| может не совпасть, нужен экземпляр \haskinline|MonadFail|; при несовпадении вызывается \haskinline|fail|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Несовпадение образца в \haskinline|do|-блоке}
+  \begin{itemize}
+    \item Для \haskinline|Maybe| несовпадение образца даёт \haskinline|Nothing|:
+          \begin{haskell}
+            safeHead :: Maybe [Int] -> Maybe Int
+            safeHead mx = do
+              (x : _) <- mx
+              pure x
+          \end{haskell}
+          \pause
+          \begin{haskell}
+            ghci> safeHead (Just [2, 3])
+            !\pause!Just 2
+            ghci> safeHead (Just [])
+            !\pause!Nothing
+          \end{haskell}
+    \item При несовпадении \haskinline|pure x| не выполняется.
+    \item Подробности "--- в \href{https://hackage.haskell.org/package/base/docs/Control-Monad-Fail.html#t:MonadFail}{документации \haskinline{MonadFail}}.
+    \item Дальше нам достаточно образцов, которые всегда совпадают.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Функции над произвольными монадами}
   \begin{itemize}[<+->]
-    \item Кроме уже виденных \haskinline|=<<| и \haskinline|>=>|, в \haskinline|Prelude| и \haskinline|Control.Monad| есть ещё функции, которые работают для любых монад (или аппликативов).
-    \item \haskinline|join :: Monad m => m (m a) -> m a|. Эту функцию можно было бы взять как базовую и выразить \haskinline|>>=| через неё.
-    \item \haskinline|sequence :: Monad m => [m a] -> m [a]|. Обобщение "--- \haskinline|sequenceA| из \haskinline|Traversable|.
-    \item \haskinline[fontsize=\small]|mapM :: Monad m => (a -> m b) -> [a] -> m [b]|
+    \item В \haskinline|Prelude| есть \haskinline|(=<<)|, а также:
+          \begin{haskellsmall}
+            sequence :: (Traversable t, Monad m) =>
+              t (m a) -> m (t a)
+
+            mapM :: (Traversable t, Monad m) =>
+              (a -> m b) -> t a -> m (t b)
+          \end{haskellsmall}
+    \item \haskinline|sequenceA| и \haskinline|traverse| из прошлой лекции делают то же самое, но требуют только \haskinline|Applicative m|.
+    \item Подставьте \haskinline|t = []|, а затем конкретные монады (например, \haskinline|Maybe| и \haskinline|[]|). Что будут делать эти функции?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Функции из \haskinline|Control.Monad|}
+  \begin{itemize}[<+->]
+    \item Нужен импорт \haskinline|Control.Monad|: здесь определены \haskinline|(>=>)|, \haskinline|join| и \haskinline|zipWithM|.
     \item
           \begin{haskell}
-    zipWithM :: Applicative m =>
-      (a -> b -> m c) -> [a] -> [b] -> m [c]
-    \end{haskell}
-    \item Подставьте конкретные монады (например, \haskinline|Maybe| и \haskinline|[]|) и подумайте, что функции будут делать для них.
+            join :: Monad m => m (m a) -> m a
+          \end{haskell}
+          Эту функцию можно было бы взять как базовую и выразить \haskinline|>>=| через неё.
+    \item
+          \begin{haskell}
+            zipWithM :: Applicative m =>
+              (a -> b -> m c) -> [a] -> [b] -> m [c]
+          \end{haskell}
+    \item Подумайте, что они делают для \haskinline|Maybe| и \haskinline|[]|.
   \end{itemize}
 \end{frame}
 
@@ -235,8 +300,15 @@
           \begin{haskellsmall}
             newtype State s a = State { runState :: s -> (a, s) }
           \end{haskellsmall}
-          Это \enquote{вычисления с состоянием}, которые могут выдать результат, зависящий от состояния и изменить это состояние.
-    \item Как сделать их аппликативным функтором?
+          Это \enquote{вычисления с состоянием}, которые могут выдать результат, зависящий от состояния, и изменить это состояние.
+    \item \haskinline|runState| принимает вычисление и начальное состояние, возвращает результат и конечное состояние.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\haskinline|State|: экземпляры Functor и Applicative}
+  \begin{itemize}
+    \item Как сделать эти вычисления аппликативным функтором?
           \begin{haskellsmall}
             instance Functor (State s) where
               fmap f (State gx) = State (\s1 ->!\pause!
@@ -261,7 +333,7 @@
             instance Monad (State s) where
               State gx >>= f = State (\s1 ->
                 let (x, s2) = gx s1!\pause!
-                State gy = f x
+                    State gy = f x
                 in!\pause! gy s2)
           \end{haskellsmall}
           \pause
@@ -281,9 +353,32 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{\haskinline|State|: пример вычисления}
+  \begin{itemize}
+    \item Прочитаем состояние, увеличим его и вернём оба значения:
+          \begin{haskell}
+            increment :: State Int (Int, Int)
+            increment = do
+              old <- get
+              modify (+1)
+              new <- get
+              pure (old, new)
+          \end{haskell}
+          \pause
+    \item Запустим вычисление с начальным состоянием \haskinline|10|:
+          \begin{ghci}
+            ghci> runState increment 10
+            ((10,11),11)
+          \end{ghci}
+    \item \haskinline|(10,11)| "--- результат, последнее \haskinline|11| "--- конечное состояние.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Монада \haskinline|State| в библиотеках}
   \begin{itemize}
-    \item В библиотеках \hackage{transformers} и \hackage{mtl} (модуль \haskinline|Control.Monad.State|) \haskinline|State s| определён как \haskinline|StateT s Identity| (трансформеры "--- в лекции 14).
+    \item \haskinline|Control.Monad.Trans.State| "--- модуль библиотеки \hackage{transformers}; \haskinline|Control.Monad.State| "--- библиотеки \hackage{mtl}.
+    \item В обоих \haskinline|State s| определён как \haskinline|StateT s Identity| (трансформеры "--- в лекции 14).
     \item Поэтому \emph{конструктора} \haskinline|State| там нет: вместо него функция
           \begin{haskell}
             state :: (s -> (a, s)) -> State s a
