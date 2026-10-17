@@ -28,8 +28,8 @@
           \haskinline|main :: IO a| (почти всегда \haskinline|IO ()|).
     \item Это аналог \mintinline{c}|int main(int argc, char** argv)| в C, \mintinline{java}|public static void main(String[] args)| в Java и т.д.
     \item Соответственно, есть доступ к аргументам командной строки и возможность указать код выхода:
-    \item \haskinline|System.Environment.getArgs :: IO [String]|. Там же есть функции для чтения переменных окружения.
-    \item \haskinline|System.Exit.exitWith :: ExitCode -> IO a|.
+    \item \href{https://hackage.haskell.org/package/base/docs/System-Environment.html}{\haskinline{System.Environment.getArgs :: IO [String]}}. Там же есть функции для чтения переменных окружения.
+    \item \href{https://hackage.haskell.org/package/base/docs/System-Exit.html}{\haskinline{System.Exit.exitWith :: ExitCode -> IO a}}.
   \end{itemize}
 \end{frame}
 
@@ -62,6 +62,49 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Обход с \haskinline|IO|: \haskinline|for| и \haskinline|for_|}
+  \begin{itemize}
+    \item Те же обходы, но функция передаётся последней:
+          \begin{haskellsmall}
+            import Data.Traversable (for)
+            import Data.Foldable (for_)
+          \end{haskellsmall}
+          \haskinline|for = flip traverse|, \haskinline|for_ = flip traverse_|.
+    \item \haskinline|for| собирает результаты; \haskinline|for_| отбрасывает их, сохраняя эффекты.
+          \pause
+    \item Так удобно записывать действие из нескольких строк:
+          \begin{haskell}
+            for_ [1..3] $ \i -> do
+              print i
+              print (i * i)
+          \end{haskell}
+          Для каждого элемента печатаем число и его квадрат.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Условное выполнение: \haskinline|when|}
+  \begin{itemize}
+    \item Функция из упражнения в лекции 9:
+          \begin{haskellsmall}
+            import Control.Monad (when)
+
+            when :: Applicative f => Bool -> f () -> f ()
+          \end{haskellsmall}
+    \item При \haskinline|True| выполняет действие, при \haskinline|False| возвращает \haskinline|pure ()| без его эффектов.
+          \pause
+    \item Например, условный диагностический вывод:
+          \begin{haskellsmall}
+            report :: Bool -> IO ()
+            report debug = do
+              when debug (putStrLn "Debug mode")
+              putStrLn "Running"
+          \end{haskellsmall}
+          \haskinline|report False| печатает только \haskinline|"Running"|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Ловушки консоли: буферизация}
   \begin{itemize}
     \item В скомпилированной программе \haskinline|stdout| буферизуется построчно (а при перенаправлении в файл или канал "--- блоками). Поэтому
@@ -71,7 +114,7 @@
           \end{haskell}
           не покажет приглашение, пока пользователь не нажмёт Enter.
           \pause
-    \item Решения: \haskinline|hFlush stdout| после \haskinline|putStr| или \haskinline|hSetBuffering stdout NoBuffering| в начале \haskinline|main| (модуль \haskinline|System.IO|).
+    \item Решения: \haskinline|hFlush stdout| после \haskinline|putStr| или \haskinline|hSetBuffering stdout NoBuffering| в начале \haskinline|main| (модуль \href{https://hackage.haskell.org/package/base/docs/System-IO.html}{\haskinline{System.IO}}).
     \item В GHCi и \ghcinline|stack repl| этого не видно: там буферизация отключена. Проверяйте \ghcinline|stack run|.
   \end{itemize}
 \end{frame}
@@ -94,7 +137,7 @@
 \begin{frame}[fragile]
   \frametitle{Изменяемые переменные: \haskinline|IORef|}
   \begin{itemize}
-    \item Модуль \haskinline|Data.IORef|:
+    \item Модуль \href{https://hackage.haskell.org/package/base/docs/Data-IORef.html}{\haskinline{Data.IORef}}:
           \begin{haskell}
             newIORef :: a -> IO (IORef a)
             readIORef :: IORef a -> IO a
@@ -109,7 +152,7 @@
 \begin{frame}[fragile]
   \frametitle{Исключения (кратко)}
   \begin{itemize}
-    \item Модуль \haskinline|Control.Exception|:
+    \item Модуль \href{https://hackage.haskell.org/package/base/docs/Control-Exception.html}{\haskinline{Control.Exception}}:
           \begin{haskellsmall}
             throwIO :: Exception e => e -> IO a
             catch   :: Exception e => IO a -> (e -> IO a) -> IO a
@@ -208,17 +251,17 @@
   \frametitle{\haskinline|ByteString| и \haskinline|Text|}
   \begin{itemize}
     \item Мы знаем, что \haskinline|String| занимает очень много места в памяти, что ухудшает и время работы.
-    \item Вместо него есть \haskinline|Data.ByteString.ByteString|, по сути представляющий собой массив байтов, и \haskinline|Data.ByteString.Lazy.ByteString| как ленивый список таких массивов.
+    \item Вместо него есть \href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString.html}{\haskinline{Data.ByteString.ByteString}}, по сути представляющий собой массив байтов, и \href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Lazy.html}{\haskinline{Data.ByteString.Lazy.ByteString}} как ленивый список таких массивов.
     \item Многие функции для работы с ними называются так же, как для \haskinline|String|, но живут в соответствующих модулях (поэтому используется \haskinline|import qualified|).
-    \item Они годятся для бинарных данных (или ASCII, с помощью \haskinline|Data.ByteString[.Lazy].Char8|).
-    \item Для текста аналогичный пакет \haskinline|text| и типы в модулях \haskinline|Data.Text[.Lazy]|.
+    \item Они годятся для бинарных данных (или ASCII, с помощью \href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Char8.html}{\haskinline{Data.ByteString}}\haskinline|[|\href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Lazy-Char8.html}{\haskinline{.Lazy}}\haskinline|].Char8|).
+    \item Для текста аналогичный пакет \haskinline|text| и типы в модулях \href{https://hackage.haskell.org/package/text/docs/Data-Text.html}{\haskinline{Data.Text}}\haskinline|[|\href{https://hackage.haskell.org/package/text/docs/Data-Text-Lazy.html}{\haskinline{.Lazy}}\haskinline|]|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Случайные значения}
   \begin{itemize}
-    \item Модуль \haskinline|System.Random| (пакет \hackage{random}) содержит класс
+    \item Модуль \href{https://hackage.haskell.org/package/random/docs/System-Random.html}{\haskinline{System.Random}} (пакет \hackage{random}) содержит класс
     \item
           \begin{haskellsmall}
             class RandomGen g where

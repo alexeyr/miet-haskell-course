@@ -12,7 +12,7 @@
   \frametitle{Роды типов}
   \begin{itemize}
     \item У значений есть типы, а у типов "--- р\'{о}ды (kinds).
-    \item Все обычные типы (\haskinline|Int|, \haskinline|Maybe Bool|, \haskinline|(Int, Int)|, \ldots) имеют род \haskinline|*|, или \haskinline|Type| (из \haskinline|Data.Kind|).
+    \item Все обычные типы (\haskinline|Int|, \haskinline|Maybe Bool|, \haskinline|(Int, Int)|, \ldots) имеют род \haskinline|*|, или \haskinline|Type| (из \href{https://hackage.haskell.org/package/base/docs/Data-Kind.html}{\haskinline{Data.Kind}}).
           \pause
     \item Конструктор типов \haskinline|Maybe| принимает тип рода \haskinline|*| и возвращает тип рода \haskinline|*|:
           \begin{haskell}
@@ -57,7 +57,7 @@
           \pause
     \item \haskinline|mapMb :: (a -> b) -> Maybe a -> Maybe b| (\haskinline|mapMaybe| называется другая функция)
           \pause
-    \item \haskinline|mapMap :: (a -> b) -> Map k a -> Map k b| (она же \haskinline|Data.Map.{Lazy/Strict}.map|)
+    \item \haskinline|mapMap :: (a -> b) -> Map k a -> Map k b| (она же \haskinline|Data.Map.|\{\href{https://hackage.haskell.org/package/containers/docs/Data-Map-Lazy.html}{\haskinline{Lazy}}/\href{https://hackage.haskell.org/package/containers/docs/Data-Map-Strict.html}{\haskinline{Strict}}\}\haskinline|.map|)
           \pause
     \item \alt<+>{\haskinline|mapSnd :: (a -> b) -> (c, a) -> (c, b)|}{\haskinline|mapSnd :: (a -> b) -> (,) c a -> (,) c b|} \pause
     \item Видим, что все они имеют вид \pause \\
@@ -350,7 +350,7 @@ fmap (g . h)    !$=$!!\pause! fmap g . fmap h
 \begin{frame}[fragile]
   \frametitle{Примеры аппликативных функторов}
   \begin{itemize}
-    \item Второй вариант для списков "--- \haskinline|ZipList| (определён в \haskinline|Control.Applicative|).
+    \item Второй вариант для списков "--- \haskinline|ZipList| (определён в \href{https://hackage.haskell.org/package/base/docs/Control-Applicative.html}{\haskinline{Control.Applicative}}).
           \begin{haskellsmall}
             newtype ZipList a = ZipList { getZipList :: [a] }
               deriving Functor
@@ -391,12 +391,12 @@ fmap (g . h)    !$=$!!\pause! fmap g . fmap h
           \end{haskellsmall}
           \pause
     \item Если обе координаты удалось прочитать, получим точку:
-          \begin{ghci}
+          \begin{haskell}
             ghci> parsePoint "2" "3"
             Just (Point 2 3)
             ghci> parsePoint "2" "x"
             Nothing
-          \end{ghci}
+          \end{haskell}
   \end{itemize}
 \end{frame}
 
@@ -504,23 +504,49 @@ fmap (g . h)    !$=$!!\pause! fmap g . fmap h
 \begin{frame}[fragile]
   \frametitle{\haskinline|Traversable|}
   \begin{itemize}
-    \item \haskinline|sequenceAL| обобщается со списков на любую структуру:
+    \item \haskinline|sequenceAL| обобщается со списков на структуры класса \haskinline|Traversable|:
           \begin{haskelltiny}
             class (Functor t, Foldable t) => Traversable t where
               traverse  :: Applicative f => (a -> f b) -> t a -> f (t b)
               sequenceA :: Applicative f => t (f a) -> f (t a)
-              -- traverse g = sequenceA . fmap g;  sequenceA = traverse id
+              -- sequenceA  = \pause{} traverse id
+              -- traverse g = \pause{} sequenceA . fmap g
           \end{haskelltiny}
+          \pause
     \item \haskinline|traverse| "--- \enquote{\haskinline|map| с эффектами}:
           \begin{haskellsmall}
             ghci> import Text.Read (readMaybe)
             ghci> traverse readMaybe ["1", "2"] :: Maybe [Int]
-            Just [1,2]
+            !\pause!Just [1,2]
             ghci> traverse readMaybe ["1", "x"] :: Maybe [Int]
-            Nothing
+            !\pause!Nothing
           \end{haskellsmall}
           \pause
-    \item \haskinline|deriving (Functor, Foldable, Traversable)| работает для большинства типов. Законы "--- в \haskinline|Data.Traversable|.
+    \item \haskinline|deriving (Functor, Foldable, Traversable)| работает для большинства типов. Законы "--- в \href{https://hackage.haskell.org/package/base/docs/Data-Traversable.html}{\haskinline{Data.Traversable}}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Выполняем действия без сбора результатов}
+  \begin{itemize}
+    \item Суффикс \haskinline|_| обычно означает: результаты отбрасываются, эффекты сохраняются.
+    \item Для \haskinline|sequenceA| это \href{https://hackage.haskell.org/package/base/docs/Data-Foldable.html#v:sequenceA_}{\haskinline{sequenceA_}}:
+          \begin{haskellsmall}
+            import Data.Foldable (sequenceA_)
+
+            sequenceA_ :: (Foldable t, Applicative f) =>
+              t (f a) -> f ()
+          \end{haskellsmall}
+          \pause
+    \item Значения отбрасываются, но отказ сохраняется:
+          \begin{haskellsmall}
+            ghci> sequenceA [Just 1, Just 2]
+            Just [1,2]
+            ghci> sequenceA_ [Just 1, Just 2]
+            Just ()
+            ghci> sequenceA_ [Just 1, Nothing]
+            Nothing
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 

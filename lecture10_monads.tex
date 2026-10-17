@@ -70,7 +70,7 @@
   \begin{itemize}
     \item Тип второго аргумента \haskinline|(>>=)|, \haskinline|a -> m b|, где \haskinline|m| "--- монада, называется \emph{стрелкой Клейсли}.
     \item \haskinline|a| и \haskinline|b| могут быть как переменными типа, так и конкретными типами.
-    \item Стрелки Клейсли можно композировать (импорт \haskinline|Control.Monad|):
+    \item Стрелки Клейсли можно композировать (импорт \href{https://hackage.haskell.org/package/base/docs/Control-Monad.html}{\haskinline{Control.Monad}}):
           \begin{haskellsmall}
             (>=>) :: Monad m => (a -> m b) -> (b -> m c) ->
                                 (a -> m c)
@@ -145,8 +145,8 @@
   \begin{itemize}
     \item \haskinline|instance Monad Identity|, где \haskinline|newtype Identity a = Identity a|.
     \item \haskinline|instance Monad (Either c)|.
-    \item \haskinline|instance Monad ((->) c)|: функции с фиксированным типом аргумента.
-    \item \haskinline|instance Monoid c => Monad ((,) c)|: пары с фиксированным типом первого элемента, если этот тип "--- моноид.
+    \item \haskinline|instance Monad ((->) c)|: функции с общим окружением типа \haskinline|c| (модель \haskinline|Reader|).
+    \item \haskinline|instance Monoid c => Monad ((,) c)|: пары \haskinline|(c, a)| с накоплением моноида \haskinline|c| (модель \haskinline|Writer|). У библиотечного \haskinline|Writer c a| порядок компонентов "--- \haskinline|(a, c)|.
   \end{itemize}
 \end{frame}
 
@@ -161,7 +161,7 @@
             pure _ = ConstInt 0
             ConstInt x <*> ConstInt y = ConstInt (x + y)
           \end{haskell}
-    \item Легко увидеть, что \haskinline|pure x >>= f| $=$ \haskinline|f x| не может выполняться ни для какого определения \haskinline|>>=|: правая часть зависит от \haskinline|x|, а левая нет.
+    \item Легко увидеть, что \haskinline|pure x >>= f| $=$ \haskinline|f x| не может выполняться ни для какого определения \haskinline|>>=|: \pause правая часть зависит от \haskinline|x|, а левая нет.
           \pause
     \item Ещё пример "--- \haskinline|ZipList| (если не допускать \emph{только} бесконечные списки, как в домашнем задании, или активное использование $\bot$).
   \end{itemize}
@@ -260,36 +260,45 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Функции над произвольными монадами}
-  \begin{itemize}[<+->]
-    \item В \haskinline|Prelude| есть \haskinline|(=<<)|, а также:
-          \begin{haskellsmall}
-            sequence :: (Traversable t, Monad m) =>
-              t (m a) -> m (t a)
-
-            mapM :: (Traversable t, Monad m) =>
-              (a -> m b) -> t a -> m (t b)
-          \end{haskellsmall}
-    \item \haskinline|sequenceA| и \haskinline|traverse| из прошлой лекции делают то же самое, но требуют только \haskinline|Applicative m|.
-    \item Подставьте \haskinline|t = []|, а затем конкретные монады (например, \haskinline|Maybe| и \haskinline|[]|). Что будут делать эти функции?
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
   \frametitle{Функции из \haskinline|Control.Monad|}
   \begin{itemize}[<+->]
-    \item Нужен импорт \haskinline|Control.Monad|: здесь определены \haskinline|(>=>)|, \haskinline|join| и \haskinline|zipWithM|.
+    \item Нужен импорт \href{https://hackage.haskell.org/package/base/docs/Control-Monad.html}{\haskinline{Control.Monad}}: здесь определены \haskinline|(>=>)|, \haskinline|join|, \haskinline|zipWithM| и \haskinline|foldM|.
     \item
           \begin{haskell}
             join :: Monad m => m (m a) -> m a
           \end{haskell}
-          Эту функцию можно было бы взять как базовую и выразить \haskinline|>>=| через неё.
     \item
           \begin{haskell}
             zipWithM :: Applicative m =>
               (a -> b -> m c) -> [a] -> [b] -> m [c]
           \end{haskell}
-    \item Подумайте, что они делают для \haskinline|Maybe| и \haskinline|[]|.
+    \item
+          \begin{haskellsmall}
+            foldM :: (Foldable t, Monad m) =>
+              (b -> a -> m b) -> b -> t a -> m b
+          \end{haskellsmall}
+          Свёртка слева: шаг возвращает результат в монаде.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{\haskinline|foldM|: пример}
+  \begin{itemize}
+    \item Проводим операции по порядку. Отрицательный промежуточный баланс означает отказ:
+          \begin{haskellsmall}
+            step :: Integer -> Integer -> Maybe Integer
+            step balance delta
+              | balance + delta < 0 = Nothing
+              | otherwise = Just (balance + delta)
+          \end{haskellsmall}
+    \item Начальный баланс "--- \haskinline|10|:
+          \begin{haskellsmall}
+            ghci> foldM step 10 [-3, 5]
+            !\pause!Just 12
+            ghci> foldM step 10 [-12, 5]
+            !\pause!Nothing
+          \end{haskellsmall}
+    \item Во втором случае \haskinline|+5| уже не обрабатывается, хотя итоговая сумма могла бы стать положительной.
   \end{itemize}
 \end{frame}
 
@@ -304,6 +313,56 @@
             mx >>= g = ???
           \end{haskell}
     \item Подсказка: подумайте о типе \haskinline|fmap g mx|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Отбор значений: \haskinline|guard|}
+  \begin{itemize}
+    \item \href{https://hackage.haskell.org/package/base/docs/Control-Monad.html#v:guard}{\haskinline{guard}} из \haskinline|Control.Monad| проверяет условие:
+          \begin{haskellsmall}
+            import Control.Monad (guard)
+            guard :: Alternative f => Bool -> f ()
+            -- Для Maybe:
+            guard True  !$=$!!\pause! Just ()
+            guard False !$=$!!\pause! Nothing
+          \end{haskellsmall}
+    \item Можно продолжить вычисление, только если число чётное:
+          \begin{haskellsmall}
+            evenSquare :: Maybe Int -> Maybe Int
+            evenSquare mx = do
+              x <- mx
+              guard (even x)
+              pure (x * x)
+          \end{haskellsmall}
+    \item У \haskinline|Maybe| и списков есть \href{https://hackage.haskell.org/package/base/docs/Control-Applicative.html#t:Alternative}{\haskinline{Alternative}}; для списков \haskinline|guard False| даёт \haskinline|[]|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Монадические включения}
+  \begin{itemize}
+    \item \href{https://downloads.haskell.org/~ghc/latest/docs/users_guide/exts/monad_comprehensions.html}{\haskinline{MonadComprehensions}} обобщает синтаксис списковых включений на монады:
+          \begin{haskellsmall*}{texcomments=false}
+            {-# LANGUAGE MonadComprehensions #-}
+            evenSquare mx = [x * x | x <- mx, even x]
+          \end{haskellsmall*}
+          \pause
+    \item Перевод в \haskinline|do|-нотацию:
+          \begin{haskellsmall}
+            evenSquare mx = do x <- mx
+                               guard (even x)
+                               return (x * x)
+          \end{haskellsmall}
+          \pause
+    \item Например, для \haskinline|Maybe|:
+          \begin{haskellsmall}
+            ghci> :set -XMonadComprehensions
+            ghci> [x * x | x <- Just 2, even x]
+            !\pause!Just 4
+            ghci> [x * x | x <- Just 3, even x]
+            !\pause!Nothing
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -381,10 +440,10 @@
           \end{haskell}
           \pause
     \item Запустим вычисление с начальным состоянием \haskinline|10|:
-          \begin{ghci}
+          \begin{haskell}
             ghci> runState increment 10
             ((10,11),11)
-          \end{ghci}
+          \end{haskell}
     \item \haskinline|(10,11)| "--- результат, последнее \haskinline|11| "--- конечное состояние.
   \end{itemize}
 \end{frame}
@@ -401,10 +460,10 @@
     \item Подсказка: используйте \haskinline|get|, \haskinline|modify| и \haskinline|pure|.
           \pause
     \item Ожидаемый результат обхода:
-          \begin{ghcismall}
+          \begin{haskellsmall}
             ghci> runState (traverse number ["a", "b"]) 0
             ([(0,"a"),(1,"b")],2)
-          \end{ghcismall}
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
