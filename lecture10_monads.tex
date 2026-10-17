@@ -53,13 +53,14 @@
               mCond >>=!\pause! \cond ->!\pause!
                 if cond then mThen else mElse
           \end{haskellsmall}
-          и проверить:
-          \begin{haskell}
-            ghci> ifM [True] [1] [2,3]
+          \begin{haskellsmall}
+            ghci> ifM [True] [1] [2,3] !\pause!
             [1]
-            ghci> ifM [False] [1] [2,3]
+            ghci> ifM [False] [1] [2,3] !\pause!
             [2,3]
-          \end{haskell}
+            ghci> ifM [True, False] [1] [2,3] !\pause!
+            [1,2,3]
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -69,7 +70,7 @@
   \begin{itemize}
     \item Тип второго аргумента \haskinline|(>>=)|, \haskinline|a -> m b|, где \haskinline|m| "--- монада, называется \emph{стрелкой Клейсли}.
     \item \haskinline|a| и \haskinline|b| могут быть как переменными типа, так и конкретными типами.
-    \item Стрелки Клейсли можно композировать:
+    \item Стрелки Клейсли можно композировать (импорт \haskinline|Control.Monad|):
           \begin{haskellsmall}
             (>=>) :: Monad m => (a -> m b) -> (b -> m c) ->
                                 (a -> m c)
@@ -377,14 +378,14 @@
 \begin{frame}[fragile]
   \frametitle{Монада \haskinline|State| в библиотеках}
   \begin{itemize}
-    \item \haskinline|Control.Monad.Trans.State| "--- модуль библиотеки \hackage{transformers}; \haskinline|Control.Monad.State| "--- библиотеки \hackage{mtl}.
-    \item В обоих \haskinline|State s| определён как \haskinline|StateT s Identity| (трансформеры "--- в лекции 14).
+    \item \hackage{transformers} содержит сами трансформеры монад (\haskinline|StateT|, \haskinline|ReaderT|, \ldots; о них позже в курсе), модуль \haskinline|Control.Monad.Trans.State|.
+    \item \hackage{mtl} строится на \hackage{transformers} и добавляет классы вроде \haskinline|MonadState|, чтобы \haskinline|get| и \haskinline|put| работали без явного \haskinline|lift|; модуль \haskinline|Control.Monad.State|.
+    \item В обоих \haskinline|State s| определён как \haskinline|StateT s Identity|.
     \item Поэтому \emph{конструктора} \haskinline|State| там нет: вместо него функция
           \begin{haskell}
             state :: (s -> (a, s)) -> State s a
           \end{haskell}
     \item \haskinline|runState|, \haskinline|get|, \haskinline|put|, \haskinline|modify| есть, а также \haskinline|evalState| (только результат) и \haskinline|execState| (только состояние).
-    \item Типичная ошибка: написать \haskinline|State (\s -> ...)| после \haskinline|import Control.Monad.State| и получить \ghcinline|Data constructor not in scope: State|.
   \end{itemize}
 \end{frame}
 
@@ -393,13 +394,13 @@
   \begin{itemize}
     \item \href{https://www.snoyman.com/blog/2017/01/functors-applicatives-and-monads}{Functors, Applicatives, and Monads}
     \item \href{https://wiki.haskell.org/Typeclassopedia}{Typeclassopedia} (ещё раз)
-    \item \href{http://dev.stephendiehl.com/hask/#monads}{What I Wish I Knew When Learning Haskell: Monads}
+    \item \href{https://smunix.github.io/dev.stephendiehl.com/hask/index.html#monads}{What I Wish I Knew When Learning Haskell: Monads}
     \item \href{https://wiki.haskell.org/All_About_Monads}{All About Monads}
-    \item И две более сложные монады:
+    \item И более сложные монады:
           \begin{itemize}
             \item \href{http://blog.sigfpe.com/2008/12/mother-of-all-monads.html}{The Mother of all Monads}
             \item \href{https://lukepalmer.wordpress.com/2008/08/10/mindfuck-the-reverse-state-monad/}{Mindfuck: The Reverse State Monad}
-            \item \href{https://tech-blog.capital-match.com/posts/5-the-reverse-state-monad.html}{The Curious Time-Traveling Reverse State Monad}
+            \item \href{https://web.archive.org/web/2024/https://tech-blog.capital-match.com/posts/5-the-reverse-state-monad.html}{The Curious Time-Traveling Reverse State Monad}
           \end{itemize}
   \end{itemize}
 \end{frame}
