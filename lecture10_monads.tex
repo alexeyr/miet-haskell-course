@@ -224,30 +224,39 @@
 
 \begin{frame}[fragile]
   \frametitle{Законы монад в \haskinline|do|-нотации}
-  \begin{itemize}[<+->]
+  \begin{itemize}
     \item Законы монад также можно записать через \haskinline|do|:
     \item
-          \begin{haskell}
-            do y <- pure x    !$\mathtt{=}$!    f x
-               f y
-          \end{haskell}
+          {\small
+          \begin{tabular}[t]{@{}p{0.43\linewidth}@{\quad}c@{\quad}l@{}}
+            \haskinline{do y <- pure x} & $\mathtt{=}$ & \uncover<2->{\haskinline{f x}} \\
+            \haskinline{   f y} & &
+          \end{tabular}}
+          \pause
     \item
-          \begin{haskell}
-            do x <- mx        !$\mathtt{=}$!    mx
-               pure x
-          \end{haskell}
+          {\small
+          \begin{tabular}[t]{@{}p{0.43\linewidth}@{\quad}c@{\quad}l@{}}
+            \haskinline{do x <- mx} & $\mathtt{=}$ & \uncover<3->{\haskinline{mx}} \\
+            \haskinline{   pure x} & &
+          \end{tabular}}
+          \pause
     \item
-          \begin{haskell}
-            do x <- mx        !$\mathtt{=}$!    do y <- do x <- mx
-               y <- f x       !\textcolor{white}{$\mathtt{=}$}!               f x
-               g y            !\textcolor{white}{$\mathtt{=}$}!       g y
-          \end{haskell}
-    \item
-          \begin{haskell}
-            mf <*> mx         !$\mathtt{=}$!    do f <- mf
-                              !\textcolor{white}{$\mathtt{=}$}!       x <- mx
-                              !\textcolor{white}{$\mathtt{=}$}!       pure (f x)
-          \end{haskell}
+          {\small
+          \begin{tabular}[t]{@{}p{0.43\linewidth}@{\quad}c@{\quad}l@{}}
+            \haskinline{do y <- do x <- mx} & $\mathtt{=}$ & \uncover<4->{\haskinline{do x <- mx}} \\
+            \haskinline{           f x} & & \uncover<4->{\hphantom{\texttt{do\ }}\haskinline{y <- f x}} \\
+            \hphantom{\texttt{do\ }}\haskinline{g y} & & \uncover<4->{\hphantom{\texttt{do\ }}\haskinline{g y}}
+          \end{tabular}}
+          \pause
+    \item Согласование с \haskinline|<*>| (не закон монады):
+
+          {\small
+          \begin{tabular}[t]{@{}p{0.43\linewidth}@{\quad}c@{\quad}l@{}}
+            \haskinline{mf <*> mx} & $\mathtt{=}$ & \uncover<5->{\haskinline{do f <- mf}} \\
+            & & \uncover<5->{\hphantom{\texttt{do\ }}\haskinline{x <- mx}} \\
+            & & \uncover<5->{\hphantom{\texttt{do\ }}\haskinline{pure (f x)}}
+          \end{tabular}}
+          \pause
   \end{itemize}
 \end{frame}
 
@@ -305,6 +314,7 @@
               (b -> a -> m b) -> b -> t a -> m b
           \end{haskellsmall}
           Свёртка слева: шаг возвращает результат в монаде.
+    \item Подумайте, как эти функции работают для \haskinline|m = []| и \haskinline|m = Maybe|.
   \end{itemize}
 \end{frame}
 
