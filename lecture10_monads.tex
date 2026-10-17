@@ -127,6 +127,12 @@
               Nothing >>= _ =!\pause! Nothing
               Just x  >>= f =!\pause! f x
           \end{haskell*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Монада списков}
+  \begin{itemize}
     \item Списки тоже монада:
           \begin{haskell}
             -- (>{}>=) ::\pause{} [a] -> (a -> [b]) -> [b]
@@ -147,6 +153,27 @@
     \item \haskinline|instance Monad (Either c)|.
     \item \haskinline|instance Monad ((->) c)|: функции с общим окружением типа \haskinline|c| (модель \haskinline|Reader|).
     \item \haskinline|instance Monoid c => Monad ((,) c)|: пары \haskinline|(c, a)| с накоплением моноида \haskinline|c| (модель \haskinline|Writer|). У библиотечного \haskinline|Writer c a| порядок компонентов "--- \haskinline|(a, c)|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Монады в C++: \mintinline{cpp}|std::optional|}
+  \begin{itemize}
+    \item В C++23 у \href{https://eel.is/c++draft/optional.monadic}{\mintinline{cpp}{std::optional}} есть \mintinline{cpp}|and_then| "--- аналог \haskinline|>>=|:
+          \begin{minted}[fontsize=\footnotesize,autogobble,breaklines=false]{cpp}
+            std::optional<int> parseInt(std::string_view);
+            std::optional<double> reciprocal(int);
+
+            auto result = parseInt("4").and_then(reciprocal);
+          \end{minted}
+          \pause
+    \item Соответствующее выражение на Haskell:
+          \begin{haskellsmall}
+            result = parseInt "4" >>= reciprocal
+          \end{haskellsmall}
+    \item Если \mintinline{cpp}|parseInt| вернул \mintinline{cpp}|std::nullopt|, \mintinline{cpp}|reciprocal| не вызывается.
+    \item У \href{https://eel.is/c++draft/expected.object.monadic}{\mintinline{cpp}{std::expected<T, E>}} в C++23 тоже есть \mintinline{cpp}|and_then|: аналог связывания для \haskinline|Either e|, сохраняющий ошибку.
+    \item В других языках эта операция часто называется \texttt{flatMap}.
   \end{itemize}
 \end{frame}
 
