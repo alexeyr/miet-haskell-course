@@ -109,11 +109,20 @@
   \frametitle{Законы монад: композиция}
   \begin{itemize}
     \item С помощью монадической композиции они записываются естественнее:
-    \item \haskinline|pure >=> f| $=$ \haskinline|f| \quad (левая единица)
-    \item \haskinline|f >=> pure| $=$ \haskinline|f| \quad (правая единица)
-    \item \haskinline|(f >=> g) >=> h| $=$ \haskinline|f >=> (g >=> h)| \\
-          (ассоциативность)
+    \item Левая единица: \pause \haskinline|pure >=> f| $=$ \haskinline|f|
+    \item Правая единица: \pause \haskinline|f >=> pure| $=$ \haskinline|f|
+    \item Ассоциативность: \pause \\
+          \haskinline|(f >=> g) >=> h| $=$ \haskinline|f >=> (g >=> h)|
   \end{itemize}
+  \pause
+  \vfill
+  \begin{center}
+    \small\itshape
+    «Монада "--- это моноид в \href{https://en.wikipedia.org/wiki/Category_(mathematics)}{категории} \href{https://en.wikipedia.org/wiki/Endofunctor}{эндофункторов}».
+    \\
+    \normalfont\footnotesize
+    \href{https://medium.com/@felix.kuehl/a-monad-is-just-a-monoid-in-the-category-of-endofunctors-lets-actually-unravel-this-f5d4b7dbe5d6}{Подробный разбор: Felix Kühl (примеры на Scala)}
+  \end{center}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -525,6 +534,7 @@
     \item \href{https://wiki.haskell.org/Typeclassopedia}{Typeclassopedia} (ещё раз)
     \item \href{https://smunix.github.io/dev.stephendiehl.com/hask/index.html#monads}{What I Wish I Knew When Learning Haskell: Monads}
     \item \href{https://wiki.haskell.org/All_About_Monads}{All About Monads}
+    \item Bartosz Milewski: \href{https://bartoszmilewski.com/2014/10/28/category-theory-for-programmers-the-preface/}{Category Theory for Programmers}, особенно \href{https://bartoszmilewski.com/2016/12/27/monads-categorically/}{глава 22: Monads Categorically}
     \item И более сложные монады:
           \begin{itemize}
             \item \href{http://blog.sigfpe.com/2008/12/mother-of-all-monads.html}{The Mother of all Monads}
