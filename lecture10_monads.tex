@@ -376,10 +376,29 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{\haskinline|State| и \haskinline|traverse|: упражнение}
+  \begin{itemize}
+    \item Дополнительное упражнение: пронумеруйте элементы списка с помощью состояния.
+    \item Каждый элемент получает текущий номер, затем счётчик увеличивается:
+          \begin{haskell}
+            number :: a -> State Int (Int, a)
+            number x = ???
+          \end{haskell}
+    \item Подсказка: используйте \haskinline|get|, \haskinline|modify| и \haskinline|pure|.
+          \pause
+    \item Ожидаемый результат обхода:
+          \begin{ghcismall}
+            ghci> runState (traverse number ["a", "b"]) 0
+            ([(0,"a"),(1,"b")],2)
+          \end{ghcismall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Монада \haskinline|State| в библиотеках}
   \begin{itemize}
-    \item \hackage{transformers} содержит сами трансформеры монад (\haskinline|StateT|, \haskinline|ReaderT|, \ldots; о них позже в курсе), модуль \haskinline|Control.Monad.Trans.State|.
-    \item \hackage{mtl} строится на \hackage{transformers} и добавляет классы вроде \haskinline|MonadState|, чтобы \haskinline|get| и \haskinline|put| работали без явного \haskinline|lift|; модуль \haskinline|Control.Monad.State|.
+    \item \hackage{transformers} содержит сами трансформеры монад (\haskinline|StateT|, \haskinline|ReaderT|, \ldots; о них позже в курсе), модуль \href{https://hackage.haskell.org/package/transformers/docs/Control-Monad-Trans-State.html}{\haskinline{Control.Monad.Trans.State}}.
+    \item \hackage{mtl} строится на \hackage{transformers} и добавляет классы вроде \href{https://hackage.haskell.org/package/mtl/docs/Control-Monad-State-Class.html#t:MonadState}{\haskinline{MonadState}}, чтобы \haskinline|get| и \haskinline|put| работали без явного \haskinline|lift|; модуль \href{https://hackage.haskell.org/package/mtl/docs/Control-Monad-State.html}{\haskinline{Control.Monad.State}}.
     \item В обоих \haskinline|State s| определён как \haskinline|StateT s Identity|.
     \item Поэтому \emph{конструктора} \haskinline|State| там нет: вместо него функция
           \begin{haskell}

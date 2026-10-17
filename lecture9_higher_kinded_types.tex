@@ -264,7 +264,7 @@ fmap (g . h)    !$=$!!\pause! fmap g . fmap h
               (<*) :: f a -> f b -> f a
               fx <* fy = const <$> fx <*> fy
           \end{haskellsmall}
-    \item \haskinline|(*>)| и \haskinline|(<*)| комбинируют контексты, как \haskinline|(<*>)|: \haskinline|(*>)| сохраняет значение справа, \haskinline|(<*)| "--- слева.
+    \item \haskinline|(*>)| и \haskinline|(<*)| комбинируют контексты, как \haskinline|(<*>)|: \haskinline|(*>)| сохраняет значения справа, игнорируя значения слева; \haskinline|(<*)| "--- наоборот.
   \end{itemize}
 \end{frame}
 
@@ -373,6 +373,30 @@ fmap (g . h)    !$=$!!\pause! fmap g . fmap h
           \begin{haskell}
             pure x = ZipList (repeat x)
           \end{haskell}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Собираем значение с помощью Applicative}
+  \begin{itemize}
+    \item Конструктор тоже можно применить к значениям в контексте:
+          \begin{haskellsmall}
+            import Text.Read (readMaybe)
+
+            data Point = Point Int Int deriving Show
+
+            parsePoint :: String -> String -> Maybe Point
+            parsePoint sx sy =
+              Point <$> readMaybe sx <*> readMaybe sy
+          \end{haskellsmall}
+          \pause
+    \item Если обе координаты удалось прочитать, получим точку:
+          \begin{ghci}
+            ghci> parsePoint "2" "3"
+            Just (Point 2 3)
+            ghci> parsePoint "2" "x"
+            Nothing
+          \end{ghci}
   \end{itemize}
 \end{frame}
 
