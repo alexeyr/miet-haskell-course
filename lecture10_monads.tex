@@ -294,6 +294,20 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{\haskinline|join| и \haskinline|>>=|: упражнение}
+  \begin{itemize}
+    \item Выразите \haskinline|join| через \haskinline|>>=|, а затем \haskinline|>>=| через \haskinline|fmap| и \haskinline|join|:
+          \begin{haskell}
+            join :: Monad m => m (m a) -> m a
+            join mm = ???
+
+            mx >>= g = ???
+          \end{haskell}
+    \item Подсказка: подумайте о типе \haskinline|fmap g mx|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Монада \haskinline|State|}
   \begin{itemize}
     \item Рассмотрим ещё один, более сложный пример:
