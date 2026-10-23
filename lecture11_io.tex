@@ -301,103 +301,106 @@
 \begin{frame}[fragile]
   \frametitle{Случайные значения}
   \begin{itemize}
-    \item Модуль \href{https://hackage.haskell.org/package/random/docs/System-Random.html}{\haskinline{System.Random}} (пакет \hackage{random}) содержит класс
-    \item
+    \item Модуль \href{https://hackage.haskell.org/package/random/docs/System-Random.html}{\haskinline{System.Random}} (пакет \hackage{random}). Класс \haskinline|RandomGen| описывает чистые генераторы псевдослучайных чисел. Например:
           \begin{haskellsmall}
-            class RandomGen g where
-              genWord64 :: g -> (Word64, g)
-              split :: g -> (g, g)
-              -- также genWord8/16/32; next устарел
+            genWord64 :: RandomGen g => g -> (Word64, g)
           \end{haskellsmall}
-          описывающий (чистые) генераторы псевдослучайных чисел.
-    \item Есть тип \haskinline|StdGen| и \haskinline|instance RandomGen StdGen|.
+    \item Получаем число и \emph{новое состояние} генератора. \haskinline|Word64| "--- 64-битное беззнаковое целое из \href{https://hackage.haskell.org/package/base/docs/Data-Word.html}{\haskinline{Data.Word}}.
+    \item Стандартный генератор \haskinline|StdGen| имеет экземпляр \haskinline|RandomGen|. Его можно создать из начального значения (\emph{seed}):
+          \begin{haskellsmall}
+            mkStdGen :: Int -> StdGen
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Случайные значения: глобальный генератор}
+  \frametitle{Случайные значения: тип результата}
   \begin{itemize}
-    \item Глобальный генератор живёт в \haskinline|IORef| (в документации типы более общие):
+    \item \haskinline|Uniform a|: равномерное распределение по всем значениям типа \haskinline|a| (например, \haskinline|Bool| или \haskinline|Int|).
+    \item \haskinline|UniformRange a|: равномерное распределение в заданном диапазоне (например, для \haskinline|Int|, \haskinline|Integer| или \haskinline|Double|).
+    \item В \haskinline|System.Random| есть чистые функции:
           \begin{haskellsmall}
-            getStdGen :: IO StdGen
-            setStdGen :: StdGen -> IO ()
-            newStdGen :: IO StdGen  -- разделяет генератор
-            getStdRandom :: (StdGen -> (a, StdGen)) -> IO a
+            uniform :: (Uniform a, RandomGen g) =>
+              g -> (a, g)
+            uniformR :: (UniformRange a, RandomGen g) =>
+              (a, a) -> g -> (a, g)
           \end{haskellsmall}
-    \item Типы \haskinline|genWord64| и \haskinline|getStdRandom| могут напомнить про \haskinline|State| и не зря!
-    \item Реализуем \haskinline|newStdGen| и \haskinline|getStdRandom|.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Случайные значения (ответ)}
-  \begin{itemize}
-    \item Упрощённые реализации для одного потока:
-
-          \begin{haskellsmall}
-            newStdGen = do 
-              currGen <- getStdGen
-              let (newGen1, newGen2) = split currGen
-              setStdGen newGen2
-              pure newGen1
-          \end{haskellsmall}
-          \pause
-    \item
-          \begin{haskellsmall}
-            getStdRandom f = do 
-              currGen <- getStdGen
-              let (result, newGen) = f currGen
-              setStdGen newGen
-              pure result
-          \end{haskellsmall}
-          \pause
-    \item Можем выразить одно через другое?
-          \pause
-          \begin{haskellsmall}
-            newStdGen = getStdRandom split
-          \end{haskellsmall}
-    \item В библиотеке генератор обновляется атомарно, с помощью \haskinline|atomicModifyIORef'|.
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Случайные значения (2)}
-  \begin{itemize}
-    \item Ещё один класс в \haskinline|System.Random| описывает типы, для которых можно получить случайные значения, если есть ГСЧ:
-    \item
-          \begin{haskell}
-            class Random a where 
-              randomR :: RandomGen g => (a, a) -> g -> (a, g) 
-              random :: RandomGen g => g -> (a, g) 
-          \end{haskell}
-          Первый аргумент \haskinline|randomR|: диапазон, в котором берутся значения.
-    \item Опять видим тип, похожий на \haskinline|State|.
-    \item
-          \begin{haskell}
-            randomRIO :: Random a => (a, a) -> IO a
-            randomIO :: Random a => IO a
-          \end{haskell}
-          используют глобальный генератор.
-    \item С \hackage{random} 1.2 \haskinline|Random| оставлен для совместимости; новые классы "--- \haskinline|Uniform| и \haskinline|UniformRange| (функции \haskinline|uniform|, \haskinline|uniformR|).
+    \item Результат и новое состояние генератора "--- знакомая схема \haskinline|State|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Случайные значения: воспроизводимость}
   \begin{itemize}
-    \item \haskinline|mkStdGen| создаёт генератор из начального значения (\emph{seed}):
+    \item Передаём новое состояние в следующий вызов:
           \begin{haskellsmall}
             g0 = mkStdGen 42
-            (n1, g1) = randomR (1, 100) g0 :: (Int, StdGen)
-            (n2, g2) = randomR (1, 100) g1 :: (Int, StdGen)
+            (n1 :: Int, g1) = uniformR (1, 100) g0
+            (n2 :: Int, g2) = uniformR (1, 100) g1
           \end{haskellsmall}
-    \item Для следующего числа передаём \emph{новое} состояние генератора, как в \haskinline|State|.
-          \pause
           \begin{haskellsmall}
             ghci> (n1, n2)
-            !\pause!(49,24)
+            (49,24)
           \end{haskellsmall}
+    \item Если снова передать \haskinline|g0|, \pause получим \haskinline|(49,49)|.
     \item При той же версии \haskinline|random| повторный запуск с тем же seed даёт ту же последовательность.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Случайные значения в IO}
+  \begin{itemize}
+    \item В \href{https://hackage.haskell.org/package/random/docs/System-Random-Stateful.html}{\haskinline{System.Random.Stateful}} генераторы сами хранят изменяемое состояние:
+          \begin{haskellsmall}
+            uniformM :: (Uniform a, StatefulGen g m) =>
+              g -> m a
+            uniformRM :: (UniformRange a, StatefulGen g m) =>
+              (a, a) -> g -> m a
+          \end{haskellsmall}
+          \haskinline|StatefulGen g m| связывает генератор \haskinline|g| с монадой \haskinline|m|.
+    \item Глобальный генератор обновляется атомарно:
+          \begin{haskellsmall}
+            globalStdGen :: AtomicGenM StdGen
+          \end{haskellsmall}
+    \item Например, бросок кубика:
+          \begin{haskellsmall}
+            rollDie :: IO Int
+            rollDie = uniformRM (1, 6) globalStdGen
+          \end{haskellsmall}
+          Каждый вызов обновляет состояние генератора.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Из чистого генератора в IO}
+  \begin{itemize}
+    \item \haskinline|AtomicGenM| "--- обёртка над \haskinline|IORef|:
+          \begin{haskellsmall}
+            newtype AtomicGenM g = AtomicGenM (IORef g)
+            atomicModifyIORef' :: IORef g -> (g -> (g, a)) -> IO a
+          \end{haskellsmall}
+    \item Реализуем библиотечную функцию (тип для \haskinline|IO|):
+          \begin{overprint}[\linewidth]
+            \onslide<1>
+              \begin{haskellsmall}
+                applyAtomicGen :: (g -> (a, g)) -> AtomicGenM g -> IO a
+                applyAtomicGen step (AtomicGenM ref) = ???
+              \end{haskellsmall}
+            \onslide<2->
+              \begin{haskellsmall}
+                applyAtomicGen :: (g -> (a, g)) -> AtomicGenM g -> IO a
+                applyAtomicGen step (AtomicGenM ref) =
+                  atomicModifyIORef' ref $ \g ->
+                    let (x, g') = step g
+                    in (g', x)
+              \end{haskellsmall}
+          \end{overprint}
+          \pause
+    \item Тот же бросок кубика через \haskinline|applyAtomicGen|:
+          \begin{haskellsmall}
+            rollDie :: IO Int
+            rollDie = applyAtomicGen (uniformR (1, 6)) globalStdGen
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -406,12 +409,12 @@
   \begin{itemize}
     \item Если у нас есть значение типа \haskinline|IO a|, можно ли превратить его просто в \haskinline|a|?
           \pause
-    \item На самом деле есть функция \haskinline|unsafePerformIO :: IO a -> a|.
+    \item В обычном коде нет. \pause Но есть функция \href{https://hackage.haskell.org/package/base/docs/System-IO-Unsafe.html#v:unsafePerformIO}{\haskinline{unsafePerformIO :: IO a -> a}}.
     \item Но само название говорит о её небезопасности.
     \item Конкретное использование может быть и безопасным, но для этого надо знать довольно много о внутренностях Haskell.
           \pause
     \item Поэтому в рамках этого курса мы её использовать не будем, как и другие \haskinline|unsafe*IO|.
-    \item А есть ещё \haskinline|accursedUnutterablePerformIO|\ldots
+    \item А есть ещё \href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Internal.html#v:accursedUnutterablePerformIO}{\haskinline{accursedUnutterablePerformIO}}\ldots
   \end{itemize}
 \end{frame}
 
