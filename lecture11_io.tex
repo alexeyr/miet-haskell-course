@@ -71,10 +71,10 @@
     \item Внутри \haskinline|do| можно использовать результат действия, но само вычисление остаётся в \haskinline|IO|.
     \item Но есть функция \\
           \href{https://hackage.haskell.org/package/base/docs/System-IO-Unsafe.html#v:unsafePerformIO}{\haskinline{unsafePerformIO :: IO a -> a}}.
-    \item Но само название говорит о её небезопасности.
+    \item Само название говорит о её небезопасности.
     \item Конкретное использование может быть и безопасным, но для этого надо знать довольно много о внутренностях Haskell.
           \pause
-    \item Поэтому в рамках этого курса мы её использовать не будем, как и другие \haskinline|unsafe*IO|.
+    \item Поэтому в рамках этого курса мы её использовать не будем, как и \href{https://hackage.haskell.org/package/base/docs/System-IO-Unsafe.html}{другие \haskinline{unsafe*IO}}.
     \item А есть ещё \href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Internal.html#v:accursedUnutterablePerformIO}{\haskinline{accursedUnutterablePerformIO}}\ldots
   \end{itemize}
 \end{frame}
@@ -82,13 +82,13 @@
 \begin{frame}[fragile]
   \frametitle{Обход с \haskinline|IO|: \haskinline|for| и \haskinline|for_|}
   \begin{itemize}
-    \item Те же обходы, но функция передаётся последней:
+    \item Как \haskinline|traverse| и \haskinline|traverse_|, но функция передаётся последней:
           \begin{haskellsmall}
             import Data.Traversable (for)
             import Data.Foldable (for_)
           \end{haskellsmall}
           \haskinline|for = flip traverse|, \haskinline|for_ = flip traverse_|.
-    \item \haskinline|for| собирает результаты; \haskinline|for_| отбрасывает их, сохраняя эффекты.
+    \item \haskinline|for| собирает результаты; \haskinline|for_| отбрасывает их, сохраняя эффекты. \haskinline|forM(_)| и \haskinline|mapM(_)| "--- старые имена того же для монад.
           \pause
     \item Так удобно записывать действие из нескольких строк:
           \begin{haskell}
@@ -141,7 +141,7 @@
   \frametitle{Ловушки консоли: кодировки}
   \begin{itemize}
     \item Кодировка \haskinline|stdin|/\haskinline|stdout| и \haskinline|readFile|/\haskinline|writeFile| определяется окружением; UTF-8 не гарантирована.
-    \item Под Windows с кодовой страницей 866 или 1251 вывод кириллицы может закончиться ошибкой вроде \ghcinline|<stdout>: hPutChar: invalid argument (invalid character)| или крякозябрами.
+    \item Под Windows при неподходящей кодировке программа может упасть или вывести крякозябры.
           \pause
     \item Решение: \ghcinline|chcp 65001| перед запуском и/или в программе
           \begin{haskell}
@@ -211,7 +211,7 @@
 \begin{frame}[fragile]
   \frametitle{Работа с файлами}
   \begin{itemize}
-    \item Модуль \href{http://hackage.haskell.org/package/base/docs/System-IO.html}{\haskinline|System.IO|}.
+    \item Модуль \href{https://hackage.haskell.org/package/base/docs/System-IO.html}{\haskinline|System.IO|}.
     \item Напомню, \haskinline|type FilePath = String|.
     \item Простейшие операции это чтение и запись в файл:
           \begin{haskell}
@@ -225,7 +225,7 @@
             openFile, openBinaryFile :: 
               FilePath -> IOMode -> IO Handle 
             hPutStrLn :: Handle -> String -> IO ()
-            hGetStr...
+            hGetLine, hGetContents :: Handle -> IO String
           \end{haskell}
           \pause
     \item
@@ -422,12 +422,15 @@
   \end{itemize}
 \end{frame}
 
-% TODO добавить ссылки
-% \begin{frame}[fragile]
-%   \frametitle{Дополнительное чтение}
-%   \begin{itemize}
-%     \item TODO
-%   \end{itemize}
-% \end{frame}
+\begin{frame}[fragile]
+  \frametitle{Дополнительное чтение}
+  \begin{itemize}
+    \item \href{https://www.engineering.upenn.edu/~cis1940/spring13/lectures/08-IO.html}{CIS 194: IO}: действия как описания вычислений и связь с чистотой.
+    \item \href{https://wiki.haskell.org/IO_inside}{IO inside} (Haskell Wiki): как устроена монада \haskinline|IO|.
+    \item \href{https://www.snoyman.com/blog/2016/12/beware-of-readfile/}{Beware of readFile}: ловушки ленивого ввода-вывода и кодировок.
+    \item \href{https://academy.fpblock.com/haskell/tutorial/exceptions/}{Safe exception handling}: исключения и освобождение ресурсов; примеры с \haskinline|UnliftIO.Exception|/\haskinline|RIO|.
+    \item Simon Peyton Jones: \href{https://www.microsoft.com/en-us/research/publication/tackling-awkward-squad-monadic-inputoutput-concurrency-exceptions-foreign-language-calls-haskell/}{Tackling the Awkward Squad} (\emph{углублённо}): \haskinline|IO|, исключения, потоки и FFI; часть API устарела (2001).
+  \end{itemize}
+\end{frame}
 
 \end{document}
