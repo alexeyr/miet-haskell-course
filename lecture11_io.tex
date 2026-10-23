@@ -122,7 +122,7 @@
 \begin{frame}[fragile]
   \frametitle{Ловушки консоли: кодировки}
   \begin{itemize}
-    \item Кодировка \haskinline|stdin|/\haskinline|stdout| и \haskinline|readFile|/\haskinline|writeFile| берётся из локали, а \emph{не} UTF-8.
+    \item Кодировка \haskinline|stdin|/\haskinline|stdout| и \haskinline|readFile|/\haskinline|writeFile| определяется окружением; UTF-8 не гарантирована.
     \item Под Windows с кодовой страницей 866 или 1251 вывод кириллицы может закончиться ошибкой вроде \ghcinline|<stdout>: hPutChar: invalid argument (invalid character)| или крякозябрами.
           \pause
     \item Решение: \ghcinline|chcp 65001| перед запуском и/или в программе
@@ -160,10 +160,33 @@
             evaluate :: a -> IO a
             bracket :: IO a -> (a -> IO b) -> (a -> IO c) -> IO c
           \end{haskellsmall}
-    \item Тип исключения нужно указывать: \haskinline|try @IOException (readFile path)|. Ловить всё (\haskinline|SomeException|) "--- обычно плохая идея.
-          \pause
-    \item Ленивость: \haskinline|try (pure (div 1 0))| \emph{не} поймает ошибку "--- значение ещё не вычислено. Нужно \haskinline|try (evaluate (div 1 0))|.
+    \item Нужно определить, какие исключения ловить:
+          \begin{haskellsmall}
+            import System.IO (readFile')
+
+            try @IOException (readFile' path)
+          \end{haskellsmall}
+          Ловить всё (\haskinline|SomeException|) "--- обычно плохая идея.
     \item \haskinline|error| и неполные сопоставления тоже исключения (\haskinline|ErrorCall|, \haskinline|PatternMatchFail|), но лучше их не ловить, а не допускать.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Исключения и ленивость}
+  \begin{itemize}
+    \item \haskinline|pure| не вычисляет результат:
+          \begin{haskellsmall}
+            try @ArithException (pure (div (1 :: Int) 0))
+          \end{haskellsmall}
+          Получим \haskinline|Right| с отложенным вычислением; ошибка возникнет уже вне \haskinline|try|.
+          \pause
+    \item Чтобы вычислить результат внутри \haskinline|try|:
+          \begin{haskellsmall}
+            try @ArithException (evaluate (div (1 :: Int) 0))
+          \end{haskellsmall}
+          Здесь получим \haskinline|Left DivideByZero|.
+    \item \haskinline|evaluate| вычисляет только до \emph{WHNF} (лекция 8).
+    \item Ошибки ленивого \haskinline|readFile| тоже могут возникнуть вне \haskinline|try|; \haskinline|readFile'| читает файл сразу.
   \end{itemize}
 \end{frame}
 
@@ -221,12 +244,13 @@
 \begin{frame}[fragile]
   \frametitle{Ленивый ввод-вывод}
   \begin{itemize}
-    \item Функция \haskinline|hGetContents| не читает содержимое файла, а сразу возвращает строку, по мере доступа к которой читается файл.
+    \item \haskinline|hGetContents| возвращает строку: файл читается по мере её вычисления.
     \item С одной стороны, это хорошо: не нужно явно указывать, сколько читать.
-    \item Но если закрыть файл до того, как он реально прочитан, строка закончится как если бы она дошла до конца файла:
+    \item Но попытка дочитать строку после закрытия файла вызывает ошибку:
           \begin{haskellsmall}
             wrong = do
-              fileData <- withFile "test.txt" ReadMode hGetContents
+              fileData <-
+                withFile "test.txt" ReadMode hGetContents
               putStr fileData
           \end{haskellsmall}
     \item Нужно использовать данные внутри \haskinline|withFile|:
@@ -242,7 +266,7 @@
   \frametitle{Строгий ввод-вывод}
   \begin{itemize}
     \item С GHC 9.0 в \haskinline|System.IO| есть строгие варианты \haskinline|readFile'|, \haskinline|hGetContents'|, \haskinline|getContents'|: они читают всё сразу, и проблем с закрытием файла у них нет.
-    \item Почти всегда лучше использовать их (или \haskinline|Text|/\haskinline|ByteString| со следующего слайда, чьи \haskinline|readFile| тоже строгие).
+    \item Обычно лучше использовать их или строгие варианты \haskinline|Text|/\haskinline|ByteString| со следующего слайда. Ленивые варианты \haskinline|readFile| читают по требованию.
     \item Ленивый ввод-вывод остаётся полезным для потоковой обработки больших файлов, но для этого есть и более предсказуемые библиотеки (\hackage{conduit}, \hackage{streamly}).
   \end{itemize}
 \end{frame}
@@ -255,6 +279,22 @@
     \item Многие функции для работы с ними называются так же, как для \haskinline|String|, но живут в соответствующих модулях (поэтому используется \haskinline|import qualified|).
     \item Они годятся для бинарных данных (или ASCII, с помощью \href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Char8.html}{\haskinline{Data.ByteString}}\haskinline|[|\href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Lazy-Char8.html}{\haskinline{.Lazy}}\haskinline|].Char8|).
     \item Для текста аналогичный пакет \haskinline|text| и типы в модулях \href{https://hackage.haskell.org/package/text/docs/Data-Text.html}{\haskinline{Data.Text}}\haskinline|[|\href{https://hackage.haskell.org/package/text/docs/Data-Text-Lazy.html}{\haskinline{.Lazy}}\haskinline|]|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Текст и байты: UTF-8}
+  \begin{itemize}
+    \item \haskinline|ByteString| содержит байты, \haskinline|Text| "--- текст. Для перехода между ними нужно выбрать кодировку.
+    \item \haskinline|Data.ByteString.Char8| \emph{не декодирует UTF-8}: каждый байт интерпретируется как отдельный символ.
+          \pause
+    \item Для UTF-8 есть модуль \href{https://hackage.haskell.org/package/text/docs/Data-Text-Encoding.html}{\haskinline{Data.Text.Encoding}}:
+          \begin{haskellsmall}
+            decodeUtf8' :: ByteString ->
+              Either UnicodeException Text
+            encodeUtf8 :: Text -> ByteString
+          \end{haskellsmall}
+    \item \haskinline|decodeUtf8'| возвращает \haskinline|Left| при некорректной последовательности байтов; \haskinline|Right| содержит декодированный текст.
   \end{itemize}
 \end{frame}
 
@@ -277,11 +317,11 @@
 \begin{frame}[fragile]
   \frametitle{Случайные значения: глобальный генератор}
   \begin{itemize}
-    \item Глобальный генератор живёт в \haskinline|IORef| (в документации типы чуть общее):
+    \item Глобальный генератор живёт в \haskinline|IORef| (в документации типы более общие):
           \begin{haskellsmall}
             getStdGen :: IO StdGen
             setStdGen :: StdGen -> IO ()
-            newStdGen :: IO StdGen  -- применяет split к getStdGen
+            newStdGen :: IO StdGen  -- разделяет генератор
             getStdRandom :: (StdGen -> (a, StdGen)) -> IO a
           \end{haskellsmall}
     \item Типы \haskinline|genWord64| и \haskinline|getStdRandom| могут напомнить про \haskinline|State| и не зря!
@@ -292,29 +332,31 @@
 \begin{frame}[fragile]
   \frametitle{Случайные значения (ответ)}
   \begin{itemize}
-    \item
-          \begin{haskell}
+    \item Упрощённые реализации для одного потока:
+
+          \begin{haskellsmall}
             newStdGen = do 
               currGen <- getStdGen
               let (newGen1, newGen2) = split currGen
               setStdGen newGen2
               pure newGen1
-          \end{haskell}
+          \end{haskellsmall}
           \pause
     \item
-          \begin{haskell}
+          \begin{haskellsmall}
             getStdRandom f = do 
               currGen <- getStdGen
               let (result, newGen) = f currGen
               setStdGen newGen
               pure result
-          \end{haskell}
+          \end{haskellsmall}
           \pause
     \item Можем выразить одно через другое?
           \pause
-          \begin{haskell}
+          \begin{haskellsmall}
             newStdGen = getStdRandom split
-          \end{haskell}
+          \end{haskellsmall}
+    \item В библиотеке генератор обновляется атомарно, с помощью \haskinline|atomicModifyIORef'|.
   \end{itemize}
 \end{frame}
 
@@ -337,6 +379,25 @@
           \end{haskell}
           используют глобальный генератор.
     \item С \hackage{random} 1.2 \haskinline|Random| оставлен для совместимости; новые классы "--- \haskinline|Uniform| и \haskinline|UniformRange| (функции \haskinline|uniform|, \haskinline|uniformR|).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Случайные значения: воспроизводимость}
+  \begin{itemize}
+    \item \haskinline|mkStdGen| создаёт генератор из начального значения (\emph{seed}):
+          \begin{haskellsmall}
+            g0 = mkStdGen 42
+            (n1, g1) = randomR (1, 100) g0 :: (Int, StdGen)
+            (n2, g2) = randomR (1, 100) g1 :: (Int, StdGen)
+          \end{haskellsmall}
+    \item Для следующего числа передаём \emph{новое} состояние генератора, как в \haskinline|State|.
+          \pause
+          \begin{haskellsmall}
+            ghci> (n1, n2)
+            !\pause!(49,24)
+          \end{haskellsmall}
+    \item При той же версии \haskinline|random| повторный запуск с тем же seed даёт ту же последовательность.
   \end{itemize}
 \end{frame}
 
