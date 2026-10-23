@@ -17,7 +17,7 @@
   \begin{itemize}
     \item Среди многих монад стандартной библиотеки, \haskinline|IO| играет особую роль.
     \item Значение типа \haskinline|IO a| описывает вычисление с результатом типа \haskinline|a| и побочными эффектами.
-    \item В первую очередь имеются в виду ввод-вывод, как видно из названия, но также изменяемые переменные и т.д.
+    \item \haskinline|IO| описывает взаимодействие с внешним миром и работу с изменяемым состоянием.
   \end{itemize}
 \end{frame}
 
@@ -58,6 +58,24 @@
                 else
                   pure ()  -- или exitSuccess
           \end{haskellsmall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Побег из \haskinline|IO|}
+  \begin{itemize}
+    \item Если у нас есть значение типа \haskinline|IO a|, можно ли превратить его просто в \haskinline|a|?
+          \pause
+    \item В обычном коде нет.
+          \pause
+    \item Внутри \haskinline|do| можно использовать результат действия, но само вычисление остаётся в \haskinline|IO|.
+    \item Но есть функция \\
+          \href{https://hackage.haskell.org/package/base/docs/System-IO-Unsafe.html#v:unsafePerformIO}{\haskinline{unsafePerformIO :: IO a -> a}}.
+    \item Но само название говорит о её небезопасности.
+    \item Конкретное использование может быть и безопасным, но для этого надо знать довольно много о внутренностях Haskell.
+          \pause
+    \item Поэтому в рамках этого курса мы её использовать не будем, как и другие \haskinline|unsafe*IO|.
+    \item А есть ещё \href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Internal.html#v:accursedUnutterablePerformIO}{\haskinline{accursedUnutterablePerformIO}}\ldots
   \end{itemize}
 \end{frame}
 
@@ -401,20 +419,6 @@
             rollDie :: IO Int
             rollDie = applyAtomicGen (uniformR (1, 6)) globalStdGen
           \end{haskellsmall}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Побег из \haskinline|IO|}
-  \begin{itemize}
-    \item Если у нас есть значение типа \haskinline|IO a|, можно ли превратить его просто в \haskinline|a|?
-          \pause
-    \item В обычном коде нет. \pause Но есть функция \href{https://hackage.haskell.org/package/base/docs/System-IO-Unsafe.html#v:unsafePerformIO}{\haskinline{unsafePerformIO :: IO a -> a}}.
-    \item Но само название говорит о её небезопасности.
-    \item Конкретное использование может быть и безопасным, но для этого надо знать довольно много о внутренностях Haskell.
-          \pause
-    \item Поэтому в рамках этого курса мы её использовать не будем, как и другие \haskinline|unsafe*IO|.
-    \item А есть ещё \href{https://hackage.haskell.org/package/bytestring/docs/Data-ByteString-Internal.html#v:accursedUnutterablePerformIO}{\haskinline{accursedUnutterablePerformIO}}\ldots
   \end{itemize}
 \end{frame}
 
