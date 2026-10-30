@@ -57,8 +57,6 @@
   \end{itemize}
 \end{frame}
 
-% TODO: 2. Добавить примеры неверных свойств без исключений!
-
 \begin{frame}[fragile]
   \frametitle{Простейший пример}
   \begin{itemize}
@@ -80,6 +78,48 @@
             True
           \end{ghci}
     \item Проверили, что квадраты \haskinline|Integer| неотрицательны (100 тестов).
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{А если использовать Int?}
+  \begin{itemize}
+    \item Верно ли то же свойство для \haskinline|Int|?
+          \begin{haskellsmall}
+            prop_squareInt :: Property
+            prop_squareInt = property $ do
+              x <- forAll $ Gen.int Range.constantBounded
+              diff (x * x) (>=) 0
+            ghci> check prop_squareInt
+          \end{haskellsmall}
+          \pause
+          {\footnotesize Пример сокращённого отчёта (64-битный \haskinline|Int|):}
+          \begin{ghcismall}
+            after 2 tests and 27 shrinks.
+            x = 3013262616387239886
+            Failed (- lhs) (+ rhs)
+            - -7464790805971924540
+            + 0
+            False
+          \end{ghcismall}
+    \item Умножение \haskinline|Int| может переполниться. \haskinline|Range.constantBounded| охватывает весь диапазон значений.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Переполнение и минимизация}
+  \begin{itemize}
+    \item Hedgehog уменьшал контрпример, но полученное число далеко не самое маленькое. Например, для 64-битного \haskinline|Int|:
+          \begin{haskellsmall}
+            ghci> let x = 3037000500 :: Int
+            ghci> x * x
+          \end{haskellsmall}
+          \pause
+          \begin{ghcismall}
+            -9223372036709301616
+          \end{ghcismall}
+    \item При уменьшении \haskinline|x| свойство \haskinline|x * x >= 0| может многократно менять истинность из-за переполнения.
+    \item Уменьшение (shrinking) не гарантирует нахождения самого маленького контрпримера.
   \end{itemize}
 \end{frame}
 
@@ -382,6 +422,34 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{QuickCheck: переполнение Int}
+  \begin{itemize}
+    \item Проверим неотрицательность квадрата:
+          \begin{haskellsmall}
+            prop_squareInt :: Int -> Bool
+            prop_squareInt x = x * x >= 0
+            ghci> quickCheck prop_squareInt
+          \end{haskellsmall}
+          \pause
+          \begin{ghcismall}
+            +++ OK, passed 100 tests.
+          \end{ghcismall}
+    \item Стандартный генератор \haskinline|Int| начинает с малых значений. Возьмём весь диапазон и явно зададим уменьшение:
+          \begin{haskellsmall}
+            ghci> quickCheck $
+                    forAllShrink arbitraryBoundedIntegral shrink
+                      prop_squareInt
+          \end{haskellsmall}
+          \pause
+          {\footnotesize Пример вывода (64-битный \haskinline|Int|):}
+          \begin{ghcismall}
+            *** Failed! Falsified (after 1 test and 64 shrinks):
+            3037000500
+          \end{ghcismall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Альтернативы: Falsify}
   \begin{itemize}
     \item \hackage{falsify}: уменьшает внутренние случайные решения; поддерживает уменьшение через зависимые генераторы.
@@ -420,6 +488,29 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Falsify: переполнение Int}
+  \begin{itemize}
+    \item \haskinline|Range.uniform| охватывает весь диапазон типа и задаёт уменьшение к нулю:
+          \begin{haskellsmall}
+            prop_squareInt :: Property ()
+            prop_squareInt = do
+              x <- gen $ Gen.int Range.uniform
+              assert $ P.ge .$ ("x * x", x * x)
+                            .$ ("zero", 0)
+            ghci> falsify prop_squareInt
+          \end{haskellsmall}
+          \pause
+    \item Получим \haskinline|Just| с описанием ошибки. Пример сообщения для 64-битного \haskinline|Int|:
+          \begin{ghcismall}
+            x * x < zero
+            x * x: -9223372036709301616
+            zero : 0
+          \end{ghcismall}
+    \item \haskinline|P.ge| проверяет \haskinline|>=|; подписи помогают понять, что именно оказалось неверным.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Альтернативы: TinyCheck}
   \begin{itemize}
     \item \href{https://github.com/turion/tinycheck}{TinyCheck}: перебирает значения от простых к сложным вместо случайной генерации. Проверки детерминированы; отдельное уменьшение не требуется.
@@ -434,6 +525,53 @@
                 \(xs :: [Int]) -> reverse (reverse xs) == xs
           \end{haskellsmall}
     \item Использует свой класс \haskinline|Arbitrary| для перечисления примеров; экземпляры для стандартных типов уже есть.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{TinyCheck: переполнение Int}
+  \begin{itemize}
+    \item Та же проверка со стандартным перечислением:
+          \begin{haskellsmall}
+            main :: IO ()
+            main = defaultMain $
+              testProperty "square" $
+                \(x :: Int) -> x * x >= 0
+          \end{haskellsmall}
+          \pause
+          \begin{ghcismall}
+            square: OK
+              OK, checked 10000 cases
+          \end{ghcismall}
+    \item Перебираются \haskinline|0, -1, 1, -2, 2, ...|: до значений, вызывающих переполнение, ещё очень далеко.
+    \item Добавим большие значения в перечисление явно.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{TinyCheck: добавляем большие значения}
+  \begin{itemize}
+    \item Значения вида $2^k-1$ чередуем со стандартными:
+          \begin{haskellsmall}
+            import Data.Bits (finiteBitSize)
+            import Data.TestCases (TestCases(..), arbitrary)
+            import Test.Tasty.TinyCheck (forAllShow, assert)
+
+            ints :: TestCases Int
+            ints = TestCases [2^k - 1 | k <- [0 .. bits - 1]]
+              <> arbitrary
+              where bits = finiteBitSize (0 :: Int)
+            main = defaultMain $ testProperty "square" $ do
+              x <- forAllShow "x" ints
+              assert (x * x >= 0)
+          \end{haskellsmall}
+          \pause
+          {\footnotesize Сокращённый вывод для 64-битного \haskinline|Int|:}
+          \begin{ghcismall}
+            square: FAIL
+              x: 4294967295
+              falsified
+          \end{ghcismall}
   \end{itemize}
 \end{frame}
 
