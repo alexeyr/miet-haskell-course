@@ -1,6 +1,11 @@
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
 
+% Символы рамки в отчёте Hedgehog.
+\DeclareUnicodeCharacter{2503}{\makebox[.6em]{\rule[-.2ex]{.6pt}{1.7ex}}}
+\DeclareUnicodeCharacter{2502}{\makebox[.6em]{\rule[-.2ex]{.3pt}{1.7ex}}}
+\DeclareUnicodeCharacter{2501}{\rule[.5ex]{.6em}{.6pt}}
+
 \title{Лекция 12: тестирование свойств}
 
 \begin{document}
@@ -93,16 +98,18 @@
             ghci> check prop_squareInt
           \end{haskellsmall}
           \pause
-          {\footnotesize Пример сокращённого отчёта (64-битный \haskinline|Int|):}
+          {\footnotesize Фрагмент отчёта (64-битный \haskinline|Int|):}
           \begin{ghcismall}
-            after 2 tests and 27 shrinks.
-            x = 3013262616387239886
-            Failed (- lhs) (+ rhs)
-            - -7464790805971924540
-            + 0
+                after 2 tests and 27 shrinks.
+            6 ┃   x <- forAll $ Gen.int Range.constantBounded
+              ┃   │ 3013262616387239886
+            7 ┃   diff (x * x) (>=) 0
+              ┃   ^^^^^^^^^^^^^^^^^^^
+              ┃   │ ━━━ Failed (- lhs) (+ rhs) ━━━
+              ┃   │ - -7464790805971924540
+              ┃   │ + 0
             False
           \end{ghcismall}
-    \item Умножение \haskinline|Int| может переполниться. \haskinline|Range.constantBounded| охватывает весь диапазон значений.
   \end{itemize}
 \end{frame}
 
