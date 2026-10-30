@@ -53,12 +53,21 @@
 \begin{frame}[fragile]
   \frametitle{Свойства вместо примеров}
   \begin{itemize}
-    \item Тестирование свойств (property testing или property-based testing) позволяет избежать этих проблем (и создать новые, как обычно).
+    \item Тестирование свойств (property-based testing) помогает находить ошибки на множестве автоматически сгенерированных примеров.
     \item Основная идея: вместо результата на конкретных аргументах мы описываем свойства, которые должны выполняться \emph{для всех аргументов} подходящего типа. \pause Или не совсем для всех, но об этом потом.
           \pause
     \item Эти свойства проверяем на случайных аргументах (скажем, 100 за раз по умолчанию).
-          \pause
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Что означает успешная проверка?}
+  \begin{itemize}
     \item В процессе разработки тесты запускаются далеко не один раз, так что каждое свойство будет проверено в сотнях или тысячах случаев.
+          \pause
+    \item Успешная проверка не доказывает свойство: результат зависит от выбора генераторов и числа тестов.
+          \pause
+    \item Важные пограничные случаи всё равно нужно учитывать при построении генераторов.
   \end{itemize}
 \end{frame}
 
@@ -73,9 +82,9 @@
 
             prop_square :: Property
             prop_square = property $ do
-              x <- forAll $ Gen.integral $
+              (x :: Integer) <- forAll $ Gen.integral $
                 Range.linear (-1000) 1000
-              assert ((x :: Integer) * x >= 0)
+              assert (x * x >= 0)
 
             ghci> check prop_square
           \end{haskellsmall}
@@ -116,7 +125,8 @@
 \begin{frame}[fragile]
   \frametitle{Переполнение и минимизация}
   \begin{itemize}
-    \item Hedgehog уменьшал контрпример, но полученное число далеко не самое маленькое. Например, для 64-битного \haskinline|Int|:
+    \item \href{https://hackage.haskell.org/package/hedgehog/docs/Hedgehog.html#v:diff}{\haskinline|diff a rel b|} проверяет \haskinline|rel a b|. При ошибке показывает оба значения: \haskinline|-| обозначает левое, \haskinline|+| "--- правое.
+    \item Контрпример уменьшен, но не до минимума. Для 64-битного \haskinline|Int| есть, например:
           \begin{haskellsmall}
             ghci> let x = 3037000500 :: Int
             ghci> x * x
@@ -125,8 +135,7 @@
           \begin{ghcismall}
             -9223372036709301616
           \end{ghcismall}
-    \item При уменьшении \haskinline|x| свойство \haskinline|x * x >= 0| может многократно менять истинность из-за переполнения.
-    \item Уменьшение (shrinking) не гарантирует нахождения самого маленького контрпримера.
+    \item Из-за переполнения свойство \haskinline|x * x >= 0| может менять истинность при уменьшении \haskinline|x|. Shrinking не гарантирует самого маленького контрпримера.
   \end{itemize}
 \end{frame}
 
@@ -389,24 +398,27 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Ещё о Hedgehog}
+  \frametitle{Свойства с IO}
   \begin{itemize}
-    \item Показ контрпримеров с помощью пакета \hackage{pretty-show} и функции \href{https://hackage.haskell.org/package/hedgehog/docs/Hedgehog.html#v:diff}{\haskinline|diff|}:
+    \item Проверим запись и чтение \haskinline|IORef| из \href{https://hackage.haskell.org/package/base/docs/Data-IORef.html}{\haskinline|Data.IORef|}:
           \begin{haskellsmall}
-            ghci> check $ property $
-                    diff [1, 2] (==) [1, 3]
+            import Data.IORef (newIORef, writeIORef, readIORef)
+
+            prop_ioRef :: Property
+            prop_ioRef = property $ do
+              x <- forAll $ Gen.int Range.constantBounded
+              y <- evalIO $ do
+                ref <- newIORef 0
+                writeIORef ref x
+                readIORef ref
+              y === x
+            ghci> check prop_ioRef
           \end{haskellsmall}
           \pause
-          {\footnotesize Фрагмент вывода:}
           \begin{ghcismall}
-            - [ 1 , 2 ]
-            + [ 1 , 3 ]
-            False
+            True
           \end{ghcismall}
-          Операторы \haskinline|===| и \haskinline|/==| показывают разницу так же.
-    \item Работа с монадическими свойствами, в том числе с \haskinline|IO|.
-    \item Поддержка тестирования с состоянием.
-    \item Параллельная проверка (для ускорения).
+    \item \haskinline|evalIO| выполняет действие \haskinline|IO| внутри свойства. Новый \haskinline|IORef| создаётся для каждого примера, в том числе при уменьшении.
   \end{itemize}
 \end{frame}
 
