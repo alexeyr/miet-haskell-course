@@ -302,11 +302,10 @@
     \item Для Hedgehog это предоставляет пакет \hackage{hedgehog-fn}, модуль \href{https://hackage.haskell.org/package/hedgehog-fn/docs/Hedgehog-Function.html}{\haskinline|Hedgehog.Function|}:
           \begin{haskellsmall}
             import Hedgehog.Function
-              (Arg, Vary, Fn, fn, forAllFn)
+              (Arg, Vary, Fn, fn, apply)
 
             fn :: (Arg a, Vary a) => Gen b -> Gen (Fn a b)
-            forAllFn :: (Show a, Show b) =>
-                        Gen (Fn a b) -> PropertyT IO (a -> b)
+            apply :: Fn a b -> a -> b
           \end{haskellsmall}
     \item \haskinline|Fn a b| представляет функцию \haskinline|a -> b| в виде, который можно показать и уменьшить.
     \item Экземпляры \haskinline|Arg a| и \haskinline|Vary a| нужны для генерации функций с аргументами типа \haskinline|a|; для стандартных типов они уже есть.
@@ -316,19 +315,22 @@
 \begin{frame}[fragile]
   \frametitle{Свойства функций}
   \begin{itemize}
-    \item Как пример использования, покажем, что функции \haskinline|Int -> String| "--- чистые, то есть дают одинаковый результат при повторном вызове:
+    \item Проверим ассоциативность композиции для функций \haskinline|Int -> Int|:
           \begin{haskellsmall}
-            prop :: Property
-            prop = property $ do
-              g <- forAllFn $ fn
-                (Gen.string (Range.linear 0 20) Gen.alpha)
-              x <- forAll $ Gen.int (Range.linear (-100) 100)
-              g x === g x
-            ghci> check prop
+            prop_compose :: Property
+            prop_compose = property $ do
+              let gi = Gen.int (Range.linear (-100) 100)
+              (fg, fh, fk, x) <- forAll $
+                (,,,) <$> fn gi <*> fn gi <*> fn gi <*> gi
+              let (g, h, k) = (apply fg, apply fh, apply fk)
+              ((g . h) . k) x === (g . (h . k)) x
+            ghci> check prop_compose
           \end{haskellsmall}
-          \begin{ghci}
+          \pause
+          \begin{ghcismall}
             True
-          \end{ghci}
+          \end{ghcismall}
+    \item У функций нет \haskinline|Eq|: сравниваем результаты на аргументе \haskinline|x|. Функция \haskinline|apply| извлекает обычную функцию из \haskinline|Fn|.
   \end{itemize}
 \end{frame}
 
