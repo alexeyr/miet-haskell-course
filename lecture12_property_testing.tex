@@ -42,7 +42,7 @@
           Разве что если функция на \haskinline|Bool|...
           \pause
     \item Нужно искать пограничные случаи (т.е. те, в которых ошибка более вероятна) самому. \\
-          Хотя есть часто встречающиеся: \pause \haskinline|0|, пустой список, \haskinline|INT_MIN|...
+          Хотя есть часто встречающиеся: \pause \haskinline|0|, пустой список, \haskinline|(minBound :: Int)|...
           \pause
     \item Для каких-то аргументов мы можем не знать правильного результата (и не иметь независимого от тестируемой функции способа его найти).
           \pause
@@ -291,6 +291,10 @@
     \item Конечно, это удобно делать только тогда, когда минимизация более-менее удалась.
     \item Кроме того, для некоторых типов результат \haskinline|show x| недостаточен для точного воспроизведения \haskinline|x| (придумаете пример?)
     \item В Hedgehog печатается команда с \href{https://hackage.haskell.org/package/hedgehog/docs/Hedgehog.html#v:recheckAt}{\haskinline|recheckAt|} для воспроизведения по seed и пути уменьшения.
+          Перед её запуском в GHCi:
+          \begin{haskellsmall}
+            ghci> :set -XOverloadedStrings
+          \end{haskellsmall}
   \end{itemize}
 \end{frame}
 
@@ -308,7 +312,6 @@
             genTree g = Gen.shrink shrinkTree (treeOf g)
           \end{haskellsmall}
     \item Дополнительно пробуем пустое дерево или поддерево.
-    \item Экземпляр класса не нужен: генератор явно передаём в \haskinline|forAll|.
   \end{itemize}
 \end{frame}
 
