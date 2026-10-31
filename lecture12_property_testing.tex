@@ -25,7 +25,7 @@
             \item Тесты легко понять.
             \item Можно сделать даже без помощи библиотек.
             \item Но при этом библиотеки для написания таких тестов есть практически для всех языков.
-            \item Для чистых функций (в Haskell почти для всех!) кроме аргументов и результата функции проверять и нечего.
+            \item Чистую функцию удобно тестировать: результат зависит только от аргументов.
           \end{itemize}
           \pause
     \item TDD (Test Driven Development) \pause "--- сначала тесты, потом реализация.
@@ -237,6 +237,31 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Распределение тестовых примеров}
+  \begin{itemize}
+    \item \href{https://hackage.haskell.org/package/hedgehog/docs/Hedgehog.html#v:classify}{\haskinline|classify|} показывает доли случаев, а \href{https://hackage.haskell.org/package/hedgehog/docs/Hedgehog.html#v:cover}{\haskinline|cover|} требует минимальную долю:
+          \begin{haskellsmall*}{texcomments=false}
+            {-# LANGUAGE OverloadedStrings #-}
+            prop_reverseCoverage :: Property
+            prop_reverseCoverage = property $ do
+              xs <- forAll $ Gen.list
+                (Range.constant 0 10) Gen.bool
+              classify "empty" (null xs)
+              cover 30 "length >= 3" (length xs >= 3)
+              reverse (reverse xs) === xs
+            ghci> check prop_reverseCoverage
+          \end{haskellsmall*}
+          \pause
+          {\footnotesize Фрагмент сводки одного запуска (без диаграмм):}
+          \begin{ghcismall}
+            empty        5%
+            length >= 3 82%
+          \end{ghcismall}
+    \item С \haskinline|pure []| свойство верно, но проверка покрытия провалится.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Генераторы значений}
   \begin{itemize}
     \item Для рекурсивных типов наивный генератор:
@@ -320,9 +345,35 @@
   \begin{itemize}
     \item Самое тривиальное свойство "--- функция даёт результат, а не выкидывает исключение.
     \item Сверка с другой реализацией той же функции.
-    \item Сериализация и разбор: \haskinline|decode (encode x) == Right x| "--- закодированное значение можно восстановить.
     \item Алгебраические свойства: идемпотентность, коммутативность, ассоциативность и так далее.
     \item Законы классов типов.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Свойства сериализации и разбора}
+  \begin{itemize}
+    \item Для некоторого типа значений \haskinline|Value|:
+          \begin{itemize}
+            \item Предположим типы:
+                  \begin{haskellsmall}
+                    encode :: Value -> String
+                    decode :: String -> Either String Value
+                  \end{haskellsmall}
+            \item Из значения в представление и обратно:
+                  \begin{haskellsmall}
+                    decode (encode x) === Right x
+                  \end{haskellsmall}
+                  Проверяем, что кодирование сохраняет значение.
+                  \pause
+            \item Из представления в значение и обратно:
+                  \begin{haskellsmall}
+                    fmap encode (decode s) === Right s
+                  \end{haskellsmall}
+                  Требует корректной канонической записи: в той форме, которую выдаёт \haskinline|encode|.
+
+                  Повторное кодирование может нормализовать запись: например, разбор \haskinline|"01"| даёт число \haskinline|1|, а его запись "--- \haskinline|"1"|.
+          \end{itemize}
   \end{itemize}
 \end{frame}
 
