@@ -83,7 +83,7 @@
             prop_square :: Property
             prop_square = property $ do
               (x :: Integer) <- forAll $ Gen.integral $
-                Range.linear (-1000) 1000
+                Range.linearFrom 0 (-10^100) (10^100)
               assert (x * x >= 0)
 
             ghci> check prop_square
@@ -91,7 +91,19 @@
           \begin{ghci}
             True
           \end{ghci}
-    \item Проверили, что квадраты \haskinline|Integer| неотрицательны (100 тестов).
+    \item Квадраты оказались неотрицательны для 100 случайных значений в данном диапазоне.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Диапазоны значений}
+  \begin{itemize}
+    \item \href{https://hackage.haskell.org/package/hedgehog/docs/Hedgehog-Range.html}{\haskinline|Hedgehog.Range|} задаёт границы значений и цель уменьшения.
+    \item \haskinline|Range.linear 0 100|: границы растут от \haskinline|(0, 0)| до \haskinline|(0, 100)| вместе с размером примера (от 0 до 99).
+    \item \haskinline|Range.constant 0 100|: границы всегда \haskinline|(0, 100)|, независимо от размера.
+    \item \haskinline|Range.linearFrom 0 (-100) 100|: границы расширяются от нуля в обе стороны.
+    \item \haskinline|Range.constantBounded|: весь диапазон ограниченного типа, например \haskinline|Int|.
+    \item Во всех этих примерах цель уменьшения "--- ноль.
   \end{itemize}
 \end{frame}
 
@@ -147,7 +159,7 @@
             prop_head :: Property
             prop_head = property $ do
               xs <- forAll $ Gen.list (Range.linear 0 100) $
-                Gen.int (Range.linear (-100) 100)
+                Gen.int (Range.linearFrom 0 (-100) 100)
               head xs === last (reverse xs)
             ghci> check prop_head
           \end{haskellsmall}
@@ -335,7 +347,7 @@
           \begin{haskellsmall}
             prop_compose :: Property
             prop_compose = property $ do
-              let gi = Gen.int (Range.linear (-100) 100)
+              let gi = Gen.int (Range.linearFrom 0 (-100) 100)
               (fg, fh, fk, x) <- forAll $
                 (,,,) <$> fn gi <*> fn gi <*> fn gi <*> gi
               let (g, h, k) = (apply fg, apply fh, apply fk)
@@ -366,7 +378,7 @@
           \begin{haskellsmall}
             ghci> check $ prop_associative $
                     Gen.list (Range.linear 0 20) $
-                      Gen.int (Range.linear (-100) 100)
+                      Gen.int (Range.linearFrom 0 (-100) 100)
           \end{haskellsmall}
           \pause
           \begin{ghcismall}
@@ -387,7 +399,7 @@
             lawsCheck :: Laws -> IO Bool
 
             ghci> lawsCheck $ eqLaws $
-                    Gen.int (Range.linear (-100) 100)
+                    Gen.int (Range.linearFrom 0 (-100) 100)
           \end{haskellsmall}
           \pause
     \item Для проверки законов \haskinline|Functor/Applicative/Monad/...| передаём генератор структуры, например:
