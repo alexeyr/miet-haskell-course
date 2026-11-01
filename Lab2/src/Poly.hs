@@ -79,17 +79,20 @@ composePoly = undefined
 -- Задание 9 -----------------------------------------
 
 -- Реализуйте nderiv через deriv
-class Num a => Differentiable a where
+class Differentiable f where
+    -- значение представленной функции в точке: apply p t = p(t)
+    apply  :: Num a => f a -> a -> a
     -- взятие производной
-    deriv  :: a -> a
+    deriv  :: Num a => f a -> f a
     -- взятие n-ной производной; предполагается n >= 0.
-    nderiv :: Int -> a -> a
+    nderiv :: Num a => Int -> f a -> f a
     nderiv = undefined
 
 -- Задание 10 ----------------------------------------
 
 -- Определите экземпляр класса типов
-instance Num a => Differentiable (Poly a) where
+instance Differentiable Poly where
+    apply = applyPoly
     deriv = undefined
 
 -- Готовый вывод многочленов --------------------------------------------

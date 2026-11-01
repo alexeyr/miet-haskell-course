@@ -1,11 +1,12 @@
 -- Не забудьте добавить тесты.
 module RootFinding where
 
-import Poly (Poly(..), applyPoly, deriv, nderiv)
+import Poly (Poly(..), Differentiable(..))
 
--- Поиск корней многочлена ---------------------------------------------
--- Здесь применяются applyPoly и экземпляр Differentiable из модуля Poly.
--- Многочлен p представляет функцию f(t) = applyPoly p t.
+-- Поиск корней --------------------------------------------------------
+-- Здесь применяется класс Differentiable из модуля Poly.
+-- Методы должны работать с любым экземпляром Differentiable;
+-- в примерах используется Poly.
 -- В заданиях можно использовать Rational или Double; для Double
 -- предполагаем, что входные и промежуточные значения конечны (не NaN/Infinity).
 
@@ -18,15 +19,15 @@ import Poly (Poly(..), applyPoly, deriv, nderiv)
 -- Например:
 -- newtonStep (P [-2, 0, 1] :: Poly Rational) 1 == Just (3 / 2)
 -- newtonStep (P [-2, 0, 1] :: Poly Rational) 0 == Nothing
-newtonStep :: (Fractional a, Eq a) => Poly a -> a -> Maybe a
+newtonStep :: (Differentiable f, Fractional a, Eq a) => f a -> a -> Maybe a
 newtonStep = undefined
 
 -- Задание 2 -----------------------------------------
 
 -- Реализуйте поиск приближённого корня методом Ньютона.
--- Аргументы: точность epsilon, максимум шагов, многочлен, начальная точка.
+-- Аргументы: точность epsilon, максимум шагов, представление функции, начальная точка.
 -- epsilon задаёт допустимую невязку: abs (f(t)) <= epsilon.
--- Это ограничение на значение многочлена, а не расстояние до точного корня.
+-- Это ограничение на значение функции, а не расстояние до точного корня.
 -- Если epsilon <= 0 или максимум шагов отрицателен, верните Nothing.
 -- Верните Just t для найденного приближения; если лимита шагов недостаточно
 -- или продолжению мешает нулевая производная, верните Nothing.
@@ -40,7 +41,7 @@ newtonStep = undefined
 -- Just 2.0
 -- ghci> newton 1e-10 10 (P [1, 0, 1] :: Poly Double) 0
 -- Nothing
-newton :: (Fractional a, Ord a) => a -> Int -> Poly a -> a -> Maybe a
+newton :: (Differentiable f, Fractional a, Ord a) => a -> Int -> f a -> a -> Maybe a
 newton = undefined
 
 -- Необязательное задание ----------------------------------------------
@@ -55,10 +56,10 @@ newton = undefined
 -- halleyStep (P [-2, 0, 1] :: Poly Rational) 1 == Just (7 / 5)
 -- Сравните число шагов Ньютона и Хэлли для x^2 - 2 с начальной точкой 1
 -- и одинаковой точностью. Всегда ли Хэлли требует меньше шагов?
-halleyStep :: (Fractional a, Eq a) => Poly a -> a -> Maybe a
+halleyStep :: (Differentiable f, Fractional a, Eq a) => f a -> a -> Maybe a
 halleyStep = undefined
 
-halley :: (Fractional a, Ord a) => a -> Int -> Poly a -> a -> Maybe a
+halley :: (Differentiable f, Fractional a, Ord a) => a -> Int -> f a -> a -> Maybe a
 halley = undefined
 
 -- Можно ли определить такую общую функцию, что newton и halley получаются

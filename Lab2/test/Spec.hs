@@ -3,6 +3,9 @@ import RootFinding
 import SimpleLang
 import Test.Hspec
 
+-- Это только начальная заготовка: добавьте собственные тесты,
+-- в том числе для граничных случаев и отсутствия сходимости.
+
 main :: IO ()
 main = hspec $ do
     describe "poly" $ do
@@ -21,6 +24,7 @@ main = hspec $ do
             it "складывает многочлены с разным числом коэффициентов" $ pending
             it "умножение на нулевой многочлен даёт нулевой многочлен" $ pending
         describe "Differentiable" $ do
+            it "apply совпадает с applyPoly" $ pending
             it "deriv" $ pending
             it "nderiv" $ pending
         describe "show (готовая реализация)" $ do
