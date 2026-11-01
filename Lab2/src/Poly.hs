@@ -82,7 +82,7 @@ composePoly = undefined
 class Num a => Differentiable a where
     -- взятие производной
     deriv  :: a -> a
-    -- взятие n-ной производной
+    -- взятие n-ной производной; предполагается n >= 0.
     nderiv :: Int -> a -> a
     nderiv = undefined
 

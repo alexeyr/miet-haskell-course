@@ -1,10 +1,10 @@
 module SimpleLang where
 -- Язык Simple -- очень простой императивный язык.
--- В нём только один тип данных: целые числа.
+-- В нём только один тип данных: целые числа Integer без переполнения.
 
 data Expression =
     Var String                   -- Переменные
-  | Val Int                      -- Целые константы
+  | Val Integer                  -- Целые константы
   | Op Expression Bop Expression -- Бинарные операции
   deriving (Show, Eq)
 
@@ -28,8 +28,11 @@ data Statement =
     -- ненулевые значения работают как истина в if, while и for
   | If       Expression Statement  Statement
   | While    Expression Statement
+    -- For initialization condition step body:
+    -- initialization выполняется один раз, затем проверяется condition;
+    -- пока оно ненулевое, выполняются body и step (именно в таком порядке).
   | For      Statement  Expression Statement Statement
-    -- как { ... } в C-подобных языках
+    -- как { ... } в C-подобных языках; Block [] ничего не делает
   | Block [Statement]
     -- пустая инструкция
   | Skip
@@ -38,8 +41,8 @@ data Statement =
 -- примеры программ на этом языке в конце модуля
 
 -- по состоянию можно получить значение каждой переменной
--- (в реальной программе скорее использовалось бы Data.Map.Map String Int)
-type State = String -> Int
+-- (в реальной программе скорее использовалось бы Data.Map.Map String Integer)
+type State = String -> Integer
 
 -- Задание 1 -----------------------------------------
 
@@ -49,13 +52,16 @@ empty = undefined
 
 -- возвращает состояние, в котором переменная var имеет значение newVal, 
 -- все остальные -- то же, что в state
-extend :: State -> String -> Int -> State
+extend :: State -> String -> Integer -> State
 extend state var newVal = undefined
 
 -- Задание 2 -----------------------------------------
 
 -- возвращает значение выражения expr при значениях переменных из state.
-eval :: State -> Expression -> Int
+-- Сравнения возвращают 1, если условие истинно, и 0 иначе.
+-- Divide использует div (округление вниз): (-3) `div` 2 == -2.
+-- Деление на ноль вызывает стандартную ошибку div; обрабатывать её не требуется.
+eval :: State -> Expression -> Integer
 eval state expr = undefined
 
 -- Задание 3 -----------------------------------------
@@ -81,9 +87,6 @@ desugar = undefined
 runSimpler :: State -> DietStatement -> State
 runSimpler = undefined
 
--- 
--- in s "A" ~?= 10
-
 -- принимает начальное состояние и программу Simple
 -- и возвращает состояние после работы программы
 run :: State -> Statement -> State
@@ -91,7 +94,7 @@ run = undefined
 
 -- Программы -------------------------------------------
 
-{- Вычисление факториала
+{- Вычисление факториала для In >= 0 (готовый пример)
 
    for (Out := 1; In > 0; In := In - 1) {
      Out := In * Out
@@ -104,7 +107,11 @@ factorial = For (Assign "Out" (Val 1))
                 (Assign "Out" (Op (Var "In") Times (Var "Out")))
 
 
-{- Вычисление целой части квадратного корня
+-- Задание 5 -----------------------------------------
+
+-- Запишите следующую программу с помощью конструкторов Statement.
+{- Вычисление целой части квадратного корня для A >= 0.
+   Результат записывается в B.
 
    B := 0;
    while (A >= B * B) {
@@ -115,7 +122,11 @@ factorial = For (Assign "Out" (Val 1))
 squareRoot :: Statement
 squareRoot = undefined
 
-{- Вычисление числа Фибоначчи
+-- Задание 6 -----------------------------------------
+
+-- Запишите следующую программу с помощью конструкторов Statement.
+{- Вычисление числа Фибоначчи для In >= 0.
+   Здесь F0 = F1 = 1; результат записывается в Out.
 
    F0 := 1;
    F1 := 1;

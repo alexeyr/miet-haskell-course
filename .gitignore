@@ -1,4 +1,5 @@
 temp_*
+.playwright-mcp/
 
 ## Core latex/pdflatex auxiliary files:
 *.aux

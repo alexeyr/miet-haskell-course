@@ -10,11 +10,15 @@ main = hspec $ do
         it "composePoly" $ pending
         describe "Eq" $ do
             it "(==)" $ pending
+            it "пустой список и список нулей задают нулевой многочлен" $ pending
+            it "нули в конце списка не меняют многочлен" $ pending
         describe "Num" $ do
             it "(+)" $ pending
             it "(*)" $ pending
             it "negate" $ pending
             it "fromInteger" $ pending
+            it "складывает многочлены с разным числом коэффициентов" $ pending
+            it "умножение на нулевой многочлен даёт нулевой многочлен" $ pending
         describe "Differentiable" $ do
             it "deriv" $ pending
             it "nderiv" $ pending
@@ -51,5 +55,29 @@ main = hspec $ do
                 show (Just (P [0, 1] :: Poly Integer)) `shouldBe` "Just x"
                 show (Just (P [0, 0, 1] :: Poly Integer)) `shouldBe` "Just (x^2)"
     describe "simpleLang" $ do
-        -- включите тесты на работу 
-        it "desugar" $ pending
+        -- Замените pending своими тестами. В примере factorial достаточно
+        -- удалить pending, когда будут реализованы нужные функции.
+        -- Состояния — функции: сравнивайте значения выбранных переменных.
+        describe "empty и extend" $ do
+            it "empty возвращает 0 для любой переменной" $ pending
+            it "extend меняет выбранную переменную, сохраняя остальные" $ pending
+            it "повторный extend заменяет предыдущее значение" $ pending
+        describe "eval" $ do
+            it "вычисляет арифметику и сравнения (1 или 0)" $ pending
+            it "деление отрицательных чисел округляет вниз" $ pending
+            it "деление на ноль вызывает ошибку" $ pending
+        describe "desugar" $ do
+            it "преобразует Incr в присваивание" $ pending
+            it "преобразует For с порядком initialization, condition, body, step" $ pending
+            it "преобразует Block [] в DSkip" $ pending
+        describe "runSimpler и run" $ do
+            it "пустой блок сохраняет значения переменных" $ pending
+            it "цикл с ложным начальным условием не выполняет тело" $ pending
+            it "For выполняет инициализацию даже при ложном начальном условии" $ pending
+            it "factorial записывает результат в Out" $ do
+                pending
+                let st = run (extend empty "In" 5) factorial
+                st "Out" `shouldBe` 120
+            it "factorial для 0 возвращает 1" $ pending
+            it "squareRoot обрабатывает 0, точные квадраты и числа между ними" $ pending
+            it "fibonacci возвращает 1 для In = 0 и In = 1" $ pending
