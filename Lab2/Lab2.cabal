@@ -26,6 +26,7 @@ source-repository head
 library
   exposed-modules:
       Poly
+      RootFinding
       SimpleLang
   other-modules:
       Paths_Lab2

@@ -1,4 +1,5 @@
 import Poly
+import RootFinding
 import SimpleLang
 import Test.Hspec
 
@@ -54,6 +55,25 @@ main = hspec $ do
                 show (Just (P [1, 1] :: Poly Integer)) `shouldBe` "Just (x + 1)"
                 show (Just (P [0, 1] :: Poly Integer)) `shouldBe` "Just x"
                 show (Just (P [0, 0, 1] :: Poly Integer)) `shouldBe` "Just (x^2)"
+    describe "rootFinding" $ do
+        describe "newtonStep" $ do
+            it "делает один шаг для x^2 - 2" $ do
+                pending
+                newtonStep (P [-2, 0, 1] :: Poly Rational) 1
+                    `shouldBe` Just (3 / 2)
+            it "возвращает Nothing при нулевой производной" $ pending
+        describe "newton" $ do
+            it "находит приближение к sqrt 2 с заданной невязкой" $ pending
+            it "принимает начальный корень даже при лимите 0" $ pending
+            it "проверяет последнюю точку после разрешённого числа шагов" $ pending
+            it "возвращает Nothing при исчерпании лимита" $ pending
+            it "возвращает Nothing при нулевой производной вне корня" $ pending
+            it "отклоняет неположительную точность и отрицательный лимит" $ pending
+        describe "halley (необязательно)" $ do
+            it "halleyStep делает один шаг для x^2 - 2" $ pending
+            it "возвращает Nothing при нулевом знаменателе вне корня" $ pending
+            it "находит приближение к sqrt 2" $ pending
+            it "соблюдает те же правила точности и лимита, что и newton" $ pending
     describe "simpleLang" $ do
         -- Замените pending своими тестами. В примере factorial достаточно
         -- удалить pending, когда будут реализованы нужные функции.
