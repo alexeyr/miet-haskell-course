@@ -2,12 +2,23 @@ import Poly
 import RootFinding
 import SimpleLang
 import Test.Hspec
+import Test.Tasty (defaultMain, localOption, testGroup)
+import Test.Tasty.Hspec (TreatPendingAs(..), testSpec)
+import qualified Properties
 
 -- Это только начальная заготовка: добавьте собственные тесты,
 -- в том числе для граничных случаев и отсутствия сходимости.
 
 main :: IO ()
-main = hspec $ do
+main = do
+    examples <- testSpec "Hspec" spec
+    defaultMain $ testGroup "Lab2"
+        [ localOption TreatPendingAsSuccess examples
+        , Properties.tests
+        ]
+
+spec :: Spec
+spec = do
     describe "poly" $ do
         it "applyPoly" $ pending
         it "degree" $ pending

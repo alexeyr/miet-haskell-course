@@ -50,3 +50,9 @@ tests:
     dependencies:
     - Lab2
     - hspec
+    - hedgehog
+    - hedgehog-fn
+    - tasty
+    - tasty-hspec
+    - tasty-hedgehog
+    - tasty-expected-failure

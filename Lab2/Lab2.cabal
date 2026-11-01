@@ -41,6 +41,7 @@ test-suite Lab2-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      Properties
       Paths_Lab2
   hs-source-dirs:
       test
@@ -48,5 +49,11 @@ test-suite Lab2-test
   build-depends:
       Lab2
     , base >=4.7 && <5
+    , hedgehog
+    , hedgehog-fn
     , hspec
+    , tasty
+    , tasty-expected-failure
+    , tasty-hedgehog
+    , tasty-hspec
   default-language: GHC2021
