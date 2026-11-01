@@ -20,6 +20,17 @@ tests = testGroup "Hedgehog (лабораторная 3)"
     [ ignoreTestBecause "Реализовать в лабораторной 3" $
         testPropertyNamed "Прибавление константы сдвигает значение многочлена"
             "prop_addConstant" prop_addConstant
+    , testGroup "RootFinding"
+        [ ignoreTestBecause "Реализовать в лабораторной 3" $
+            testPropertyNamed "Шаг Ньютона находит корень линейной функции"
+                "prop_newtonStepLinear" prop_newtonStepLinear
+        , ignoreTestBecause "Реализовать в лабораторной 3" $
+            testPropertyNamed "Результат Ньютона удовлетворяет заданной невязке"
+                "prop_newtonResidual" prop_newtonResidual
+        , ignoreTestBecause "Необязательно: реализовать в лабораторной 3" $
+            testPropertyNamed "Результат Хэлли удовлетворяет заданной невязке"
+                "prop_halleyResidual" prop_halleyResidual
+        ]
     , testGroup "SimpleLang"
         [ ignoreTestBecause "Реализовать в лабораторной 3" $
             testPropertyNamed "Чтение после обновления переменной"
@@ -49,6 +60,21 @@ tests = testGroup "Hedgehog (лабораторная 3)"
 -- в любой точке t на c. Используйте коэффициенты и точки типа Integer.
 prop_addConstant :: Property
 prop_addConstant = property $ fail "Реализуйте свойство"
+
+-- Для линейной функции с ненулевым коэффициентом при переменной один шаг
+-- Ньютона из любой точки даёт её корень. Используйте Rational.
+prop_newtonStepLinear :: Property
+prop_newtonStepLinear = property $ fail "Реализуйте свойство"
+
+-- Если newton возвращает Just t, невязка в точке t не превышает epsilon.
+-- Выбирайте допустимые аргументы и проверяйте, что генераторы дают также
+-- случаи успешного поиска: одни результаты Nothing не проверяют это свойство.
+prop_newtonResidual :: Property
+prop_newtonResidual = property $ fail "Реализуйте свойство"
+
+-- Необязательно: аналогичное свойство невязки для метода Хэлли.
+prop_halleyResidual :: Property
+prop_halleyResidual = property $ fail "Реализуйте свойство"
 
 -- Для следующих свойств состояние можно генерировать как список обновлений empty
 -- или как функцию String -> Integer с помощью hedgehog-fn:
