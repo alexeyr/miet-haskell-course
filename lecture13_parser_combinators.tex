@@ -691,22 +691,26 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Megaparsec: парсер числа}
-  \haskinline|number| читает неотрицательное целое число с помощью библиотечного парсера.
-  \pause
-  \begin{haskellsmall}
-    number :: Parser Integer !\pause!
-    number = L.decimal
-  \end{haskellsmall}
+  \frametitle{Megaparsec: лексические комбинаторы}
   \begin{itemize}
-    \item \haskinline|L.lexeme| и \haskinline|L.symbol| принимают парсер пропусков; \haskinline|L.space| помогает обработать также комментарии.
+    \item У нас: \haskinline|lexeme p = p <* spaces|.
+    \item В \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html}{\haskinline{Text.Megaparsec.Char.Lexer}} \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:lexeme}{\haskinline{L.lexeme}} принимает парсер пропусков явно:
+      \begin{haskellsmall}
+        lexeme :: Parser a -> Parser a
+        lexeme = L.lexeme space
+      \end{haskellsmall}
+      Аналогично: \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:symbol}{\haskinline{symbol = L.symbol space}}. Здесь \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char.html#v:space}{\haskinline{space}} пропускает пробельные символы.
+    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:space}{\haskinline{L.space}} позволяет учитывать также комментарии; для них есть \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:skipLineComment}{\haskinline{L.skipLineComment}} и \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:skipBlockComment}{\haskinline{L.skipBlockComment}}.
+    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:signed}{\haskinline{L.signed}} добавляет к числовому парсеру необязательный знак.
+    \item Есть \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:indentBlock}{комбинаторы для учёта отступов}.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Megaparsec: запуск и ошибка}
+  \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:decimal}{\haskinline{L.decimal}} читает неотрицательное целое число.
   \begin{haskellsmall}
-    ghci> parseTest (number <* eof) "12x" !\pause!
+    ghci> parseTest (L.decimal <* eof :: Parser Integer) "12x" !\pause!
     1:3:
       |
     1 | 12x
