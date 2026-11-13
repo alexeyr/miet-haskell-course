@@ -90,6 +90,10 @@ spec = do
             it "находит приближение к sqrt 2" $ pending
             it "соблюдает те же правила точности и лимита, что и newton" $ pending
     describe "simpleLang" $ do
+        describe "вывод" $ do
+            it "renderExpression" $ pending
+            it "renderStatement" $ pending
+            it "renderDietStatement" $ pending
         -- Замените pending своими тестами. В примере factorial достаточно
         -- удалить pending, когда будут реализованы нужные функции.
         -- Состояния — функции: сравнивайте значения выбранных переменных.

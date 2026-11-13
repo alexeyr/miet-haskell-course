@@ -1,0 +1,808 @@
+% !TeX TXS-program:compile = txs:///pdflatex/[-shell-escape]
+\documentclass[11pt]{beamer}
+\input{lecture_preamble.tex}
+\usepackage{tikz}
+\title{Лекция 13: комбинаторы парсеров}
+
+\begin{document}
+\begin{frame}[plain]
+  \maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{От текста к программе}
+  \begin{itemize}
+    \item В лабораторной 2 выражения задавались значениями типа \haskinline|Expression|. Как получить их из текста?
+      \begin{columns}[c,onlytextwidth]
+        \begin{column}{0.52\linewidth}
+          \begin{haskellsmall}
+            "2 + 3 * 4"
+            Op (Val 2) Plus
+               (Op (Val 3) Times (Val 4))
+          \end{haskellsmall}
+        \end{column}
+        \begin{column}{0.46\linewidth}
+          \centering
+          \begin{tikzpicture}[
+            every node/.style={font=\footnotesize\ttfamily},
+            edge from parent/.style={draw,semithick},
+            level distance=0.75cm,
+            level 1/.style={sibling distance=1.7cm},
+            level 2/.style={sibling distance=1.3cm}]
+            \node {Op: Plus}
+              child {node {Val: 2}}
+              child {node {Op: Times}
+                child {node {Val: 3}}
+                child {node {Val: 4}}};
+          \end{tikzpicture}
+        \end{column}
+      \end{columns}
+      \pause
+    \item \emph{Синтаксический анализ} (parsing) превращает текст в структуру, например дерево выражения.
+    \item Вычисление результата по этому дереву "--- отдельная задача: для SimpleLang её решает \haskinline|eval|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Тип парсера}
+  \begin{haskell}
+    newtype Parser a = Parser
+      { runParser :: String -> Maybe (a, String) }
+  \end{haskell}
+  \begin{itemize}
+    \item \haskinline|a| "--- тип результата. Успех возвращает результат и \emph{остаток входа}, неудача "--- \haskinline|Nothing|.
+      \pause
+    \item Можно использовать также \hackage{text} (\haskinline|Text|) и \hackage{bytestring} (\haskinline|ByteString|). Для простоты берём \haskinline|String|.
+    \item В Megaparsec эти варианты объединяет класс \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Stream.html}{\haskinline{Stream}}. \haskinline|Text| содержит символы, \haskinline|ByteString| "--- байты.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Один символ}
+  Парсер \haskinline|satisfy| читает и возвращает первый символ, если он удовлетворяет предикату. Если символ не подходит или вход пуст, разбор завершается неудачей.
+  \pause
+  \begin{haskellsmall}
+    satisfy :: (Char -> Bool) -> Parser Char !\pause!
+    satisfy predicate = Parser $ \input ->
+      case input of
+        c : rest | predicate c -> Just (c, rest)
+        _                      -> Nothing
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Заданный символ}
+  Парсер \haskinline|char| читает и возвращает заданный символ. Если первый символ другой или вход пуст, разбор завершается неудачей.
+  \pause
+  \begin{haskellsmall}
+    char :: Char -> Parser Char !\pause!
+    char c = satisfy (== c)
+  \end{haskellsmall}
+  \begin{haskellsmall}
+    ghci> runParser (char 'a') "abc" !\pause!
+    Just ('a',"bc")
+    ghci> runParser (char 'a') "xyz" !\pause!
+    Nothing
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Парсер как функтор}
+  \begin{itemize}
+    \item Изменяем результат, сохраняя остаток входа и неудачу:
+      \pause
+      \begin{haskellsmall}
+        instance Functor Parser where
+          fmap g (Parser parse) = Parser $ \input ->
+            fmap (\(value, rest) -> (g value, rest))
+                 (parse input)
+      \end{haskellsmall}
+    \item Здесь внутренний \haskinline|fmap| работает с \haskinline|Maybe|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Цифра и её значение}
+  \begin{itemize}
+    \item \haskinline|digit| читает одну десятичную цифру и возвращает её как символ.
+      \pause
+      \begin{haskellsmall}
+        digit :: Parser Char !\pause!
+        digit = satisfy (\c -> '0' <= c && c <= '9')
+      \end{haskellsmall}
+      \pause
+    \item \haskinline|digitValue| читает цифру и возвращает её числовое значение.
+      \pause
+      \begin{haskellsmall}
+        digitValue :: Parser Int !\pause!
+        digitValue = (\c -> fromEnum c - fromEnum '0')
+                     <$> digit
+      \end{haskellsmall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Последовательность парсеров: Applicative}
+  \begin{itemize}
+    \item Второй парсер получает остаток входа после первого.
+      \begin{haskellsmall}
+        instance Applicative Parser where
+          pure value = Parser $ \input ->
+            Just (value, input)
+          Parser parseG <*> Parser parseX =
+            Parser $ \input -> do
+              (g, rest1) <- parseG input
+              (value, rest2) <- parseX rest1
+              pure (g value, rest2)
+      \end{haskellsmall}
+      \pause
+    \item Здесь \haskinline|do| работает в \haskinline|Maybe|. При неудаче любой части получаем \haskinline|Nothing|.
+    \item Упражнение: определите \haskinline|liftA2| напрямую через \haskinline|runParser|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Собираем результат}
+  \haskinline|twoDigits| читает две цифры подряд и возвращает пару их числовых значений.
+  \pause
+  \begin{haskell}
+    twoDigits :: Parser (Int, Int) !\pause!
+    twoDigits = liftA2 (,) digitValue digitValue
+  \end{haskell}
+  \begin{haskellsmall}
+    ghci> runParser twoDigits "42!" !\pause!
+    Just ((4,2),"!")
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Парсер в скобках}
+  \haskinline|parens| запускает переданный парсер между круглыми скобками. Скобки читаются, но в результат входит только значение внутреннего парсера.
+  \pause
+  \begin{haskell}
+    parens :: Parser a -> Parser a !\pause!
+    parens p = char '(' *> p <* char ')'
+  \end{haskell}
+  \begin{haskellsmall}
+    ghci> runParser (parens twoDigits) "(42)!" !\pause!
+    Just ((4,2),"!")
+    ghci> runParser (parens twoDigits) "(4x)!" !\pause!
+    Nothing
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Заданная строка}
+  Парсер \haskinline|string| читает и возвращает заданную строку. Если она не совпадает с началом входа, разбор завершается неудачей.
+  \pause
+  \begin{haskellsmall}
+    string :: String -> Parser String !\pause!
+    string = traverse char
+  \end{haskellsmall}
+  \pause
+  Для двух символов определение \haskinline|traverse| раскрывается так:
+  \begin{haskellsmall}
+    traverse char "ab" !\pause!
+      !$=$! (:) <$> char 'a'
+            <*> ((:) <$> char 'b' <*> pure [])
+  \end{haskellsmall}
+  \begin{haskellsmall}
+    ghci> runParser (string "ab") "abc" !\pause!
+    Just ("ab","c")
+    ghci> runParser (string "ab") "ac!" !\pause!
+    Nothing
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Выбор: Alternative}
+  \begin{itemize}
+    \item Класс из \href{https://hackage.haskell.org/package/base/docs/Control-Applicative.html}{\haskinline{Control.Applicative}} добавляет неудачу и выбор:
+      \begin{haskellsmall}
+        class Applicative f => Alternative f where
+          empty :: f a
+          (<|>) :: f a -> f a -> f a
+      \end{haskellsmall}
+    \item Это основные методы; повторение обсудим отдельно.
+      \pause
+    \item Для нашего парсера сначала пробуем левый вариант. При неудаче пробуем правый \emph{на исходном входе}:
+      \begin{haskellsmall}
+        instance Alternative Parser where
+          empty = Parser $ const Nothing
+          Parser p <|> Parser q = Parser $ \input ->
+            p input <|> q input
+      \end{haskellsmall}
+    \item Справа \haskinline{(<|>)} работает с \haskinline|Maybe|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Возврат к началу альтернативы}
+  \haskinline|abOrAc| разбирает и возвращает строку \haskinline|"ab"| или \haskinline|"ac"|.
+  \pause
+  \begin{haskellsmall}
+    abOrAc :: Parser String !\pause!
+    abOrAc = string "ab" <|> string "ac"
+  \end{haskellsmall}
+  \begin{haskellsmall}
+    ghci> runParser abOrAc "ac!" !\pause!
+    Just ("ac","!")
+  \end{haskellsmall}
+  \begin{itemize}
+    \item После несовпадения с \haskinline|"ab"| правая ветка пробует \haskinline|"ac"| на исходном входе.
+      \pause
+    \item Успех слева завершает выбор. Позднейшая неудача другого парсера не заставляет пересмотреть этот выбор.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Успешный выбор не пересматривается}
+  Парсер \haskinline|p| выбирает между \haskinline|"a"| и \haskinline|"ab"|, а затем читает \haskinline|"c"|.
+  \pause
+  \begin{haskellsmall}
+    p :: Parser String !\pause!
+    p = (string "a" <|> string "ab") <* string "c"
+  \end{haskellsmall}
+  \begin{haskellsmall}
+    ghci> runParser p "abc" !\pause!
+    Nothing
+  \end{haskellsmall}
+  \begin{itemize}
+    \item Левая ветка успешно читает \haskinline|"a"|. Остаток "--- \haskinline|"bc"|.
+    \item Следующий \haskinline|string "c"| не срабатывает. К варианту \haskinline|"ab"| внутри завершившегося выбора уже не возвращаемся.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Границы альтернативы}
+  Включим чтение конечного \haskinline|"c"| в каждую ветку. Парсер \haskinline|q| выбирает между \haskinline|"ac"| и \haskinline|"abc"|.
+  \pause
+  \begin{haskellsmall}
+    q :: Parser String !\pause!
+    q = (string "a" <* string "c")
+        <|> (string "ab" <* string "c")
+  \end{haskellsmall}
+  \begin{haskellsmall}
+    ghci> runParser q "abc" !\pause!
+    Just ("ab","")
+  \end{haskellsmall}
+  \begin{itemize}
+    \item Неудача на \haskinline|"c"| теперь происходит внутри левой ветки. Правая ветка запускается на исходном входе.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Повторение: many и some}
+  \haskinline|some| повторяет парсер хотя бы один раз, \haskinline|many| допускает ноль повторений. Результаты собираются в список.
+  \pause
+  \begin{haskellsmall}
+    many :: Alternative f => f a -> f [a]
+    some :: Alternative f => f a -> f [a] !\pause!
+
+    some p = (:) <$> p <*> many p
+    many p = some p <|> pure []
+  \end{haskellsmall}
+  Это взаимные определения по умолчанию в \haskinline|Alternative|.
+  \begin{haskellsmall}
+    ghci> runParser (some digit) "123x" !\pause!
+    Just ("123","x")
+    ghci> runParser (many digit) "xyz" !\pause!
+    Just ("","xyz")
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Повторяемый парсер должен продвигаться}
+  \begin{itemize}
+    \item Что произойдёт при разборе?
+      \begin{haskell}
+        runParser (many (pure 'x')) "abc"
+      \end{haskell}
+      \pause
+    \item \haskinline|pure 'x'| всегда успешно завершается, но не читает вход. Рекурсия в \haskinline|many| не заканчивается.
+    \item В нашей реализации это зацикливание. Некоторые библиотеки диагностируют такую ошибку.
+    \item Не передавайте в \haskinline|many| или \haskinline|some| парсер, который может успешно завершиться без чтения входа.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Лексический и синтаксический анализ}
+  \begin{itemize}
+    \item \emph{Лексический анализ} (lexing) выделяет токены: числа, имена, знаки операций и т.д. Пробелы и комментарии обычно пропускаются.
+    \item Например, \haskinline|"12 + total"| содержит три токена: \haskinline|12|, \haskinline|+| и \haskinline|total|.
+      \pause
+    \item \emph{Синтаксический анализ} (parsing) объединяет токены по правилам грамматики, строя дерево выражения или программы.
+      \pause
+    \item У нас оба этапа совмещены: парсеры читают символы, а комбинаторы собирают дерево.
+    \item Можно сначала получить список токенов, а затем разобрать этот список по грамматике.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Числа и пробелы}
+  \begin{itemize}
+    \item \haskinline|natural| читает непустую последовательность цифр и возвращает неотрицательное целое число.
+      \pause
+      \begin{haskellsmall}
+        natural :: Parser Integer !\pause!
+        natural = read <$> some digit
+      \end{haskellsmall}
+      \pause
+    \item \haskinline|spaces| читает ноль или больше пробельных символов.
+      \pause
+      \begin{haskellsmall}
+        spaces :: Parser String !\pause!
+        spaces = many (satisfy isSpace)
+      \end{haskellsmall}
+    \item \haskinline|isSpace| импортируем из \href{https://hackage.haskell.org/package/base/docs/Data-Char.html}{\haskinline{Data.Char}}.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Пробелы после токена}
+  \begin{itemize}
+    \item \haskinline|lexeme| запускает парсер, затем читает пробелы. Возвращает результат переданного парсера.
+      \pause
+      \begin{haskellsmall}
+        lexeme :: Parser a -> Parser a !\pause!
+        lexeme p = p <* spaces
+      \end{haskellsmall}
+      \pause
+    \item \haskinline|symbol| читает заданную строку и следующие пробелы.
+      \pause
+      \begin{haskellsmall}
+        symbol :: String -> Parser String !\pause!
+        symbol = lexeme . string
+      \end{haskellsmall}
+    \item Начальные пробелы обработаем при запуске всего парсера.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Разделители и скобки}
+  \haskinline|between| запускает парсер между открывающим и закрывающим разделителями, возвращая только внутренний результат.
+  \pause
+  \begin{haskellsmall}
+    between :: Parser open -> Parser close ->
+               Parser a -> Parser a !\pause!
+    between open close p = open *> p <* close
+  \end{haskellsmall}
+  \pause
+  \haskinline|sepBy| разбирает список элементов с разделителями между ними. Пустой список допустим. Разделитель после последнего элемента остаётся во входе.
+  \pause
+  \begin{haskellsmall}
+    sepBy :: Parser a -> Parser sep -> Parser [a] !\pause!
+    sepBy p sep =
+      ((:) <$> p <*> many (sep *> p)) <|> pure []
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Список чисел}
+  \haskinline|numbers| разбирает список неотрицательных целых чисел в квадратных скобках, разделённых запятыми. Между токенами допускаются пробелы.
+  \pause
+  \begin{haskellsmall}
+    numbers :: Parser [Integer] !\pause!
+    numbers = between (symbol "[") (symbol "]")
+      (sepBy (lexeme natural) (symbol ","))
+  \end{haskellsmall}
+  \begin{itemize}
+    \item Упражнение: что останется от \haskinline|"[1, 2, 3]!"|? А что будет с \haskinline|"[1,]"|?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Нужно ли разобрать весь вход?}
+  \haskinline|eof| успешно завершается только на пустом остатке входа и возвращает \haskinline|()|.
+  \pause
+  \begin{haskellsmall}
+    eof :: Parser () !\pause!
+    eof = Parser $ \input -> case input of
+      [] -> Just ((), [])
+      _  -> Nothing
+  \end{haskellsmall}
+  \pause
+  \haskinline|parseAll| пропускает начальные пробелы и запускает парсер, требуя полного разбора входа. Возвращает только результат.
+  \pause
+  \begin{haskellsmall}
+    parseAll :: Parser a -> String -> Maybe a !\pause!
+    parseAll p input =
+      fst <$> runParser (spaces *> p <* eof) input
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Успешный разбор префикса}
+  \begin{haskellsmall}
+    ghci> runParser (lexeme natural) "12xyz" !\pause!
+    Just (12,"xyz")
+    ghci> parseAll (lexeme natural) "12xyz" !\pause!
+    Nothing
+  \end{haskellsmall}
+  \begin{itemize}
+    \item Само по себе успешное чтение числа не означает, что весь вход соответствует формату.
+    \item Вызывающий код решает, допустим ли остаток, или требует \haskinline|eof|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Парсер как монада}
+  \begin{haskellsmall}
+    instance Monad Parser where
+      Parser parse >>= next = Parser $ \input -> do
+        (value, rest) <- parse input
+        runParser (next value) rest
+  \end{haskellsmall}
+  \begin{itemize}
+    \item \haskinline|next| по результату первого парсера выбирает следующий.
+    \item Остаток входа передаётся неявно, как состояние в \haskinline|State|. Неудача передаётся через \haskinline|Maybe|.
+      \pause
+    \item Большую часть обычной грамматики удобно выразить через \haskinline|Applicative| и \haskinline|Alternative|. \haskinline|do| также можно использовать для читаемости.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Когда следующая часть зависит от результата}
+  \begin{itemize}
+    \item \haskinline|counted| читает цифру, двоеточие и указанное цифрой число символов. Возвращает эти символы, например \haskinline|"3:abc"| даёт \haskinline|"abc"|.
+      \pause
+      \begin{haskell}
+        counted :: Parser String !\pause!
+        counted = do
+          n <- digitValue
+          char ':'
+          replicateM n (satisfy (const True))
+      \end{haskell}
+      \pause
+    \item Число запусков парсера зависит от прочитанного \haskinline|n|. Здесь используем \haskinline|Monad|.
+    \item \haskinline|replicateM| "--- из \href{https://hackage.haskell.org/package/base/docs/Control-Monad.html}{\haskinline{Control.Monad}}.
+    \item Упражнение: предскажите остаток для \haskinline|"2:abc"| и результат для \haskinline|"3:ab"|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Дерево выражения}
+  \begin{itemize}
+    \item Часть типов из SimpleLang (лабораторная 2):
+      \begin{haskell}
+        data Expression
+          = Var String
+          | Val Integer
+          | Op Expression Bop Expression
+          deriving (Show, Eq)
+
+        data Bop = Plus | Minus | Times
+          deriving (Show, Eq)
+      \end{haskell}
+    \item Пока разбираем числа, переменные, скобки и \haskinline|+|. Унарного минуса нет.
+    \item Имена состоят из латинских букв.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Первая грамматика: только сложение}
+  \begin{haskell}
+    expr0 = atom { '+' atom }
+    atom  = natural | name | '(' expr0 ')'
+  \end{haskell}
+  \begin{itemize}
+    \item Это \emph{грамматика} в нотации \href{https://en.wikipedia.org/wiki/Extended_Backus\%E2\%80\%93Naur_form}{EBNF}, расширении \href{https://en.wikipedia.org/wiki/Backus\%E2\%80\%93Naur_form}{формы Бэкуса--Наура (BNF)}, а не Haskell. Фигурные скобки обозначают ноль или больше повторений, вертикальная черта "--- выбор.
+      \pause
+    \item \haskinline|atom| "--- неделимое выражение на этом уровне: число, переменная или выражение в скобках.
+    \item Выражение в скобках снова содержит \haskinline|expr0|: грамматика рекурсивна.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Имя переменной}
+  \haskinline|name| читает непустую последовательность латинских букв и следующие пробелы, возвращая имя.
+  \pause
+  \begin{haskellsmall}
+    name :: Parser String !\pause!
+    name = lexeme $ some $ satisfy $ \c ->
+      ('a' <= c && c <= 'z') ||
+      ('A' <= c && c <= 'Z')
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Парсер атома}
+  \haskinline|atom| разбирает число, переменную или выражение в круглых скобках и возвращает соответствующее дерево.
+  \pause
+  \begin{haskellsmall}
+    atom :: Parser Expression !\pause!
+    atom = Val <$> lexeme natural
+       <|> Var <$> name
+       <|> between (symbol "(") (symbol ")") expr0
+  \end{haskellsmall}
+  \begin{itemize}
+    \item Все три ветки возвращают \haskinline|Expression|.
+    \item Перед рекурсивным вызовом читается открывающая скобка.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Парсер сложения}
+  \haskinline|expr0| разбирает цепочку слагаемых и собирает дерево сложений слева направо.
+  \pause
+  \begin{haskellsmall}
+    expr0 :: Parser Expression !\pause!
+    expr0 = assemble <$> atom
+                     <*> many (symbol "+" *> atom)
+      where
+        assemble first rest =
+          foldl (\left right -> Op left Plus right)
+                first rest
+  \end{haskellsmall}
+  \begin{haskellsmall}
+    ghci> parseAll expr0 "a + 2 + 3" !\pause!
+    Just (Op (Op (Var "a") Plus (Val 2))
+             Plus (Val 3))
+  \end{haskellsmall}
+  \begin{itemize}
+    \item Список хвостовых слагаемых превращаем в дерево слева направо.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Добавим умножение: что получится?}
+  \haskinline|operator| читает знак сложения или умножения и возвращает соответствующий конструктор операции.
+  \pause
+  \begin{haskellsmall}
+    operator :: Parser Bop !\pause!
+    operator = Plus  <$ symbol "+"
+           <|> Times <$ symbol "*"
+  \end{haskellsmall}
+  \begin{itemize}
+    \item Попробуем разбирать любую цепочку \haskinline|atom| и \haskinline|operator| слева направо, как сложение.
+    \item Какое дерево получится для \haskinline|"2 + 3 * 4"|?
+      \pause
+      \begin{haskellsmall}
+        Op (Op (Val 2) Plus (Val 3)) Times (Val 4)
+      \end{haskellsmall}
+    \item Это \haskinline|(2 + 3) * 4|. Чтобы получить привычный результат, нужно задать \emph{приоритеты} операторов.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Приоритеты операторов}
+  \begin{haskell}
+    expr0 = expr1 { ('+' | '-') expr1 }
+    expr1 = atom  { '*' atom }
+    atom  = natural | name | '(' expr0 ')'
+  \end{haskell}
+  \begin{itemize}
+    \item \haskinline|expr0| разбирает сложение и вычитание, \haskinline|expr1| "--- умножение.
+    \item Умножение собирается в поддерево раньше, чем это поддерево становится аргументом сложения.
+      \pause
+    \item \haskinline|expr0|, \haskinline|expr1| "--- наши имена уровней. При добавлении операторов с другими приоритетами можно добавить новые уровни.
+    \item Скобки позволяют снова использовать любой уровень внутри \haskinline|atom|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Парсер бинарного оператора}
+  \haskinline|binary| читает заданный знак и возвращает функцию построения узла дерева с выбранной операцией.
+  \pause
+  \begin{haskellsmall}
+    binary :: Bop -> String ->
+              Parser (Expression -> Expression -> Expression) !\pause!
+    binary op text = (\left right -> Op left op right)
+                  <$ symbol text
+  \end{haskellsmall}
+  \pause
+  \haskinline|addOp| читает плюс или минус и возвращает соответствующую функцию построения узла.
+  \pause
+  \begin{haskellsmall}
+    addOp :: Parser (Expression -> Expression -> Expression) !\pause!
+    addOp = binary Plus "+" <|> binary Minus "-"
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Ассоциативность: как собирать цепочку?}
+  \begin{itemize}
+    \item При одинаковом приоритете: как разобрать \haskinline|8 - 3 + 1|?
+      \pause
+    \item \emph{Левая ассоциативность}: \haskinline|(8 - 3) + 1|. Собираем дерево через \haskinline|foldl|.
+    \item \haskinline|chainLeft| разбирает цепочку операндов с операторами и собирает её слева направо.
+      \pause
+      \begin{haskellsmall}
+        chainLeft :: Parser a ->
+                     Parser (a -> a -> a) -> Parser a !\pause!
+        chainLeft p op = assemble <$> p
+                                 <*> many ((,) <$> op <*> p)
+          where
+            assemble = foldl (\left (g, right) ->
+                               g left right)
+      \end{haskellsmall}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Парсер с приоритетами}
+  \begin{itemize}
+    \item \haskinline|expr1| разбирает цепочку умножений атомов.
+      \pause
+      \begin{haskellsmall}
+        expr1 :: Parser Expression !\pause!
+        expr1 = chainLeft atom (binary Times "*")
+      \end{haskellsmall}
+      \pause
+    \item \haskinline|expr0| разбирает сложения и вычитания выражений уровня \haskinline|expr1|.
+      \pause
+      \begin{haskellsmall}
+        expr0 :: Parser Expression !\pause!
+        expr0 = chainLeft expr1 addOp
+      \end{haskellsmall}
+    \item Используем прежний \haskinline|atom|. Его скобки вызывают новый \haskinline|expr0|.
+    \item Для большего числа приоритетов добавляем уровни \haskinline|exprN|: операнды каждого уровня разбирает следующий, более высокий.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Приоритеты и скобки: примеры}
+  \begin{haskellsmall}
+    ghci> parseAll expr0 "2 + 3 * 4" !\pause!
+    Just (Op (Val 2) Plus
+             (Op (Val 3) Times (Val 4)))
+    ghci> parseAll expr0 "(2 + 3) * 4" !\pause!
+    Just (Op (Op (Val 2) Plus (Val 3))
+             Times (Val 4))
+    ghci> parseAll expr0 "8 - 3 + 1" !\pause!
+    Just (Op (Op (Val 8) Minus (Val 3))
+             Plus (Val 1))
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Почему не записать правило напрямую?}
+  \begin{haskell}
+    expr0 = expr0 '+' atom | atom
+  \end{haskell}
+  \begin{itemize}
+    \item Это \emph{левая рекурсия}: правило вызывает себя до чтения входа.
+      \pause
+    \item Прямой перевод в наш парсер снова вызывает \haskinline|expr0| с тем же входом и не заканчивается.
+    \item Переписанное правило читает первый атом, а затем повторяет хвост:
+      \begin{haskell}
+        expr0 = atom { '+' atom }
+      \end{haskell}
+    \item Грамматики описывают один язык, но второй вариант подходит для нашего способа разбора.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{От учебного парсера к Megaparsec}
+  \begin{itemize}
+    \item \hackage{megaparsec}: тот же стиль композиции, но с позициями во входе и сообщениями об ошибках.
+      \begin{haskellsmall}
+        import Data.Void (Void)
+        import Text.Megaparsec
+        import Text.Megaparsec.Char
+        import qualified Text.Megaparsec.Char.Lexer as L
+
+        type Parser = Parsec Void String
+      \end{haskellsmall}
+    \item \haskinline|Void| из \href{https://hackage.haskell.org/package/base/docs/Data-Void.html}{\haskinline{Data.Void}} означает отсутствие наших собственных типов ошибок.
+      \pause
+    \item Это \emph{отдельный пример}: наш тип \haskinline|Parser| и одноимённые комбинаторы заменяем библиотечными.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Megaparsec: парсер числа}
+  \haskinline|number| читает неотрицательное целое число с помощью библиотечного парсера.
+  \pause
+  \begin{haskellsmall}
+    number :: Parser Integer !\pause!
+    number = L.decimal
+  \end{haskellsmall}
+  \begin{itemize}
+    \item \haskinline|L.lexeme| и \haskinline|L.symbol| принимают парсер пропусков; \haskinline|L.space| помогает обработать также комментарии.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Megaparsec: запуск и ошибка}
+  \begin{haskellsmall}
+    ghci> parseTest (number <* eof) "12x" !\pause!
+    1:3:
+      |
+    1 | 12x
+      |   ^
+    unexpected 'x'
+    expecting digit or end of input
+  \end{haskellsmall}
+  \begin{itemize}
+    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec.html}{\haskinline{parseTest}} печатает результат или ошибку. \haskinline|parse| возвращает \haskinline|Either| с ошибкой или результатом.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Megaparsec: выбор после чтения входа}
+  \begin{itemize}
+    \item В ветках из отдельных \haskinline|char| без \haskinline|try| на \haskinline|"ac"| первая ветка читает \haskinline|'a'| и завершается ошибкой. Правая ветка \emph{не запускается}.
+      \pause
+    \item \haskinline|try| позволяет откатить потребление при неудаче:
+      \begin{haskellsmall}
+        abOrAc :: Parser Char
+        abOrAc = try (char 'a' *> char 'b')
+             <|> (char 'a' *> char 'c')
+      \end{haskellsmall}
+    \item Здесь лучше вынести общий префикс: \haskinline{char 'a' *> (char 'b' <|> char 'c')}.
+    \item Библиотечный \haskinline|string| уже откатывает несовпадение целой строки. Это не относится к произвольной последовательности парсеров.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Как тестировать парсер}
+  \begin{itemize}
+    \item Примеры: пустой вход, вложенные скобки, пробелы, неверный символ, незакрытая скобка, лишний текст после выражения.
+    \item Приоритеты и ассоциативность проверяем по \emph{дереву}, а не только по результату вычисления.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Свойство обратного разбора}
+  \begin{itemize}
+    \item Печать выражения и обратный разбор возвращают исходное дерево:
+      \begin{haskellsmall}
+        parseAll expr0 (renderExpression expression)
+          === Just expression
+      \end{haskellsmall}
+    \item \haskinline|renderExpression| из лабораторной 2 пишет выражение в нашем синтаксисе, например с полными скобками. Производный \haskinline|Show| печатает конструкторы и здесь не подходит.
+    \item Генератор должен создавать только выражения, поддерживаемые парсером: например, без отрицательных констант, с допустимыми именами.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Упражнения}
+  \begin{itemize}
+    \item Добавьте унарный минус. Решите, какой у него приоритет и допускается ли несколько минусов подряд.
+    \item Добавьте правоассоциативное возведение в степень: \haskinline|2 ^ 3 ^ 2| должно означать \haskinline|2 ^ (3 ^ 2)|. Расширьте тип дерева.
+    \item Проверьте свойство обратного разбора для \haskinline|renderExpression| из лабораторной 2 с Hedgehog.
+    \item Необязательно: реализуйте парсер для \haskinline|DietStatement| или \haskinline|Statement|. Запустите результат через \haskinline|runSimpler| или \haskinline|run| соответственно.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Комбинаторы парсеров в других языках}
+  \begin{itemize}
+    \item Java: \href{https://github.com/jparsec/jparsec}{jparsec} и \href{https://github.com/google/mug/blob/master/dot-parse/README.md}{DotParse} "--- композиция парсеров средствами Java.
+    \item Scala: \href{https://com-lihaoyi.github.io/fastparse/}{FastParse} "--- последовательность, выбор и повторение в виде операторов и методов.
+    \item Rust: \href{https://github.com/rust-bakery/nom}{nom} "--- текстовые и бинарные форматы, в том числе чтение по частям.
+    \item C++: \href{https://www.boost.org/doc/libs/latest/libs/spirit/doc/x3/html/index.html}{Boost.Spirit X3} и \href{https://github.com/boostorg/spirit_x4}{Spirit X4} "--- грамматика как выражение C++, собирающее парсеры.
+    \item Python: \href{https://parsy.readthedocs.io/en/latest/overview.html}{parsy} "--- комбинаторы в духе Parsec.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Другие способы разбора}
+  \begin{itemize}
+    \item \emph{Регулярные выражения}: часто используются для распознавания отдельных токенов, например чисел и имён.
+    \item \emph{Рекурсивный спуск вручную}: функции для правил грамматики явно управляют позицией во входе и выбором веток.
+    \item \emph{Генераторы парсеров}: по грамматике в отдельном файле создают код парсера. Примеры: \href{https://haskell-happy.readthedocs.io/en/latest/}{Happy} для Haskell и \href{https://www.antlr.org/}{ANTLR} для нескольких языков.
+    \item \emph{Инкрементальный разбор}: обновляет дерево после изменения текста. \href{https://tree-sitter.github.io/tree-sitter/}{Tree-sitter} генерирует такие парсеры для использования в редакторах.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Дополнительное чтение: комбинаторы парсеров}
+  \begin{itemize}
+    \item \href{https://www.cs.nott.ac.uk/~pszgmh/monparsing.pdf}{Hutton, Meijer: Monadic Parser Combinators} "--- учебная реализация.
+    \item \href{https://markkarpov.com/tutorial/megaparsec.html}{Mark Karpov: Megaparsec tutorial} "--- практическое руководство.
+    \item \href{https://dl.acm.org/doi/10.1145/3471874.3472984}{Willis, Wu: Design Patterns for Parser Combinators (Functional Pearl)} "--- организация парсеров.
+    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec.html}{Документация Megaparsec} и \href{https://hackage.haskell.org/package/parser-combinators/docs/Control-Monad-Combinators-Expr.html}{\haskinline{makeExprParser}} "--- таблицы операторов.
+    \item \href{https://hackage.haskell.org/package/base/docs/Control-Applicative.html}{\haskinline{Control.Applicative}} "--- общие комбинаторы.
+  \end{itemize}
+\end{frame}
+\begin{frame}[fragile]
+  \frametitle{Дополнительное чтение: разбор в целом}
+  \begin{itemize}
+    \item \href{https://craftinginterpreters.com/contents.html}{Robert Nystrom: Crafting Interpreters} "--- бесплатная онлайн-книга. Главы 4--6: лексический анализ, деревья и рекурсивный спуск на Java; глава 17: разбор по Пратту.
+    \item \href{https://dthain.github.io/books/compiler/}{Douglas Thain: Introduction to Compilers and Language Design} "--- бесплатный учебник. Главы 3--5: лексический анализ, синтаксический анализ и его реализация.
+    \item Обе книги посвящены реализации языков программирования в целом, а не только синтаксическому анализу.
+  \end{itemize}
+\end{frame}
+\end{document}

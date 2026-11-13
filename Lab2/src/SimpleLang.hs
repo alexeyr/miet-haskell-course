@@ -147,3 +147,57 @@ squareRoot = undefined
 -}
 fibonacci :: Statement
 fibonacci = undefined
+
+-- Задание 7 -----------------------------------------
+
+-- Реализуйте вывод выражения в обычной математической записи.
+-- Имена переменных выводятся без кавычек, константы -- как целые числа,
+-- операции -- знаками +, -, *, /, >, >=, <, <= и ==.
+-- Сохраните структуру выражения: можно заключать каждую бинарную операцию
+-- в скобки, не пытаясь убирать лишние скобки по приоритетам.
+-- Например:
+-- renderExpression (Op (Var "A") Plus (Val 1)) == "(A + 1)"
+renderExpression :: Expression -> String
+renderExpression = undefined
+
+-- Пока используется Show из deriving у Expression.
+-- Когда renderExpression будет реализована, уберите Show из deriving
+-- у Expression и раскомментируйте следующий экземпляр.
+-- После этого GHCi будет автоматически использовать renderExpression.
+-- instance Show Expression where
+--     show = renderExpression
+
+-- Задание 8 -----------------------------------------
+
+-- Реализуйте вывод программы Simple в синтаксисе примеров выше:
+-- присваивание через :=, увеличение на единицу через ++,
+-- if (...) { ... } else { ... }, while (...) { ... },
+-- for (инициализация; условие; шаг) { ... }.
+-- Инструкции блока разделяйте точкой с запятой, пустой блок выводите как {},
+-- а Skip -- как skip. Выражения выводите с помощью renderExpression.
+-- Группировку инструкций должно быть видно, в том числе во вложенных if.
+-- Пробелы, переносы строк и отступы выберите сами.
+-- Например:
+-- renderStatement (Assign "A" (Val 1)) == "A := 1"
+renderStatement :: Statement -> String
+renderStatement = undefined
+
+-- Когда renderStatement будет реализована, уберите Show из deriving
+-- у Statement и раскомментируйте следующий экземпляр.
+-- instance Show Statement where
+--     show = renderStatement
+
+-- Задание 9 -----------------------------------------
+
+-- Реализуйте аналогичный вывод программы Simpler.
+-- Для DAssign, DIf, DWhile и DSkip используйте ту же запись,
+-- что для соответствующих инструкций Simple. DSequence задаёт
+-- последовательность инструкций; сохраняйте видимую группировку.
+-- Выражения выводите с помощью renderExpression.
+renderDietStatement :: DietStatement -> String
+renderDietStatement = undefined
+
+-- Когда renderDietStatement будет реализована, уберите Show из deriving
+-- у DietStatement и раскомментируйте следующий экземпляр.
+-- instance Show DietStatement where
+--     show = renderDietStatement
