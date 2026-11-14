@@ -62,8 +62,8 @@
   Парсер \haskinline|satisfy| читает и возвращает первый символ, если он удовлетворяет предикату. Если символ не подходит или вход пуст, разбор завершается неудачей.
   \pause
   \begin{haskellsmall}
-    satisfy :: (Char -> Bool) -> Parser Char !\pause!
-    satisfy predicate = Parser $ \input ->
+    satisfy :: (Char -> Bool) -> Parser Char
+    satisfy predicate =!\pause! Parser $ \input ->
       case input of
         c : rest | predicate c -> Just (c, rest)
         _                      -> Nothing
@@ -75,8 +75,8 @@
   Парсер \haskinline|char| читает и возвращает заданный символ. Если первый символ другой или вход пуст, разбор завершается неудачей.
   \pause
   \begin{haskellsmall}
-    char :: Char -> Parser Char !\pause!
-    char c = satisfy (== c)
+    char :: Char -> Parser Char
+    char c =!\pause! satisfy (== c)
   \end{haskellsmall}
   \begin{haskellsmall}
     ghci> runParser (char 'a') "abc" !\pause!
@@ -90,10 +90,9 @@
   \frametitle{Парсер как функтор}
   \begin{itemize}
     \item Изменяем результат, сохраняя остаток входа и неудачу:
-      \pause
       \begin{haskellsmall}
         instance Functor Parser where
-          fmap g (Parser parse) = Parser $ \input ->
+          fmap g (Parser parse) =!\pause! Parser $ \input ->
             fmap (\(value, rest) -> (g value, rest))
                  (parse input)
       \end{haskellsmall}
@@ -107,15 +106,15 @@
     \item \haskinline|digit| читает одну десятичную цифру и возвращает её как символ.
       \pause
       \begin{haskellsmall}
-        digit :: Parser Char !\pause!
-        digit = satisfy (\c -> '0' <= c && c <= '9')
+        digit :: Parser Char
+        digit =!\pause! satisfy (\c -> '0' <= c && c <= '9')
       \end{haskellsmall}
       \pause
     \item \haskinline|digitValue| читает цифру и возвращает её числовое значение.
       \pause
       \begin{haskellsmall}
-        digitValue :: Parser Int !\pause!
-        digitValue = (\c -> fromEnum c - fromEnum '0')
+        digitValue :: Parser Int
+        digitValue =!\pause! (\c -> fromEnum c - fromEnum '0')
                      <$> digit
       \end{haskellsmall}
   \end{itemize}
@@ -146,8 +145,8 @@
   \haskinline|twoDigits| читает две цифры подряд и возвращает пару их числовых значений.
   \pause
   \begin{haskell}
-    twoDigits :: Parser (Int, Int) !\pause!
-    twoDigits = liftA2 (,) digitValue digitValue
+    twoDigits :: Parser (Int, Int)
+    twoDigits =!\pause! liftA2 (,) digitValue digitValue
   \end{haskell}
   \begin{haskellsmall}
     ghci> runParser twoDigits "42!" !\pause!
@@ -160,8 +159,8 @@
   \haskinline|parens| запускает переданный парсер между круглыми скобками. Скобки читаются, но в результат входит только значение внутреннего парсера.
   \pause
   \begin{haskell}
-    parens :: Parser a -> Parser a !\pause!
-    parens p = char '(' *> p <* char ')'
+    parens :: Parser a -> Parser a
+    parens p =!\pause! char '(' *> p <* char ')'
   \end{haskell}
   \begin{haskellsmall}
     ghci> runParser (parens twoDigits) "(42)!" !\pause!
@@ -176,8 +175,8 @@
   Парсер \haskinline|string| читает и возвращает заданную строку. Если она не совпадает с началом входа, разбор завершается неудачей.
   \pause
   \begin{haskellsmall}
-    string :: String -> Parser String !\pause!
-    string = traverse char
+    string :: String -> Parser String
+    string =!\pause! traverse char
   \end{haskellsmall}
   \pause
   Для двух символов определение \haskinline|traverse| раскрывается так:
@@ -221,8 +220,8 @@
   \haskinline|abOrAc| разбирает и возвращает строку \haskinline|"ab"| или \haskinline|"ac"|.
   \pause
   \begin{haskellsmall}
-    abOrAc :: Parser String !\pause!
-    abOrAc = string "ab" <|> string "ac"
+    abOrAc :: Parser String
+    abOrAc =!\pause! string "ab" <|> string "ac"
   \end{haskellsmall}
   \begin{haskellsmall}
     ghci> runParser abOrAc "ac!" !\pause!
@@ -240,8 +239,8 @@
   Парсер \haskinline|p| выбирает между \haskinline|"a"| и \haskinline|"ab"|, а затем читает \haskinline|"c"|.
   \pause
   \begin{haskellsmall}
-    p :: Parser String !\pause!
-    p = (string "a" <|> string "ab") <* string "c"
+    p :: Parser String
+    p =!\pause! (string "a" <|> string "ab") <* string "c"
   \end{haskellsmall}
   \begin{haskellsmall}
     ghci> runParser p "abc" !\pause!
@@ -258,8 +257,8 @@
   Включим чтение конечного \haskinline|"c"| в каждую ветку. Парсер \haskinline|q| выбирает между \haskinline|"ac"| и \haskinline|"abc"|.
   \pause
   \begin{haskellsmall}
-    q :: Parser String !\pause!
-    q = (string "a" <* string "c")
+    q :: Parser String
+    q =!\pause! (string "a" <* string "c")
         <|> (string "ab" <* string "c")
   \end{haskellsmall}
   \begin{haskellsmall}
@@ -277,10 +276,10 @@
   \pause
   \begin{haskellsmall}
     many :: Alternative f => f a -> f [a]
-    some :: Alternative f => f a -> f [a] !\pause!
+    some :: Alternative f => f a -> f [a]
 
-    some p = (:) <$> p <*> many p
-    many p = some p <|> pure []
+    some p =!\pause! (:) <$> p <*> many p
+    many p =!\pause! some p <|> pure []
   \end{haskellsmall}
   Это взаимные определения по умолчанию в \haskinline|Alternative|.
   \begin{haskellsmall}
@@ -324,15 +323,15 @@
     \item \haskinline|natural| читает непустую последовательность цифр и возвращает неотрицательное целое число.
       \pause
       \begin{haskellsmall}
-        natural :: Parser Integer !\pause!
-        natural = read <$> some digit
+        natural :: Parser Integer
+        natural =!\pause! read <$> some digit
       \end{haskellsmall}
       \pause
     \item \haskinline|spaces| читает ноль или больше пробельных символов.
       \pause
       \begin{haskellsmall}
-        spaces :: Parser String !\pause!
-        spaces = many (satisfy isSpace)
+        spaces :: Parser String
+        spaces =!\pause! many (satisfy isSpace)
       \end{haskellsmall}
     \item \haskinline|isSpace| импортируем из \href{https://hackage.haskell.org/package/base/docs/Data-Char.html}{\haskinline{Data.Char}}.
   \end{itemize}
@@ -344,17 +343,17 @@
     \item \haskinline|lexeme| запускает парсер, затем читает пробелы. Возвращает результат переданного парсера.
       \pause
       \begin{haskellsmall}
-        lexeme :: Parser a -> Parser a !\pause!
-        lexeme p = p <* spaces
+        lexeme :: Parser a -> Parser a
+        lexeme p =!\pause! p <* spaces
       \end{haskellsmall}
       \pause
     \item \haskinline|symbol| читает заданную строку и следующие пробелы.
       \pause
       \begin{haskellsmall}
-        symbol :: String -> Parser String !\pause!
-        symbol = lexeme . string
+        symbol :: String -> Parser String
+        symbol =!\pause! lexeme . string
       \end{haskellsmall}
-    \item Начальные пробелы обработаем при запуске всего парсера.
+    \item Чтобы разрешить начальные пробелы, начните итоговый парсер с \haskinline|spaces *>|.
   \end{itemize}
 \end{frame}
 
@@ -364,15 +363,15 @@
   \pause
   \begin{haskellsmall}
     between :: Parser open -> Parser close ->
-               Parser a -> Parser a !\pause!
-    between open close p = open *> p <* close
+               Parser a -> Parser a
+    between open close p =!\pause! open *> p <* close
   \end{haskellsmall}
   \pause
   \haskinline|sepBy| разбирает список элементов с разделителями между ними. Пустой список допустим. Разделитель после последнего элемента остаётся во входе.
   \pause
   \begin{haskellsmall}
-    sepBy :: Parser a -> Parser sep -> Parser [a] !\pause!
-    sepBy p sep =
+    sepBy :: Parser a -> Parser sep -> Parser [a]
+    sepBy p sep = !\pause!
       ((:) <$> p <*> many (sep *> p)) <|> pure []
   \end{haskellsmall}
 \end{frame}
@@ -382,8 +381,8 @@
   \haskinline|numbers| разбирает список неотрицательных целых чисел в квадратных скобках, разделённых запятыми. Между токенами допускаются пробелы.
   \pause
   \begin{haskellsmall}
-    numbers :: Parser [Integer] !\pause!
-    numbers = between (symbol "[") (symbol "]")
+    numbers :: Parser [Integer]
+    numbers =!\pause! between (symbol "[") (symbol "]")
       (sepBy (lexeme natural) (symbol ","))
   \end{haskellsmall}
   \begin{itemize}
@@ -396,33 +395,24 @@
   \haskinline|eof| успешно завершается только на пустом остатке входа и возвращает \haskinline|()|.
   \pause
   \begin{haskellsmall}
-    eof :: Parser () !\pause!
-    eof = Parser $ \input -> case input of
+    eof :: Parser ()
+    eof =!\pause! Parser $ \input -> case input of
       [] -> Just ((), [])
       _  -> Nothing
   \end{haskellsmall}
   \pause
-  \haskinline|parseAll| пропускает начальные пробелы и запускает парсер, требуя полного разбора входа. Возвращает только результат.
+  \haskinline|parseAll| запускает парсер, требуя полного разбора входа. Возвращает только результат.
   \pause
   \begin{haskellsmall}
-    parseAll :: Parser a -> String -> Maybe a !\pause!
-    parseAll p input =
-      fst <$> runParser (spaces *> p <* eof) input
+    parseAll :: Parser a -> String -> Maybe a
+    parseAll p input = !\pause!
+      fst <$> runParser (p <* eof) input
   \end{haskellsmall}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Успешный разбор префикса}
+  \pause
   \begin{haskellsmall}
-    ghci> runParser (lexeme natural) "12xyz" !\pause!
-    Just (12,"xyz")
-    ghci> parseAll (lexeme natural) "12xyz" !\pause!
+    ghci> parseAll natural "12xyz" !\pause!
     Nothing
   \end{haskellsmall}
-  \begin{itemize}
-    \item Само по себе успешное чтение числа не означает, что весь вход соответствует формату.
-    \item Вызывающий код решает, допустим ли остаток, или требует \haskinline|eof|.
-  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
@@ -444,12 +434,12 @@
 \begin{frame}[fragile]
   \frametitle{Когда следующая часть зависит от результата}
   \begin{itemize}
-    \item \haskinline|counted| читает цифру, двоеточие и указанное цифрой число символов. Возвращает эти символы, например \haskinline|"3:abc"| даёт \haskinline|"abc"|.
+    \item \haskinline|counted| читает неотрицательное целое число, двоеточие и указанное число символов. Возвращает эти символы, например \haskinline|"3:abc"| даёт \haskinline|"abc"|.
       \pause
       \begin{haskell}
-        counted :: Parser String !\pause!
-        counted = do
-          n <- digitValue
+        counted :: Parser String
+        counted =!\pause! do
+          (n :: Int) <- read <$> some digit
           char ':'
           replicateM n (satisfy (const True))
       \end{haskell}
@@ -498,8 +488,8 @@
   \haskinline|name| читает непустую последовательность латинских букв и следующие пробелы, возвращая имя.
   \pause
   \begin{haskellsmall}
-    name :: Parser String !\pause!
-    name = lexeme $ some $ satisfy $ \c ->
+    name :: Parser String
+    name =!\pause! lexeme $ some $ satisfy $ \c ->
       ('a' <= c && c <= 'z') ||
       ('A' <= c && c <= 'Z')
   \end{haskellsmall}
@@ -510,8 +500,8 @@
   \haskinline|atom| разбирает число, переменную или выражение в круглых скобках и возвращает соответствующее дерево.
   \pause
   \begin{haskellsmall}
-    atom :: Parser Expression !\pause!
-    atom = Val <$> lexeme natural
+    atom :: Parser Expression
+    atom =!\pause! Val <$> lexeme natural
        <|> Var <$> name
        <|> between (symbol "(") (symbol ")") expr0
   \end{haskellsmall}
@@ -526,8 +516,8 @@
   \haskinline|expr0| разбирает цепочку слагаемых и собирает дерево сложений слева направо.
   \pause
   \begin{haskellsmall}
-    expr0 :: Parser Expression !\pause!
-    expr0 = assemble <$> atom
+    expr0 :: Parser Expression
+    expr0 =!\pause! assemble <$> atom
                      <*> many (symbol "+" *> atom)
       where
         assemble first rest =
@@ -549,8 +539,8 @@
   \haskinline|operator| читает знак сложения или умножения и возвращает соответствующий конструктор операции.
   \pause
   \begin{haskellsmall}
-    operator :: Parser Bop !\pause!
-    operator = Plus  <$ symbol "+"
+    operator :: Parser Bop
+    operator =!\pause! Plus  <$ symbol "+"
            <|> Times <$ symbol "*"
   \end{haskellsmall}
   \begin{itemize}
@@ -586,16 +576,16 @@
   \pause
   \begin{haskellsmall}
     binary :: Bop -> String ->
-              Parser (Expression -> Expression -> Expression) !\pause!
-    binary op text = (\left right -> Op left op right)
+              Parser (Expression -> Expression -> Expression)
+    binary op text =!\pause! (\left right -> Op left op right)
                   <$ symbol text
   \end{haskellsmall}
   \pause
   \haskinline|addOp| читает плюс или минус и возвращает соответствующую функцию построения узла.
   \pause
   \begin{haskellsmall}
-    addOp :: Parser (Expression -> Expression -> Expression) !\pause!
-    addOp = binary Plus "+" <|> binary Minus "-"
+    addOp :: Parser (Expression -> Expression -> Expression)
+    addOp =!\pause! binary Plus "+" <|> binary Minus "-"
   \end{haskellsmall}
 \end{frame}
 
@@ -609,8 +599,8 @@
       \pause
       \begin{haskellsmall}
         chainLeft :: Parser a ->
-                     Parser (a -> a -> a) -> Parser a !\pause!
-        chainLeft p op = assemble <$> p
+                     Parser (a -> a -> a) -> Parser a
+        chainLeft p op =!\pause! assemble <$> p
                                  <*> many ((,) <$> op <*> p)
           where
             assemble = foldl (\left (g, right) ->
@@ -625,15 +615,15 @@
     \item \haskinline|expr1| разбирает цепочку умножений атомов.
       \pause
       \begin{haskellsmall}
-        expr1 :: Parser Expression !\pause!
-        expr1 = chainLeft atom (binary Times "*")
+        expr1 :: Parser Expression
+        expr1 =!\pause! chainLeft atom (binary Times "*")
       \end{haskellsmall}
       \pause
     \item \haskinline|expr0| разбирает сложения и вычитания выражений уровня \haskinline|expr1|.
       \pause
       \begin{haskellsmall}
-        expr0 :: Parser Expression !\pause!
-        expr0 = chainLeft expr1 addOp
+        expr0 :: Parser Expression
+        expr0 =!\pause! chainLeft expr1 addOp
       \end{haskellsmall}
     \item Используем прежний \haskinline|atom|. Его скобки вызывают новый \haskinline|expr0|.
     \item Для большего числа приоритетов добавляем уровни \haskinline|exprN|: операнды каждого уровня разбирает следующий, более высокий.
@@ -694,13 +684,13 @@
   \frametitle{Megaparsec: лексические комбинаторы}
   \begin{itemize}
     \item У нас: \haskinline|lexeme p = p <* spaces|.
-    \item В \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html}{\haskinline{Text.Megaparsec.Char.Lexer}} \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:lexeme}{\haskinline{L.lexeme}} принимает парсер пропусков явно:
+    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:lexeme}{\haskinline{L.lexeme}} принимает парсер пропусков явно:
       \begin{haskellsmall}
         lexeme :: Parser a -> Parser a
         lexeme = L.lexeme space
       \end{haskellsmall}
       Аналогично: \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:symbol}{\haskinline{symbol = L.symbol space}}. Здесь \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char.html#v:space}{\haskinline{space}} пропускает пробельные символы.
-    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:space}{\haskinline{L.space}} позволяет учитывать также комментарии; для них есть \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:skipLineComment}{\haskinline{L.skipLineComment}} и \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:skipBlockComment}{\haskinline{L.skipBlockComment}}.
+    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:space}{\haskinline{L.space}} поддерживает комментарии: \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:skipLineComment}{\haskinline{L.skipLineComment}} и \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:skipBlockComment}{\haskinline{L.skipBlockComment}}.
     \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:signed}{\haskinline{L.signed}} добавляет к числовому парсеру необязательный знак.
     \item Есть \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec-Char-Lexer.html#v:indentBlock}{комбинаторы для учёта отступов}.
   \end{itemize}
@@ -752,7 +742,8 @@
   \begin{itemize}
     \item Печать выражения и обратный разбор возвращают исходное дерево:
       \begin{haskellsmall}
-        parseAll expr0 (renderExpression expression)
+        parseAll (spaces *> expr0)
+          (renderExpression expression)
           === Just expression
       \end{haskellsmall}
     \item \haskinline|renderExpression| из лабораторной 2 пишет выражение в нашем синтаксисе, например с полными скобками. Производный \haskinline|Show| печатает конструкторы и здесь не подходит.
@@ -797,7 +788,8 @@
     \item \href{https://www.cs.nott.ac.uk/~pszgmh/monparsing.pdf}{Hutton, Meijer: Monadic Parser Combinators} "--- учебная реализация.
     \item \href{https://markkarpov.com/tutorial/megaparsec.html}{Mark Karpov: Megaparsec tutorial} "--- практическое руководство.
     \item \href{https://dl.acm.org/doi/10.1145/3471874.3472984}{Willis, Wu: Design Patterns for Parser Combinators (Functional Pearl)} "--- организация парсеров.
-    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec.html}{Документация Megaparsec} и \href{https://hackage.haskell.org/package/parser-combinators/docs/Control-Monad-Combinators-Expr.html}{\haskinline{makeExprParser}} "--- таблицы операторов.
+    \item \href{https://hackage.haskell.org/package/megaparsec/docs/Text-Megaparsec.html}{Документация Megaparsec}.
+    \item \hackage{parser-combinators} "--- готовые комбинаторы, в том числе \href{https://hackage.haskell.org/package/parser-combinators/docs/Control-Monad-Combinators-Expr.html}{\haskinline{makeExprParser}} для разбора выражений с заданными операторами и уровнями приоритета.
     \item \href{https://hackage.haskell.org/package/base/docs/Control-Applicative.html}{\haskinline{Control.Applicative}} "--- общие комбинаторы.
   \end{itemize}
 \end{frame}
