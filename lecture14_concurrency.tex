@@ -26,28 +26,26 @@
   \frametitle{Детерминированность}
   \begin{itemize}
     \item Модель программирования детерминирована, если результат программы зависит только от полученных данных (аргументов и ввода пользователя). \pause
-    \item Недетерминирована, если результат зависит от того, в каком порядке произойдут события (или от сгенерированных случайных чисел и т.д.). \pause
-    \item Обычно параллельные программы детерминированы, конкурентные нет.
-    \item Недетерминированность усложняет тестирование, отладку и понимание программ, но часто без неё не обойтись.
-    \item Тестирование свойств это пример пользы от недетерминированности.
+    \item Порядок выполнения потоков может меняться от запуска к запуску. В наших примерах с \haskinline|Eval| и \haskinline|Par| результат от этого порядка не зависит. \pause
+    \item В \haskinline|IO| порядок действий можно наблюдать. Если два потока выводят по сообщению, какое из них появится первым?
+    \item Если результат зависит от расписания потоков, ошибку бывает трудно воспроизвести.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Параллелизм: монада \haskinline|Eval|}
   \begin{itemize}
-    \item Модуль \haskinline|Control.Parallel.Strategies| в пакете \hackage{parallel}.
-    \item Тип \haskinline|Eval a| --- \enquote{строгая} монада: в \haskinline|mx >>= f| действие \haskinline|mx| выполняется до вызова \haskinline|f|. Но \haskinline|rpar x| не вычисляет \haskinline|x|, а лишь создаёт \enquote{искру} (spark). \pause
-    \item Есть функции
+    \item Модуль \href{https://hackage.haskell.org/package/parallel/docs/Control-Parallel-Strategies.html}{\haskinline{Control.Parallel.Strategies}} в пакете \hackage{parallel}.
+    \item В \haskinline|mx >>= f| действие \haskinline|mx| выполняется до вызова \haskinline|f|. \pause
           \begin{haskell}
             runEval :: Eval a -> a
             rpar :: a -> Eval a
             rseq :: a -> Eval a
             parEval :: Eval a -> Eval a
           \end{haskell}
-    \item \haskinline|rpar x|: запустить вычисление \haskinline|x| и сразу вернуться.
-    \item \haskinline|rseq x|: вернуться после вычисления \haskinline|x|.
-    \item \haskinline|parEval x|: запустить вычисление, описанное в \haskinline|x|, и сразу вернуться.
+    \item \haskinline|rpar x|: создать искру (spark) для вычисления \haskinline|x| до WHNF. Искра может остаться неиспользованной.
+    \item \haskinline|rseq x|: вычислить \haskinline|x| до WHNF в текущем потоке.
+    \item \haskinline|parEval x|: создать искру для выполнения действия \haskinline|x|.
   \end{itemize}
 \end{frame}
 
@@ -55,23 +53,23 @@
   \frametitle{Примеры \haskinline|Eval|}
   \begin{itemize}
     \item
-          Запуск двух вычислений параллельно:
+          Создаём искры для обоих компонентов пары:
           \begin{haskell}
             runEval $ do
               a <- rpar (f x)
               b <- rpar (f y)
-              return (a, b)
+              pure (a, b)
           \end{haskell}
           %                \includegraphics[width=\textwidth]{concurrency_eval1.png}
           \pause
     \item
-          Запуск двух вычислений параллельно и возврат, когда оба закончатся:
+          Возвращаем пару, когда оба компонента вычислены до WHNF:
           \begin{haskell}
             runEval $ do
               a <- rpar (f x)
               b <- rseq (f y)
               rseq a
-              return (a, b)
+              pure (a, b)
           \end{haskell}
           %    \includegraphics[width=\textwidth]{concurrency_eval2.png}
   \end{itemize}
@@ -100,7 +98,7 @@
             parFib2 n = do !\pause!
               f1 <- parEval (parFib2 (n - 1))
               f2 <- parFib2 (n - 2)
-              pure (f1 + f2)
+              rseq (f1 + f2)
           \end{haskellsmall}
           \pause
     \item Здесь для простоты кода много повторных вычислений!
@@ -123,9 +121,10 @@
 \begin{frame}[fragile]
   \frametitle{Искры и их цена}
   \begin{itemize}
-    \item \ghcinline|+RTS -s| печатает статистику искр: \ghcinline|SPARKS: 1000 (900 converted, 0 overflowed, 0 dud, 50 GC'd, 50 fizzled)|. \emph{Converted} "--- выполнены параллельно, \emph{fizzled} "--- главный поток успел вычислить значение сам, \emph{GC'd} "--- результат никому не понадобился.
+    \item \ghcinline|+RTS -s| печатает статистику искр: \ghcinline|SPARKS: 1000 (900 converted, 0 overflowed, 0 dud, 50 GC'd, 50 fizzled)|. \emph{Converted} "--- взяты в работу, \emph{fizzled} "--- значение уже вычислено к моменту обработки искры, \emph{GC'd} "--- результат никому не понадобился.
           \pause
-    \item Искра дешевле потока ОС, но не бесплатна. \haskinline|parFib| без порога делает $O(\varphi^n)$ искр на $O(1)$ работы каждая и работает \emph{медленнее} последовательного варианта. Обычно: ниже некоторого $n$ переходить на обычную рекурсию, а список делить \haskinline|parListChunk|.
+    \item Число искр у \haskinline|parFib1| растёт экспоненциально. Многие приходятся на мелкие подзадачи, и накладные расходы могут превысить выигрыш.
+    \item Ниже некоторого порога вычисляйте последовательно. Сравните время выполнения при \ghcinline|-N1| и \ghcinline|-N2|.
   \end{itemize}
 \end{frame}
 
@@ -164,7 +163,7 @@
     \item \haskinline|rpar| и \haskinline|rseq| --- стратегии.
     \item \haskinline|r0| --- стратегия, которая ничего не вычисляет.
     \item Стратегия принимает на вход thunk, вычисляет его части с помощью \haskinline|r0|, \haskinline|rpar| и \haskinline|rseq|.
-    \item Например, обобщая пример с прошлого слайда
+    \item Обобщим пример с парой:
           \begin{haskell}
             rparTuple2 :: Strategy (a, b)
             rparTuple2 (a, b) = do !\pause!
@@ -194,7 +193,7 @@ withStrategy s x = runEval (s x)
           \end{haskell}
           \pause
     \item \haskinline|rparWith :: Strategy a -> Strategy a| запускает стратегию параллельно.
-    \item Например, \haskinline|rparWith rpar| и \haskinline|rparWith rseq| эквивалентны \haskinline|rpar|.
+    \item Например, \haskinline|rparWith rseq| эквивалентна \haskinline|rpar|.
           \pause
     \item
           \begin{haskell}
@@ -209,18 +208,18 @@ withStrategy s x = runEval (s x)
 \begin{frame}[fragile]
   \frametitle{Комбинаторы стратегий для списков}
   \begin{itemize}
-    \item С помощью стратегий достаточно легко сделать параллельные \haskinline|map|/\haskinline|filter|/и т.д.
-    \item Например, используя \haskinline|parList :: Strategy a -> Strategy [a]|:
+    \item Применим \haskinline|parList :: Strategy a -> Strategy [a]| к результату \haskinline|map|:
           \begin{haskell}
             parallelMap :: (a -> b) -> [a] -> [b]
             parallelMap f xs = 
               withStrategy (parList rseq) (map f xs)
           \end{haskell}
           \pause
-    \item Это скорее всего создаст слишком много \enquote{искр}, лучше использовать
+    \item Для списка \haskinline|rseq| вычислит внешний конструктор, \haskinline|rdeepseq| "--- весь список с элементами (нужен \haskinline|NFData|).
+    \item Если искр слишком много, пригодятся
           \begin{itemize}
-            \item \haskinline|parListChunk|: разбивает список на части одинаковой длины и работает параллельно с каждой частью
-            \item \haskinline|parBuffer|: начинает работать параллельно с первыми элементами списка, добавляет следующие при использовании результатов
+            \item \haskinline|parListChunk|: одна искра на несколько элементов
+            \item \haskinline|parBuffer|: добавляет искры по мере потребления списка
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -228,7 +227,7 @@ withStrategy s x = runEval (s x)
 \begin{frame}[fragile]
   \frametitle{Монада \haskinline|Par|: параллелизм без ленивости}
   \begin{itemize}
-    \item Модуль \haskinline|Control.Monad.Par| в пакете \haskinline|monad-par|.
+    \item Модуль \href{https://hackage.haskell.org/package/monad-par/docs/Control-Monad-Par.html}{\haskinline{Control.Monad.Par}} в пакете \haskinline|monad-par|.
     \item Тип \haskinline|Par a| --- тоже монада, описывающая процесс вычисления значения типа \haskinline|a| с параллельными частями.
     \item \haskinline|fork :: Par () -> Par ()| создаёт новый поток.
     \item \haskinline|runPar :: Par a -> a| производит вычисление и возвращает его результат. \pause
@@ -268,8 +267,8 @@ withStrategy s x = runEval (s x)
           \begin{haskell}
             parallelMap :: NFData b => (a -> b) -> [a] -> [b]
             parallelMap f xs = runPar $ do
-              ivars <- mapM (\x -> spawn (pure (f x))) xs
-              mapM get ivars
+              ivars <- traverse (\x -> spawn (pure (f x))) xs
+              traverse get ivars
           \end{haskell}
           Как и в прошлый раз, создаёт \enquote{поток} для каждого элемента, для простоты кода.
   \end{itemize}
@@ -296,7 +295,7 @@ withStrategy s x = runEval (s x)
   \frametitle{Конкурентность}
   \begin{itemize}
     \item Перейдём от параллелизма к конкурентности.
-    \item Модуль \haskinline|Control.Concurrent| в пакете \haskinline|base| и \haskinline|C.C.MVar|/\haskinline|C.C.Chan|/\haskinline|C.C.QSem[N]|.
+    \item Модуль \href{https://hackage.haskell.org/package/base/docs/Control-Concurrent.html}{\haskinline{Control.Concurrent}} в пакете \haskinline|base| и его подмодули \href{https://hackage.haskell.org/package/base/docs/Control-Concurrent-MVar.html}{\haskinline{MVar}}, \href{https://hackage.haskell.org/package/base/docs/Control-Concurrent-Chan.html}{\haskinline{Chan}}, \href{https://hackage.haskell.org/package/base/docs/Control-Concurrent-QSem.html}{\haskinline{QSem}}, \href{https://hackage.haskell.org/package/base/docs/Control-Concurrent-QSemN.html}{\haskinline{QSemN}}.
     \item \haskinline|ThreadId| --- ссылка на поток.
     \item \haskinline|forkIO :: IO () -> IO ThreadId| создаёт новый поток, который произведёт данные действия и выйдет, возвращает ссылку на созданный поток.
           \pause
@@ -308,7 +307,7 @@ withStrategy s x = runEval (s x)
   \frametitle{\haskinline|forkIO|: подводные камни}
   \begin{itemize}
     \item Когда \haskinline|main| завершается, программа завершается целиком: остальные потоки просто убиваются. Дождаться их "--- ваша забота (\haskinline|MVar| на следующем слайде или \hackage{async}).
-    \item Исключение в потоке \haskinline|forkIO| печатается в \haskinline|stderr| и теряется; в \haskinline|main| оно не попадает.
+    \item Необработанное исключение завершает дочерний поток. Вызов \haskinline|forkIO| сам по себе не передаёт это исключение родителю.
     \item Как и для \haskinline|Eval|, второе ядро появится только с \ghcinline|-threaded| и \ghcinline|+RTS -N|; без них зелёные потоки всё равно работают, но по очереди на одном ядре.
   \end{itemize}
 \end{frame}
@@ -326,7 +325,7 @@ withStrategy s x = runEval (s x)
             takeMVar :: MVar a -> IO a
             isEmptyMVar :: MVar a -> IO Bool
           \end{haskellsmall}
-    \item Если \haskinline|putMVar| вызвана на полной переменной, она ждёт, пока та не опустеет.
+    \item \haskinline|putMVar| ждёт, если переменная полна.
     \item \haskinline|takeMVar| и \haskinline|readMVar| отличаются тем, что первая убирает прочитанное значение. На пустой переменной обе ждут.
   \end{itemize}
 \end{frame}
@@ -334,8 +333,8 @@ withStrategy s x = runEval (s x)
 \begin{frame}[fragile]
   \frametitle{Фибоначчи с \haskinline|MVar|}
   \begin{itemize}
-    \item Реализация вычисления чисел Фибоначчи с помощью \haskinline|MVar| не сильно отличается от \haskinline|Par| (только аналога \haskinline|spawn| в стандартной библиотеке нет, смотрите пакет \haskinline|async|):
-          \begin{haskell}
+    \item \haskinline|putMVar| может передать отложенное вычисление. \haskinline|evaluate| из \href{https://hackage.haskell.org/package/base/docs/Control-Exception.html}{\haskinline{Control.Exception}} вычислит сумму в текущем потоке.
+          \begin{haskellsmall}
             parFib :: Integer -> IO Integer
             parFib 0 = pure 1
             parFib 1 = pure 1
@@ -346,23 +345,19 @@ withStrategy s x = runEval (s x)
                 putMVar f1var f1'
               f2 <- parFib (n - 2)
               f1 <- readMVar f1var
-              pure (f1 + f2)
-          \end{haskell}
+              evaluate (f1 + f2)
+          \end{haskellsmall}
+    \item Что, если поток упадёт до \haskinline|putMVar|?\pause{} Родитель может остаться ждать в \haskinline|readMVar|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Правильный Фибоначчи}
+  \frametitle{Фибоначчи: сколько нужно сложений?}
   \begin{itemize}
-    \item Уже упоминалось, что приведённые программы для вычисления чисел Фибоначчи имеют серьёзный недостаток.
-    \item Например, \haskinline|parFib 4| вызовет параллельно \haskinline|parFib 3| и \haskinline|parFib 2|, а \haskinline|parFib 3| снова вызовет \haskinline|parFib 2|.
-    \item Чтобы этого избежать, нужно добавить вспомогательный аргумент для хранения уже полученных результатов.
-    \item Его тип может быть:
-          \begin{itemize}
-            \item Для \haskinline|Eval|: \haskinline|Map Integer Integer|.
-            \item Для \haskinline|Par|: \haskinline|Map Integer (IVar Integer)|.
-            \item Для \haskinline|IO|: \haskinline|MVar (Map Integer Integer)|, хотя \haskinline|Map Integer (MVar Integer)| тоже подойдёт.
-          \end{itemize}
+    \item При вычислении \haskinline|parFib 4| одна ветвь вычисляет \haskinline|parFib 2| напрямую, а другая "--- внутри \haskinline|parFib 3|.
+    \item Сколько сложений нужно, если хранить два соседних числа Фибоначчи? \pause
+    \item Начнём с пары \haskinline|(1, 1)|, как в наших примерах. Каждый переход от \haskinline|(a, b)| к \haskinline|(b, a + b)| даёт следующее число за одно сложение.
+    \item Для $n \ge 1$ достаточно $n-1$ сложений. Распараллеливание исходной рекурсии сохраняет повторные вычисления.
   \end{itemize}
 \end{frame}
 
@@ -384,42 +379,56 @@ withStrategy s x = runEval (s x)
 \begin{frame}[fragile]
   \frametitle{Пакет \hackage{async}}
   \begin{itemize}
-    \item На практике вместо голых \haskinline|forkIO| и \haskinline|MVar| используют \haskinline|Control.Concurrent.Async|:
+    \item[]
           \begin{haskellsmall}
-            async :: IO a -> IO (Async a)   -- аналог spawn
-            wait  :: Async a -> IO a        -- аналог get
+            import !\href{https://hackage.haskell.org/package/async/docs/Control-Concurrent-Async.html}{\texttt{Control.Concurrent.Async}}!
+            async :: IO a -> IO (Async a)
+            wait  :: Async a -> IO a
             withAsync :: IO a -> (Async a -> IO b) -> IO b
             concurrently :: IO a -> IO b -> IO (a, b)
             race :: IO a -> IO b -> IO (Either a b)
-            mapConcurrently :: (a -> IO b) -> [a] -> IO [b]
+            mapConcurrently :: Traversable t =>
+              (a -> IO b) -> t a -> IO (t b)
           \end{haskellsmall}
-    \item \haskinline|wait| перебрасывает исключение из потока в вызывающий, а \haskinline|withAsync|/\haskinline|concurrently| убивают дочерний поток, если родитель завершился (в том числе исключением) "--- потоки не \enquote{утекают}.
-    \item Фибоначчи: \haskinline|(f1, f2) <- concurrently (parFib (n - 1)) (parFib (n - 2))|.
+    \item \haskinline|wait| передаёт результат или исключение. \haskinline|withAsync| отменяет поток при выходе из блока.
+    \item \haskinline|concurrently| ждёт оба результата, при исключении отменяет второе действие.
+    \item \haskinline|race| отменяет проигравшее действие.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Транзакции}
   \begin{itemize}
-    \item Понятие транзакций может быть знакомо по базам данных.
-    \item Это наборы операций, которые все вместе либо выполняются успешно, либо откатываются.
-    \item В Haskell это позволяет делать монада \haskinline|STM| (пакет \hackage{stm}) с операциями над \haskinline|TVar|:
+    \item Как и в базах данных, изменения транзакции вступают в силу все вместе.
+    \item В Haskell это позволяет делать монада \href{https://hackage.haskell.org/package/stm/docs/Control-Concurrent-STM.html}{\haskinline{STM}} (пакет \hackage{stm}) с операциями над \haskinline|TVar|:
           \begin{haskellsmall}
             newTVar :: a -> STM (TVar a)
             readTVar :: TVar a -> STM a
             writeTVar :: TVar a -> a -> STM ()
-            retry :: STM a   -- ждать, пока не изменится TVar
+            retry :: STM a
+            check :: Bool -> STM ()
             atomically :: STM a -> IO a
           \end{haskellsmall}
+    \item \haskinline|check False| вызывает \haskinline|retry|: транзакция может повториться, когда изменится одна из прочитанных ею \haskinline|TVar|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Транзакции (2)}
+  \frametitle{Перевод между счетами}
   \begin{itemize}
-    \item \haskinline|atomically| выполняет транзакцию целиком: другие потоки не видят промежуточных состояний, а при конфликте транзакция повторяется.
-    \item Типы гарантируют, что у действия в монаде \haskinline|STM| не может быть побочных эффектов, кроме изменения значений \haskinline|TVar|.
-    \item Обычно проще написать правильный код, который работает с несколькими \haskinline|TVar|, чем с \haskinline|MVar|, так как можно не беспокоиться о видимости промежуточных состояний.
+    \item Переведём положительную сумму, когда на счёте отправителя хватит средств.
+          \begin{haskellsmall}
+            transfer :: TVar Integer -> TVar Integer
+                     -> Integer -> STM ()
+            transfer from to amount =!\pause! do
+              balance <- readTVar from
+              check (balance >= amount)
+              writeTVar from (balance - amount)
+              credit <- readTVar to
+              writeTVar to (credit + amount)
+          \end{haskellsmall}
+          \pause
+    \item \haskinline|atomically (transfer from to amount)| проводит обе записи вместе. Другие потоки не увидят перевод, в котором деньги уже списаны, но ещё не зачислены.
   \end{itemize}
 \end{frame}
 
