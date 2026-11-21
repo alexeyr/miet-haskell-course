@@ -109,7 +109,7 @@
               x1 `f` (x2 `f` ... (xn `f` z)...)
           \end{haskell}
           \begin{itemize}
-            \item Настоящий тип более общий: \haskinline|Foldable t => ... -> t a -> b| (лекция 9).
+            \item Настоящий тип более общий: \haskinline|Foldable t => ... -> t a -> b| (лекция 10).
           \end{itemize}
     \item Правая свёртка проходит по структуре списка и заменяет \haskinline{[]} на \haskinline{z} и \haskinline{(:)} на \haskinline{f}.
     \item Например, \haskinline|sum| получится, если взять \haskinline{f =!\pause! (+)} и \haskinline{z =!\pause! 0}.
@@ -150,7 +150,7 @@
           \begin{haskellsmall}
             (...((z `f` x1) `f` x2) `f`...) `f` xn
           \end{haskellsmall}
-    \item Хвостовая рекурсия компилируется в цикл и в других языках ФП очень важна; в Haskell её усложняет ленивость (лекция 8).
+    \item Хвостовая рекурсия компилируется в цикл и в других языках ФП очень важна; в Haskell её усложняет ленивость (лекция 9).
   \end{itemize}
 \end{frame}
 

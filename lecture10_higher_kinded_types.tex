@@ -1,7 +1,7 @@
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
 
-\title{Лекция 9: типы высших родов, функторы и аппликативные функторы}
+\title{Лекция 10: типы высших родов, функторы и аппликативные функторы}
 
 \begin{document}
 \begin{frame}[plain]
@@ -495,7 +495,7 @@ fmap (g . h)    !$=$!!\pause! fmap g . fmap h
             sum :: (Foldable t, Num a) => t a -> a
             sum = getSum . foldMap' Sum
           \end{haskellsmall}
-          \haskinline|foldMap'| "--- строгая свёртка, как \haskinline|foldl'| в лекции 8. Так и определена \haskinline|sum| в \haskinline|base|.
+          \haskinline|foldMap'| "--- строгая свёртка, как \haskinline|foldl'| в лекции 9. Так и определена \haskinline|sum| в \haskinline|base|.
           \pause
     \item Ловушка: \haskinline|length (1, 2) == 1| "--- экземпляр \haskinline|Foldable ((,) c)| \enquote{видит} только второй компонент пары.
   \end{itemize}

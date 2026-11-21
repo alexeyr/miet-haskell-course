@@ -4,7 +4,7 @@
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
 
-\title{Лекция 11: монада IO и взаимодействие с внешним миром}
+\title{Лекция 12: монада IO и взаимодействие с внешним миром}
 
 \begin{document}
 
@@ -103,7 +103,7 @@
 \begin{frame}[fragile]
   \frametitle{Условное выполнение: \haskinline|when|}
   \begin{itemize}
-    \item Функция из упражнения в лекции 9:
+    \item Функция из упражнения в лекции 10:
           \begin{haskellsmall}
             import Control.Monad (when)
 
@@ -162,8 +162,8 @@
             writeIORef :: IORef a -> a -> IO ()
             modifyIORef' :: IORef a -> (a -> a) -> IO ()
           \end{haskell}
-    \item Используйте \haskinline|modifyIORef'| (строгий), а не \haskinline|modifyIORef|: последний накапливает отложенные вычисления ровно как \haskinline|foldl| в лекции 8.
-    \item Для нескольких потоков нужны \haskinline|atomicModifyIORef'|, \haskinline|MVar| или \haskinline|STM| (лекция 13).
+    \item Используйте \haskinline|modifyIORef'| (строгий), а не \haskinline|modifyIORef|: последний накапливает отложенные вычисления ровно как \haskinline|foldl| в лекции 9.
+    \item Для нескольких потоков нужны \haskinline|atomicModifyIORef'|, \haskinline|MVar| или \haskinline|STM| (лекция 16).
   \end{itemize}
 \end{frame}
 
@@ -203,7 +203,7 @@
             try @ArithException (evaluate (div (1 :: Int) 0))
           \end{haskellsmall}
           Здесь получим \haskinline|Left DivideByZero|.
-    \item \haskinline|evaluate| вычисляет только до \emph{WHNF} (лекция 8).
+    \item \haskinline|evaluate| вычисляет только до \emph{WHNF} (лекция 9).
     \item Ошибки ленивого \haskinline|readFile| тоже могут возникнуть вне \haskinline|try|; \haskinline|readFile'| читает файл сразу.
   \end{itemize}
 \end{frame}
