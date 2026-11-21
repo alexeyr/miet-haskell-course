@@ -255,8 +255,11 @@
 \begin{frame}
   \frametitle{Дополнительное чтение}
   \begin{itemize}
-    \item \href{https://haskell-containers.readthedocs.io/en/latest/}{Руководство по containers}. Разделы \emph{Sets} и \emph{Maps}: выбор операций, примеры и оценки сложности.
-    \item Chris Okasaki, \href{https://www.cs.cmu.edu/~rwh/students/okasaki.pdf}{Purely Functional Data Structures}, глава 2 диссертации. Списки и деревья поиска как примеры сохранения старых версий.
+    \item \href{https://haskell-containers.readthedocs.io/en/latest/}{Руководство по containers}: множества, словари и последовательности (\href{https://hackage.haskell.org/package/containers/docs/Data-Sequence.html}{Data.Sequence}).
+    \item \hackage{unordered-containers}: \href{https://hackage.haskell.org/package/unordered-containers/docs/Data-HashSet.html}{HashSet} и \href{https://hackage.haskell.org/package/unordered-containers/docs/Data-HashMap-Strict.html}{HashMap}. Ключи хешируются; порядок обхода не гарантируется.
+    \item Неизменяемые массивы: \href{https://hackage.haskell.org/package/array/docs/Data-Array.html}{Data.Array} и \href{https://hackage.haskell.org/package/vector/docs/Data-Vector.html}{Data.Vector}. Создание, чтение по индексу и получение новой версии при обновлении "--- чистые операции.
+    \item Chris Okasaki, \href{https://www.cambridge.org/core/books/purely-functional-data-structures/0409255DA1B48FA731859AC72E34D494}{Purely Functional Data Structures} (платная книга). В \href{https://www.cs.cmu.edu/~rwh/students/okasaki.pdf}{бесплатной диссертации}, гл. 2: списки и деревья поиска.
+    \item Что почитать после Окасаки: \href{https://cstheory.stackexchange.com/questions/1539/whats-new-in-purely-functional-data-structures-since-okasaki}{обсуждение на CSTheory} и \href{https://www.reddit.com/r/haskell/comments/a4wk1i/seminal_works_after_purely_functional_data/ebm30ra/}{подборка на Reddit}.
   \end{itemize}
 \end{frame}
 \end{document}

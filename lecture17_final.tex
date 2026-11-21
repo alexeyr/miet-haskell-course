@@ -12,16 +12,10 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Нерассмотренные части Haskell: стандартные библиотеки}
+  \frametitle{Библиотеки и инструменты Haskell}
   \begin{itemize}
-    \item В самом начале упоминалось, что тип \haskinline{String} очень плох для практического использования. Альтернативы в пакетах \hackage{text} и \hackage{bytestring}.
-    \item Коллекции:
-          \begin{itemize}
-            \item \hackage{containers}: \haskinline|Data.Map|, \haskinline|Data.Set|, \haskinline|Data.Sequence|.
-            \item \hackage{unordered-containers}: \haskinline|Data.Hash{Map/Set}|.
-            \item Массивы: \hackage{array} и \hackage{vector}.
-          \end{itemize}
     \item Сборка проектов и управление зависимостями: \href{https://cabal.readthedocs.io/en/stable/}{cabal} и \href{https://docs.haskellstack.org/en/stable/}{stack}.
+    \item \hackage{aeson}: преобразование между JSON и типами Haskell.
     \item Линзы (\hackage{lens}): обобщение геттеров и сеттеров.
     \item Альтернативы \haskinline|show| для больших структур: \hackage{pretty-show} и \hackage{prettyprinter}.
   \end{itemize}
@@ -41,8 +35,7 @@
           \begin{itemize}
             \item Могли видеть использование в документации QuickCheck/Hedgehog.
           \end{itemize}
-    \item Исключения.
-    \item Foreign Function Interface для интеграции с C.
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/ffi.html}{Foreign Function Interface} для интеграции с \href{https://www.open-std.org/jtc1/sc22/wg14/}{C}.
   \end{itemize}
 \end{frame}
 
@@ -61,23 +54,9 @@
     \item Композиция монад не обязательно монада.
           \pause
     \item Трансформеры монад: \hackage{transformers} и \hackage{mtl}
-    \item Алгебраические эффекты
-    \item Свободные (free) и \enquote{более свободные} (freer) монады
+    \item \href{https://www.microsoft.com/en-us/research/publication/algebraic-effects-for-functional-programming/}{Алгебраические эффекты}
+    \item \href{https://haskellforall.com/2012/06/you-could-have-invented-free-monads}{Свободные (free)} и \href{https://okmij.org/ftp/Haskell/extensible/more.pdf}{\enquote{более свободные} (freer)} монады
     \item Небольшой обзор: \href{https://ocharles.org.uk/posts/2016-01-26-transformers-free-monads-mtl-laws.html}{Monad transformers, free monads, mtl, laws and a new approach}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{Функциональные структуры данных}
-  \begin{itemize}
-    \item Функциональные структуры данных очень отличаются от привычных!
-    \item Классическая книга: Okasaki, Purely functional data structures
-    \item \href{https://cstheory.stackexchange.com/questions/1539/whats-new-in-purely-functional-data-structures-since-okasaki}{Список \enquote{после Окасаки} (2010)}. И \href{https://www.reddit.com/r/haskell/comments/a4wk1i/seminal_works_after_purely_functional_data/ebm30ra/}{ещё немного}.
-          \pause
-    \item Функциональные структуры, позволяющие доступ к своим старым состояниям, полезны и в императивных языках.
-          \begin{itemize}
-            \item А изменяемые "--- в Haskell через \haskinline|IO| или \haskinline|ST|.
-          \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -101,24 +80,20 @@
 
 \begin{frame}[fragile]
   \frametitle{Альтернативы Haskell}
+  \small
   \begin{itemize}
-    \item OCaml: похож на Haskell без ленивости и (пока) классов типов.
-    \item Erlang: динамический функциональный язык, ориентированный на многозадачность.
-    \item Варианты Lisp (можно посмотреть Racket).
+    \item \href{https://ocaml.org/}{OCaml}: похож на \href{https://www.haskell.org/}{Haskell} без ленивости и классов типов.
+    \item \href{https://www.erlang.org/}{Erlang}: динамический функциональный язык, ориентированный на многозадачность.
+    \item Семейство Lisp: \href{https://lisp-lang.org/}{Common Lisp} и \href{https://racket-lang.org/}{Racket}.
           \pause
-    \item Для JVM: Scala, Clojure.
-    \item Для .Net: F\# (почти тот же OCaml).
+    \item Для JVM: \href{https://www.scala-lang.org/}{Scala}, \href{https://clojure.org/}{Clojure}.
+    \item Для .Net: \href{https://fsharp.org/}{F\#} (почти тот же \href{https://ocaml.org/}{OCaml}).
           \pause
-    \item ФП без сборщика мусора: Rust.
-          \begin{itemize}
-            \item Мощная и интересная система типов, описывающая время жизни значений.
-            \item Очень быстрое развитие.
-            \item Реальная альтернатива C++ для низкоуровневого программирования.
-          \end{itemize}
+    \item \href{https://rust-lang.org/}{Rust}: система типов отслеживает время жизни значений. Альтернатива \href{https://www.open-std.org/jtc1/sc22/wg21/}{C++} для низкоуровневого программирования без сборщика мусора.
           \pause
-    \item Языки с зависимыми типами: Agda, Idris, Rocq.
+    \item Языки с зависимыми типами: \href{https://agda.readthedocs.io/}{Agda}, \href{https://idris-lang.org/}{Idris}, \href{https://rocq-prover.org/}{Rocq}.
           \pause
-    \item Языки спецификаций: TLA+, Alloy.
+    \item Языки спецификаций: \href{https://lamport.azurewebsites.net/tla/tla.html}{TLA+}, \href{https://alloytools.org/}{Alloy}.
   \end{itemize}
 \end{frame}
 
@@ -136,7 +111,7 @@
             \item Изоморфизм Карри-Ховарда.
             \item Формализация математики.
             \item И автоматический поиск доказательств.
-            \item Agda, Idris, Rocq (бывший Coq) и Lean сюда же!
+            \item \href{https://agda.readthedocs.io/}{Agda}, \href{https://idris-lang.org/}{Idris}, \href{https://rocq-prover.org/}{Rocq (бывший Coq)} и \href{https://lean-lang.org/}{Lean} сюда же!
           \end{itemize}
           \pause
     \item Теория категорий: источник понятий функтора, монады, естественного преобразования.
@@ -154,9 +129,6 @@
     \item \href{http://docs.idris-lang.org/en/latest/tutorial/index.html}{Введение в Idris}
     \item \href{https://doc.rust-lang.org/book/}{The Rust Programming Language} (книга, доступна бесплатно)
     \item \href{https://github.com/hmemcpy/milewski-ctfp-pdf}{Category Theory for Programmers} (книга, доступна бесплатно)
-    \item \href{https://www.hillelwayne.com/post/theorem-prover-showdown/}{The Great Theorem Prover Showdown}
-    \item \href{https://blog.acolyer.org/2014/11/24/use-of-formal-methods-at-amazon-web-services/}{Use of Formal Methods at Amazon Web Services}
-    \item \href{https://blog.acolyer.org/2015/01/12/how-to-write-a-21st-century-proof/}{How to write a 21st Century Proof}
   \end{itemize}
 \end{frame}
 

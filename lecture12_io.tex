@@ -27,8 +27,8 @@
     \item Исполняемая программа в Haskell задаётся значением
           \haskinline|main :: IO a| (почти всегда \haskinline|IO ()|).
     \item Это аналог \mintinline{c}|int main(int argc, char** argv)| в C, \mintinline{java}|public static void main(String[] args)| в Java и т.д.
-    \item Соответственно, есть доступ к аргументам командной строки и возможность указать код выхода:
     \item \href{https://hackage.haskell.org/package/base/docs/System-Environment.html}{\haskinline{System.Environment.getArgs :: IO [String]}}. Там же есть функции для чтения переменных окружения.
+    \item \hackage{optparse-applicative}: разбор аргументов командной строки. В конце документации есть \href{https://hackage.haskell.org/package/optparse-applicative\#:~:text=Tutorials,-These}{ссылки на учебные материалы}.
     \item \href{https://hackage.haskell.org/package/base/docs/System-Exit.html}{\haskinline{System.Exit.exitWith :: ExitCode -> IO a}}.
   \end{itemize}
 \end{frame}
@@ -163,6 +163,7 @@
             modifyIORef' :: IORef a -> (a -> a) -> IO ()
           \end{haskell}
     \item Используйте \haskinline|modifyIORef'| (строгий), а не \haskinline|modifyIORef|: последний накапливает отложенные вычисления ровно как \haskinline|foldl| в лекции 9.
+    \item Массивы в \haskinline|IO|: \href{https://hackage.haskell.org/package/array/docs/Data-Array-IO.html#t:IOArray}{\haskinline{IOArray}} и \href{https://hackage.haskell.org/package/vector/docs/Data-Vector-Mutable.html#t:IOVector}{\haskinline{IOVector}}. Например, \haskinline|Data.Vector.Mutable.write v i x| записывает \haskinline|x| по индексу \haskinline|i| на месте.
     \item Для нескольких потоков нужны \haskinline|atomicModifyIORef'|, \haskinline|MVar| или \haskinline|STM| (лекция 16).
   \end{itemize}
 \end{frame}
