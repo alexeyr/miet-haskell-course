@@ -390,6 +390,49 @@ twice({ println("evaluating"); 2 }) !\pause!
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Приведение к нормальной форме}
+  \small
+  \begin{haskellsmall}
+    class NFData a where
+      rnf :: a -> ()
+  \end{haskellsmall}
+  \href{https://hackage.haskell.org/package/deepseq/docs/Control-DeepSeq.html#v:rnf}{\haskinline{rnf}} (\emph{reduce to normal form}) приводит аргумент к НФ и возвращает \haskinline|()|.
+  Для пары: \pause
+  \begin{haskellsmall}
+    instance (NFData a, NFData b) => NFData (a, b) where
+      rnf (x, y) = rnf x `seq` rnf y
+  \end{haskellsmall}
+  В \href{https://hackage.haskell.org/package/deepseq/docs/Control-DeepSeq.html}{\haskinline{Control.DeepSeq}} через \haskinline|rnf| определены \href{https://hackage.haskell.org/package/deepseq/docs/Control-DeepSeq.html#v:deepseq}{\haskinline{deepseq}} и \href{https://hackage.haskell.org/package/deepseq/docs/Control-DeepSeq.html#v:force}{\haskinline{force}}: \pause
+  \begin{haskellsmall}
+    deepseq x result = rnf x `seq` result
+    force x = x `deepseq` x
+  \end{haskellsmall}
+  \haskinline|force x| возвращает \haskinline|x| в НФ. Для функций достаточно WHNF: тело под лямбдой не вычисляется.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Вычисление пары: \haskinline|seq| и \haskinline|deepseq|}
+  \small
+  Выведем сумму наблюдений. Вычислится ли их число?
+  \begin{haskellsmall}
+    ghci> let xs = [1..100] :: [Int]
+    ghci> let stats = (sum xs, length xs)
+    ghci> stats `seq` fst stats
+    5050
+    ghci> :sprint stats !\pause!
+    stats = (5050,_)
+  \end{haskellsmall}
+  \haskinline|deepseq :: NFData a => a -> b -> b|
+  \begin{haskellsmall}
+    ghci> import Control.DeepSeq (deepseq, force)
+    ghci> stats `deepseq` fst stats  -- или fst (force stats)
+    5050
+    ghci> :sprint stats !\pause!
+    stats = (5050,100)
+  \end{haskellsmall}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{\haskinline|sum| через \haskinline|seq|}
   \begin{itemize}
     \item Теперь можем определить \haskinline|sum| так:\pause
@@ -438,27 +481,31 @@ twice({ println("evaluating"); 2 }) !\pause!
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Строгие переменные в образцах}
-  \begin{itemize}
-    \item В \haskinline|foldl'| аккумулятор вычисляется только до WHNF. Если мы вычисляем среднее так
-          \begin{haskell}
-            mean :: [Double] -> Double
-            mean xs = s' / fromIntegral l'
-              where (s', l') = foldl' step (0, 0) xs
-                    step (s, l) x = (s + x, l + 1)
-          \end{haskell}
-          то в \haskinline|s| и \haskinline|l| снова накапливаются вычисления! \pause
-          \begin{haskell}
-            foldl' step (0, 0) [1, 2] !$\pause \rightsquigarrow$!
-            foldl' step (!$\langle$!0 + 1!$\rangle$!, !$\langle$!0 + 1!$\rangle$!) [2] !$\pause \rightsquigarrow$!
-            foldl' step (!$\langle$!!$\langle$!0 + 1!$\rangle$! + 2!$\rangle$!, !$\langle$!!$\langle$!0 + 1!$\rangle$! + 1!$\rangle$!) []
-          \end{haskell}
-    \item Здесь аккумулятор "--- пара, и её вычисление до WHNF не вычисляет компонент.
-  \end{itemize}
+  \frametitle{Среднее: пара в аккумуляторе}
+  \small
+  \begin{haskellsmall}
+    mean :: [Double] -> Double
+    mean xs = s' / fromIntegral l'
+      where (s', l') = foldl' step (0, 0) xs
+            step (s, l) x = (s + x, l + 1)
+  \end{haskellsmall}
+  \haskinline|foldl'| вычисляет пару до WHNF. Что происходит с её полями? \pause
+  \begin{haskellsmall}
+    foldl' step (0, 0) [1, 2] !$\pause \rightsquigarrow$!
+    foldl' step (!$\langle$!0 + 1!$\rangle$!, !$\langle$!0 + 1!$\rangle$!) [2] !$\pause \rightsquigarrow$!
+    foldl' step (!$\langle$!!$\langle$!0 + 1!$\rangle$! + 2!$\rangle$!, !$\langle$!!$\langle$!0 + 1!$\rangle$! + 1!$\rangle$!) []
+  \end{haskellsmall}
+  \pause
+  Чтобы избежать этой проблемы, можно вычислить оба поля с помощью \haskinline|force|:
+  \begin{haskellsmall}
+    step :: (Double, Int) -> Double -> (Double, Int)
+    step (s, l) x = let acc = (s + x, l + 1)
+                    in force acc
+  \end{haskellsmall}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Строгие переменные в образцах (продолжение)}
+  \frametitle{Строгие переменные в образцах}
   \begin{itemize}
     \item Сделаем \haskinline|s| и \haskinline|l| строгими:
           \begin{haskell*}{escapeinside=||}
@@ -468,7 +515,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           \begin{haskell}
             step (s, l) x = s `seq` l `seq` (s + x, l + 1)
           \end{haskell}
-          т.е. \texttt{!} вычисляет значение (до WHNF) при сопоставлении. Этого хватает: \haskinline|foldl'| приводит результат \haskinline|step| к WHNF, а для этого \haskinline|step| сопоставляет предыдущую пару с образцом и вычисляет \haskinline|s| и \haskinline|l|.
+          Когда \haskinline|foldl'| требует результат шага, \texttt{!} вычисляет поля предыдущей пары до WHNF. Для \haskinline|Double| и \haskinline|Int| это уже НФ: эффект тот же, что у \haskinline|(s, l) `deepseq` (s + x, l + 1)|.
     \item Полные правила перевода \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/strict.html#bang-patterns-informal}{довольно сложные}.
   \end{itemize}
 \end{frame}
