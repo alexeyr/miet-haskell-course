@@ -3,6 +3,21 @@
 
 \documentclass[11pt]{beamer}
 \input{lecture_preamble.tex}
+\usepackage{listings}
+\definecolor{specKeyword}{HTML}{859900}
+\definecolor{specLiteral}{HTML}{B58900}
+\lstdefinestyle{specification}{
+  basicstyle=\scriptsize\ttfamily,columns=fullflexible,keepspaces=true,
+  aboveskip=.4em,belowskip=.4em,gobble=4,keywordstyle=\color{specKeyword},keywordstyle=[2]\color{specLiteral}
+}
+\lstdefinelanguage{PlusCal}{
+  morekeywords={algorithm,variables,begin,end,while,do,either,or,await},
+  morekeywords=[2]{TRUE,FALSE}
+}
+\lstdefinelanguage{Quint}{
+  morekeywords={module,var,val,action,temporal,all,any,always,eventually,implies,and,not},
+  morekeywords=[2]{bool,true,false}
+}
 
 \title{Лекция 17: что дальше?}
 
@@ -120,52 +135,277 @@
   \begin{itemize}
     \setlength{\itemsep}{1pt}
     \item \href{https://ocaml.org/}{OCaml}: похож на \href{https://www.haskell.org/}{Haskell} без ленивости и классов типов.
-    \item \href{https://www.erlang.org/}{Erlang}: функциональный язык с моделью акторов (процессов, взаимодействующих через сообщения).
-    \item Семейство Lisp: \href{https://lisp-lang.org/}{Common Lisp} и \href{https://racket-lang.org/}{Racket}.
+    \item \href{https://www.erlang.org/}{Erlang}: акторы (процессы) обмениваются сообщениями.
+    \item Lisp: \href{https://lisp-lang.org/}{Common Lisp} и \href{https://racket-lang.org/}{Racket}. Код пишут вложенными списками: \texttt{(* 3 (+ 1 2))}. Макросы строят из них новый код.
           \pause
     \item Для JVM: \href{https://www.scala-lang.org/}{Scala}, \href{https://clojure.org/}{Clojure}.
     \item Для .Net: \href{https://fsharp.org/}{F\#} (почти тот же \href{https://ocaml.org/}{OCaml}).
           \pause
     \item \href{https://rust-lang.org/}{Rust}: альтернатива \href{https://www.open-std.org/jtc1/sc22/wg21/}{C++} без сборщика мусора; типы отслеживают время жизни значений.
           \pause
-    \item Языки с зависимыми типами: \href{https://agda.readthedocs.io/}{Agda}, \href{https://idris-lang.org/}{Idris}, \href{https://rocq-prover.org/}{Rocq}.
-          \pause
-    \item Языки спецификаций: \href{https://lamport.azurewebsites.net/tla/tla.html}{TLA+}, \href{https://alloytools.org/}{Alloy}.
+    \item В \href{https://idris-lang.org/}{Idris} и \href{https://fstar-lang.org/}{F*} типы могут зависеть от значений, например \texttt{Vec n} — тип векторов длины \texttt{n}. Ещё пример: уточнения в \href{https://ucsd-progsys.github.io/liquidhaskell/}{Liquid Haskell} (лекция~14).
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Области математики, связанные с ФП}
   \begin{itemize}
-    \item Лямбда-исчисление: то, с чего всё началось.
+    \item Лямбда-исчисление и теория типов.
           \begin{itemize}
-            \item Питер Селингер, \href{https://arxiv.org/abs/0804.3434}{Lecture Notes on the Lambda Calculus}: от бестипового исчисления до полиморфизма и вывода типов.
+            \item Peter Selinger, \href{https://arxiv.org/abs/0804.3434}{Lecture Notes on the Lambda Calculus}: редукция, полиморфизм и вывод типов.
+            \item Egbert Rijke, \href{https://arxiv.org/abs/2212.11082}{Introduction to Homotopy Type Theory}: зависимые функции (§~2) и пары (§~4.6).
           \end{itemize}
           \pause
-    \item Математическая логика в целом
-          \begin{itemize}
-            \item Логики высших порядков.
-            \item Изоморфизм Карри-Ховарда.
-            \item Формализация математики.
-            \item И автоматический поиск доказательств.
-            \item \href{https://agda.readthedocs.io/}{Agda}, \href{https://idris-lang.org/}{Idris}, \href{https://rocq-prover.org/}{Rocq (бывший Coq)} и \href{https://lean-lang.org/}{Lean} сюда же!
-          \end{itemize}
+    \item Теория областей (domain theory) описывает частично вычисленные значения. Рекурсивные определения задают наименьшие неподвижные точки (Selinger, §§~12.8--12.9).
           \pause
-    \item Теория категорий: источник понятий функтора, монады, естественного преобразования.
+    \item Теория категорий: функторы, монады и естественные преобразования.
           \begin{itemize}
             \item Bartosz Milewski, \href{https://github.com/hmemcpy/milewski-ctfp-pdf}{Category Theory for Programmers}.
           \end{itemize}
   \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]
+  \frametitle{Математическая логика и формализация}
+  \begin{itemize}
+    \item \href{https://www.cs.cmu.edu/~fp/courses/15317-s23/lectures/02-natded.pdf}{Конструктивная логика}: чтобы доказать $A \lor B$ без предпосылок, нужно предъявить либо доказательство $A$, либо доказательство $B$.
+    \item \href{https://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-types/propositions-as-types.pdf}{Соответствие Карри — Ховарда}: высказывания — типы, доказательства — программы.
+
+    \pause
+    \item Формализация математики и автоматический поиск доказательств:
+          \begin{itemize}
+            \item Логика первого порядка: \href{https://isabelle.in.tum.de/dist/Isabelle2025-2/doc/logics-ZF.pdf}{Isabelle/FOL}.
+            \item Теория множеств на основе логики первого порядка: \href{https://isabelle.in.tum.de/dist/Isabelle2025-2/doc/logics-ZF.pdf}{Isabelle/ZF}, \href{https://us.metamath.org/mpeuni/mmtheorems.html}{Metamath (set.mm)}, \href{https://wiki.mizar.org/library/}{Mizar} (\href{https://en.wikipedia.org/wiki/Tarski\%E2\%80\%93Grothendieck_set_theory}{теория Тарского — Гротендика}).
+            \item Простая теория типов (логика высших порядков): \href{https://isabelle.in.tum.de/library/HOL/HOL/}{Isabelle/HOL}, \href{https://hol-light.github.io/}{HOL Light}.
+            \item Зависимые типы: \href{https://agda.readthedocs.io/}{Agda}, \href{https://rocq-prover.org/}{Rocq (бывший Coq)}, \href{https://lean-lang.org/}{Lean}, \href{https://fstar-lang.org/}{F*}.
+          \end{itemize}
+  \end{itemize}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{Что такое языки спецификаций?}
+  \small
+  \begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \item Как с помощью логики описать, что система должна делать, и найти поведение, которое это требование нарушает?
+    \pause
+    \item На языке программирования мы обычно задаём способ получить результат или выполнить действие.
+    \item На языке спецификаций можно задать ограничения на структуру системы или на её поведение.
+    \item Спецификация обычно абстрактнее реализации. Ей могут удовлетворять разные реализации. Это можно доказать, например, в Liquid~Haskell.
+    \pause
+    \item Проверяемые свойства формулируем отдельно.
+      \begin{itemize}
+        \item Можно искать контрпримеры.
+        \item Иногда можно доказать, что свойство следует из спецификации.
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{TLA+: состояния и действия}
+  \begin{itemize}
+    \item В \href{https://lamport.azurewebsites.net/tla/tla.html}{TLA+} состояние задают значения переменных: $\mathit{Red}$ и $\mathit{Green}$ — сигналы, $\mathit{Pressed}$ — светофор запомнил нажатие кнопки.
+    \item Условие «горит ровно один сигнал»:
+          $\mathit{OneLight} \triangleq (\mathit{Red} \lor \mathit{Green}) \land \neg(\mathit{Red} \land \mathit{Green})$.
+    \item Вначале: $\mathit{Init} \mathrel{\triangleq} \mathit{Red} \land \neg\mathit{Green} \land \neg\mathit{Pressed}$.
+          \pause
+    \item Действие — условие на пару соседних состояний. Штрих — значение переменной на следующем шаге.
+      \begin{itemize}
+        \item $\mathit{Press}$ — нажать кнопку на красный:\\
+              $\mathit{Red} \land \mathit{Pressed}' \land
+              \mathop{\mathrm{UNCHANGED}}\,\langle\mathit{Red},\mathit{Green}\rangle$.
+        \item $\mathit{Serve}$ — обслужить запрос:\\
+              $\mathit{Pressed} \land \mathit{Green}' \land \neg\mathit{Red}' \land \neg\mathit{Pressed}'$.
+      \end{itemize}
+    \item Допустимый переход: $\mathit{Next} \triangleq \mathit{Press} \lor \mathit{Serve}$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{TLA+: свойства трасс}
+  \small
+  \begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \item \href{https://en.wikipedia.org/wiki/Temporal_logic_of_actions}{Темпоральная логика действий} (\href{https://www.learntla.com/index.html}{Learn TLA+}) добавляет к логике предикатов два оператора:
+      \begin{itemize}
+        \item $\Box P$: $P$ верно сейчас и на всех следующих шагах.
+        \item $\Diamond P$: $P$ верно сейчас или позже.
+      \end{itemize}
+    \item $\Box\mathit{OneLight}$ — всегда горит ровно один сигнал.
+    \item $\mathit{Spec} \triangleq \mathit{Init} \land \Box\mathit{Next}$. Вначале верно $\mathit{Init}$, каждый переход удовлетворяет $\mathit{Next}$.
+    \item Как потребовать обслуживания каждого запроса?
+          \pause
+    \item $\Box(\mathit{Pressed} \Rightarrow \Diamond(\mathit{Green} \land \neg\mathit{Pressed}))$:
+          в итоге горит зелёный и флаг сброшен.
+    \item Контрпример? \pause $\mathit{Press}$ повторяется вечно, свет остаётся красным.
+    \item Баг:\pause{} после $\mathit{Serve}$ оба действия невыполнимы.
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Светофор на PlusCal}
+  \small Алгоритм на \href{https://lamport.azurewebsites.net/tla/pluscal.html}{PlusCal} переводится в TLA+. Здесь одна итерация цикла — один атомарный шаг.
+  \begin{lstlisting}[style=specification,language=PlusCal]
+    (* --algorithm Light
+    variables red = TRUE, green = FALSE, pressed = FALSE;
+    begin
+      Step: while TRUE do
+        either await red;
+               pressed := TRUE;
+        or     await pressed;
+               green := TRUE; red := FALSE;
+                   pressed := FALSE;
+        end either;
+      end while;
+    end algorithm; *)
+    OneLight == red /= green
+  \end{lstlisting}
+  После нажатия на красный доступны обе ветви. В TLC можно проверить \texttt{OneLight} как инвариант.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Светофор на Quint}
+  \small В \href{https://quint-lang.org/}{Quint} \texttt{any} выбирает одно из доступных действий, а \texttt{all} объединяет условия и обновления одного шага.
+  \begin{lstlisting}[style=specification,language=Quint]
+    module light {
+      var red: bool
+      var green: bool
+      var pressed: bool
+      action init = all { red' = true, green' = false,
+                          pressed' = false }
+      action press = all { red, pressed' = true,
+                           red' = red, green' = green }
+      action serve = all { pressed, green' = true,
+                           red' = false, pressed' = false }
+      action step = any { press, serve }
+      val oneLight = red != green
+      temporal safety = always(oneLight)
+      temporal response =
+        always(pressed implies eventually(green and not(pressed)))
+    }
+  \end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Языки спецификаций: Alloy}
+  \small
+  В \href{https://alloytools.org/}{Alloy} описывают объекты, отношения и ограничения. Alloy Analyzer может построить разные примеры, удовлетворяющие всем условиям модели.
+  \medskip
+  \begin{columns}[c,onlytextwidth]
+    \begin{column}{.69\textwidth}
+      \begin{minted}[autogobble,fontsize=\footnotesize]{alloy}
+        sig FSObject { parent: lone Dir }
+        sig File extends FSObject {}
+        sig Dir extends FSObject {}
+        fact { File + Dir = FSObject }
+        one sig Root extends Dir {} { no parent }
+      \end{minted}
+      В \href{https://alloytools.org/tutorials/online/maintext-FS-1.html}{этой модели} каждый объект — файл или каталог. У него не более одного родителя, у корня — ни одного.
+    \end{column}
+    \begin{column}{.28\textwidth}
+      \centering
+      \includegraphics[width=\linewidth,height=.43\textheight,keepaspectratio]{alloy-parent-instance.png}
+    \end{column}
+  \end{columns}
+  \medskip
+  \href{https://alloy.readthedocs.io/en/latest/}{AlloyDocs}: язык и примеры, включая \href{https://alloy.readthedocs.io/en/latest/language/time.html}{темпоральные операторы Alloy~6}.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Alloy: может ли каталог быть своим родителем?}
+  \small
+  \begin{minted}[autogobble,fontsize=\footnotesize]{alloy}
+    assert NoSelfParent { no d: Dir | d.parent = d }
+    check NoSelfParent for 2
+  \end{minted}
+  Как выглядит контрпример с двумя объектами?
+  \pause\par\medskip
+  У \mintinline{alloy}{Root} нет родителя, а второй каталог указывает на себя.
+  \pause\par
+  Чтобы это запретить, можно исключить циклы любой длины:
+  \begin{minted}[autogobble,fontsize=\footnotesize]{alloy}
+    fact acyclic { no d: Dir | d in d.^parent }
+  \end{minted}
+  \mintinline{alloy}{d.^parent} — предки, достижимые из \mintinline{alloy}{d} за один или несколько переходов по \mintinline{alloy}{parent}.
+  \pause\par Обязательно ли теперь из каждого объекта можно дойти до \mintinline{alloy}{Root}?
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dafny: как проверить реализацию?}
+  \small В \href{https://dafny.org/}{Dafny} можно записать контракт метода, а затем проверить, что реализация ему удовлетворяет.
+  \begin{lstlisting}[style=specification,basicstyle=\footnotesize\ttfamily,morekeywords={method,returns,ensures,if,else},morekeywords={[2]int}]
+    method Max(x: int, y: int) returns (m: int)
+      ensures m >= x && m >= y
+    {
+      if x >= y { m := x; } else { m := y; }
+    }
+  \end{lstlisting}
+  Пройдёт ли проверку метод, возвращающий максимум плюс один?
+  \pause\par Да. Добавим второе постусловие:
+  \begin{lstlisting}[style=specification,basicstyle=\footnotesize\ttfamily,morekeywords={ensures}]
+    ensures m == x || m == y
+  \end{lstlisting}
+  Вместе эти условия однозначно задают максимум.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dafny: максимум непустой последовательности}
+  \small
+  \lstset{style=specification,basicstyle=\footnotesize\ttfamily,morekeywords={method,returns,requires,ensures,forall,in,assert,var,if},morekeywords={[2]int,seq}}
+  \begin{lstlisting}
+    method MaxSeq(xs: seq<int>) returns (m: int)
+      requires |xs| > 0
+      ensures m in xs
+      ensures forall x :: x in xs ==> x <= m
+    {
+      assert xs == [xs[0]] + xs[1..];
+      m := xs[0];
+      if |xs| > 1 {
+        var t := MaxSeq(xs[1..]);
+        m := Max(m, t);
+      }
+    }
+  \end{lstlisting}
+  \begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \item<2-> Без \lstinline!requires |xs| > 0! не проходит проверку \texttt{xs[0]}.
+    \item<3-> \lstinline!assert! помогает доказать верхнюю границу: каждый элемент — первый или из хвоста.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Dafny: вызов метода с предусловием}
+  \small
+  \lstset{style=specification,basicstyle=\footnotesize\ttfamily,morekeywords={method,returns,requires,ensures,forall,in,assert,var,if},morekeywords={[2]int,seq}}
+  \begin{lstlisting}
+    method MaxSeq(xs: seq<int>) returns (m: int)
+      requires |xs| > 0
+      ensures m in xs
+      ensures forall x :: x in xs ==> x <= m
+  \end{lstlisting}
+  \begin{lstlisting}
+    method Use(xs: seq<int>) {
+      if |xs| > 0 { var a := MaxSeq(xs); }
+      var b := MaxSeq(xs);
+    }
+  \end{lstlisting}
+  Какой вызов пройдёт проверку?
+  \uncover<2->{Только первый: внутри \textcolor{specKeyword}{\texttt{if}} известно, что последовательность непуста.}
+
+\end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
+    \item \href{https://blog.acolyer.org/2014/11/24/use-of-formal-methods-at-amazon-web-services/}{Use of Formal Methods at Amazon Web Services}. Обзор опыта AWS: поиск ошибок в проектах распределённых систем с помощью TLA+.
     \item \href{https://sdiehl.github.io/wiwinwlh/}{What I Wish I Knew When Learning Haskell}
     \item \href{https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/}{An opinionated guide to Haskell in 2018}
+    \item Doug Hoyte, \href{https://letoverlambda.com/}{Let Over Lambda} (бесплатная книга о макросах в Common Lisp).
     \item \href{https://realworldocaml.org/}{Real World OCaml: Functional Programming for the Masses} (бесплатная книга)
     \item \href{https://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.Documentation}{Много ссылок по Agda}
+    \item \href{https://rocq-prover.org/docs}{Книги по Rocq}
     \item \href{https://idris2.readthedocs.io/en/latest/tutorial/index.html}{Введение в Idris}
     \item \href{https://doc.rust-lang.org/book/}{The Rust Programming Language} (бесплатная книга)
   \end{itemize}

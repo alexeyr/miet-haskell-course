@@ -112,7 +112,7 @@
 
 \begin{frame}[fragile]
   \frametitle{Lean: как читать доказательство?}
-  В \href{https://lean-lang.org/}{Lean} можно записать утверждение вместе с доказательством.
+  В \href{https://lean-lang.org/}{Lean} \href{https://homepages.inf.ed.ac.uk/wadler/papers/propositions-as-types/propositions-as-types.pdf}{утверждение — это тип}, а его доказательство — значение этого типа.
   \begin{minted}[autogobble,fontsize=\footnotesize,escapeinside=!!]{lean4}
     example {A : Type} (xs : List A) : [] ++ xs = xs := by
       !\pause!rfl
@@ -289,6 +289,7 @@
   \begin{itemize}
     \setlength{\itemsep}{1pt}
     \item \href{https://nikivazou.github.io/floc26/Lecture_01_RefinementTypes.html}{Refinement Types} (Ники Вазу), \href{https://ruhaskell.org/posts/utils/2016/12/16/liquidhaskell-hello.html}{LiquidHaskell: знакомство} и \href{https://liquid.kosmikus.org/}{Liquid Haskell Tutorial}.
+    \item \href{https://fstar-lang.org/tutorial/book/}{Proof-Oriented Programming in F*} (бесплатная книга). \href{https://fstar-lang.org/tutorial/book/part1/part1_lemmas.html}{Доказательство свойств рекурсивных функций по индукции}.
     \item \href{https://doi.org/10.1145/3242744.3242756}{Theorem Proving for All}, \S\,2.3: индукция по списку в Liquid Haskell.
     \item Хаттон, \href{https://people.cs.nott.ac.uk/pszgmh/pih.html}{Programming in Haskell} (платная книга), гл. 16 о доказательствах.
     \item \href{https://people.cs.nott.ac.uk/pszgmh/afp.html}{Видеолекции Хаттона}, 11--14: обращение списка и обход дерева.
@@ -302,7 +303,6 @@
     \item \href{https://www.hillelwayne.com/post/theorem-prover-showdown/}{The Great Theorem Prover Showdown}. Три задачи на проверку программ и их решения в разных системах.
     \item \href{https://www.hillelwayne.com/post/lpl/}{Let's Prove Leftpad}. Продолжение: как доказать корректность одной функции в разных системах.
     \item \href{https://www.cs.ru.nl/~freek/100/}{Formalizing 100 Theorems}. Иррациональность $\sqrt{2}$ и другие теоремы в разных системах.
-    \item \href{https://blog.acolyer.org/2014/11/24/use-of-formal-methods-at-amazon-web-services/}{Use of Formal Methods at Amazon Web Services}. Обзор опыта AWS: поиск ошибок в проектах распределённых систем с помощью TLA+.
     \item \href{https://blog.acolyer.org/2015/01/12/how-to-write-a-21st-century-proof/}{How to Write a 21st Century Proof}. Обзор статьи Лампорта о том, как разбить доказательство на проверяемые шаги.
   \end{itemize}
 \end{frame}
