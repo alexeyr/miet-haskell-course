@@ -1,0 +1,309 @@
+\documentclass[11pt]{beamer}
+\input{lecture_preamble.tex}
+\setminted[lean4]{extrakeywords={rfl,rw,change,induction}}
+
+\title{Лекция 12а: рассуждения с помощью равенств и структурная индукция}
+
+\begin{document}
+\begin{frame}[plain]
+  \maketitle
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{От проверки свойства к доказательству}
+  Пусть \haskinline|xs| и \haskinline|ys| "--- списки целых чисел. Как проверить, что порядок двух операций не влияет на результат?
+  \begin{haskellsmall}
+    prop_mapAppend = property $ do
+      xs <- forAll genList
+      ys <- forAll genList
+      map (+1) (xs ++ ys) === map (+1) xs ++ map (+1) ys
+  \end{haskellsmall}
+  Здесь \haskinline|genList :: Gen [Integer]|. Допустим, все 100 тестов прошли. Что мы узнали? \pause
+
+  Равенство выполнено на этих 100 парах. Можно ли доказать его сразу для всех конечных списков и заменить \haskinline|(+1)| произвольной функцией?
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Какие значения мы рассматриваем?}
+  \begin{itemize}
+    \item В этой лекции списки и деревья конечны и полностью определены. Функции на рассматриваемых входах возвращают полностью определённые значения.
+    \item Зачем это оговаривать? Список \haskinline|repeat 1| тоже имеет тип \haskinline|[Integer]|, но до его конца мы никогда не дойдём. \pause
+    \item В доказательстве $=$ означает равенство значений. Его можно доказывать и для типов, у которых нет экземпляра \haskinline|Eq|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Определение как равенство}
+  \begin{haskell}
+    []       ++ ys = ys
+    (x : xs) ++ ys = x : (xs ++ ys)
+
+    map f []       = []
+    map f (x : xs) = f x : map f xs
+  \end{haskell}
+  Если образец подходит, одну сторону уравнения можно заменить другой. Например, что получится из \haskinline|map f (x : [])|? \pause
+  \begin{haskell}
+      map f (x : [])
+    !$=$! f x : map f []
+    !$=$! f x : []
+  \end{haskell}
+  Во втором переходе заменили выражение внутри \haskinline|(:)|.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Где вычисление останавливается?}
+  Хотим доказать для любых \haskinline|f|, \haskinline|xs| и \haskinline|ys|:
+  \begin{haskell}
+    map f (xs ++ ys) !$=$! map f xs ++ map f ys
+  \end{haskell}
+  Какое определение можно раскрыть слева? \pause
+  \begin{itemize}
+    \item Чтобы раскрыть \haskinline|(++)|, нужно знать первый конструктор \haskinline|xs|. Вид списка \haskinline|ys| здесь не важен.
+    \item Зафиксируем произвольные \haskinline|f| и \haskinline|ys|. Докажем утверждение $P(\mathit{xs})$ индукцией по \haskinline|xs|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Структурная индукция по списку}
+  \begin{itemize}
+    \item \emph{База.} Докажите $P([])$.
+    \item \emph{Шаг.} Возьмите произвольные голову \haskinline|x| и хвост \haskinline|xs|. Предположив $P(\mathit{xs})$, докажите $P(x : \mathit{xs})$.
+    \item Почему этого достаточно для любого конечного списка? \pause
+    \item Например, для \haskinline|[a,b]| база даёт $P([])$. Шаг с головой \haskinline|b| даёт $P([b])$, ещё один шаг с головой \haskinline|a| "--- $P([a,b])$.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{База: первый список пуст}
+  Подставим \haskinline|[]| вместо \haskinline|xs|. Как упростить обе стороны? \pause
+  \begin{haskell}
+      map f ([] ++ ys)
+    !$=$! map f ys
+  \end{haskell}
+  \pause
+  \begin{haskell}
+      map f [] ++ map f ys
+    !$=$! [] ++ map f ys
+    !$=$! map f ys
+  \end{haskell}
+  Получили одно и то же выражение при любом \haskinline|ys|.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Шаг: где применить предположение?}
+  Для хвоста уже предполагаем:
+  \begin{haskellsmall}
+    map f (xs ++ ys) !$=$! map f xs ++ map f ys
+  \end{haskellsmall}
+  Преобразуем левую сторону для \haskinline|x : xs|:
+  \begin{haskellsmall}
+      map f ((x : xs) ++ ys)
+    !$=$! map f (x : (xs ++ ys))
+    !$=$! f x : map f (xs ++ ys)
+  \end{haskellsmall}
+  \pause
+  \begin{haskellsmall}
+    !$=$! f x : (map f xs ++ map f ys)
+    !$=$! (f x : map f xs) ++ map f ys
+    !$=$! map f (x : xs) ++ map f ys
+  \end{haskellsmall}
+  В первом из этих переходов применили предположение к хвосту. В двух последних прочитали определения справа налево.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Lean: как читать доказательство?}
+  В \href{https://lean-lang.org/}{Lean} можно записать утверждение вместе с доказательством.
+  \begin{minted}[autogobble,fontsize=\footnotesize,escapeinside=!!]{lean4}
+    example {A : Type} (xs : List A) : [] ++ xs = xs := by
+      !\pause!rfl
+  \end{minted}
+  \begin{itemize}
+    \item \mintinline{lean4}{example} задаёт утверждение для любого списка. После \mintinline{lean4}{by} идут шаги доказательства.
+    \item \mintinline{lean4}|{A : Type}| "--- неявный аргумент: Lean выводит тип элемента из типа списка. \mintinline{lean4}|(xs : List A)| "--- явный аргумент: список передаём сами.
+    \item По определению конкатенации левая часть сводится к \mintinline{lean4}{xs}. Команда \mintinline{lean4}{rfl} (reflexivity) закрывает цель, когда обе стороны совпадают по определению.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Тот же шаг индукции в Lean 4}
+  Запишем цель и выберем индукцию по первому списку.
+  \begin{minted}[autogobble,fontsize=\footnotesize,escapeinside=!!]{lean4}
+    example {A B : Type} (f : A -> B) (xs ys : List A) :
+        (xs ++ ys).map f = xs.map f ++ ys.map f := by
+      induction xs with
+      | nil => rfl
+      | cons x xs ih =>
+        change f x :: (xs ++ ys).map f =
+               f x :: (xs.map f ++ ys.map f)
+        !\pause!rw [ih]
+  \end{minted}
+  В базе \mintinline{lean4}{rfl} проверяет равенство по определению.
+  В шаге \mintinline{lean4}{change} раскрывает определения, а \mintinline{lean4}{rw [ih]} (rewrite) переписывает левую часть по предположению для хвоста и закрывает цель.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Liquid Haskell: уточнённые типы}
+  \href{https://ucsd-progsys.github.io/liquidhaskell/}{Liquid Haskell} позволяет дополнить тип условием на его значения. Например, \texttt{\{v:Integer | v > 0\}} "--- тип положительных целых чисел.
+  \begin{minted}[autogobble,fontsize=\footnotesize]{haskell}
+    {-@ inc :: x:Integer -> {v:Integer | v > x} @-}
+    inc :: Integer -> Integer
+    inc x = x + 1
+  \end{minted}
+  Здесь условие на результат \haskinline|v| зависит от аргумента \haskinline|x|. Подойдёт ли реализация \haskinline|inc x = x|? \pause
+
+  Она пройдёт проверку обычного типа. Liquid Haskell отклонит её: возвращённое значение должно быть строго больше аргумента.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Какие определения раскрывает Liquid Haskell?}
+  \begin{minted}[autogobble,fontsize=\footnotesize]{haskell}
+    {-@ LIQUID "--reflection" @-}
+    {-@ LIQUID "--ple" @-}
+    import Prelude hiding (map, (++))
+
+    {-@ reflect map @-}
+    map :: (a -> b) -> [a] -> [b]
+    map _ []       = []
+    map f (x : xs) = f x : map f xs
+
+    {-@ infixr 5 ++ @-}
+    {-@ reflect ++ @-}
+    (++) :: [a] -> [a] -> [a]
+    []       ++ ys = ys
+    (x : xs) ++ ys = x : (xs ++ ys)
+  \end{minted}
+  \texttt{reflect} даёт доступ к уравнениям функций, а \texttt{--ple} разрешает раскрывать их автоматически.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Тот же шаг индукции в Liquid Haskell}
+  Равенство из примера на Lean теперь записано в уточнении типа результата.
+  \begin{minted}[autogobble,fontsize=\footnotesize]{haskell}
+    {-@ mapAppend :: f:(a -> b) -> xs:[a] -> ys:[a]
+          -> { map f (xs ++ ys) == map f xs ++ map f ys } @-}
+    mapAppend :: (a -> b) -> [a] -> [a] -> ()
+    mapAppend _ []       _  = ()
+  \end{minted}
+  В Lean мы применили \mintinline{lean4}{rw [ih]}. Как здесь получить равенство для хвоста \haskinline|xs|?
+  \begin{haskellsmall}
+    mapAppend f (_ : xs) ys =!\pause! mapAppend f xs ys
+  \end{haskellsmall}
+  Вызов на строго меньшем списке \haskinline|xs| даёт предположение индукции для хвоста. После раскрытия определений обе стороны начинаются с одной и той же головы.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Упражнение: ассоциативность}
+  Докажите закон, знакомый по списковому моноиду:
+  \begin{haskell}
+    (xs ++ ys) ++ zs !$=$! xs ++ (ys ++ zs)
+  \end{haskell}
+  \begin{itemize}
+    \item По какому списку провести индукцию? Какие два списка можно зафиксировать?
+    \item Выпишите предположение для хвоста и отметьте ровно тот переход, в котором оно понадобилось.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Деревья: сколько предположений?}
+  Вернёмся к дереву из лекции 6:
+  \begin{haskell}
+    data Tree a = Leaf a | Node (Tree a) (Tree a)
+
+    mirror (Leaf x)   = Leaf x
+    mirror (Node l r) = Node (mirror r) (mirror l)
+  \end{haskell}
+  Хотим доказать \haskinline|mirror (mirror t)| $=$ \haskinline|t|. Какие случаи придётся разобрать? \pause
+  \begin{itemize}
+    \item Для \haskinline|Leaf x| достаточно раскрыть определение дважды.
+    \item Для \haskinline|Node l r| есть два предположения: одно для \haskinline|l|, другое для \haskinline|r|.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Два отражения узла}
+  \begin{haskell}
+      mirror (mirror (Node l r))
+    !$=$! mirror (Node (mirror r) (mirror l))
+    !$=$! Node (mirror (mirror l)) (mirror (mirror r))
+  \end{haskell}
+  Какое подвыражение можно заменить, зная свойство только для \haskinline|l|? \pause
+  \begin{haskell}
+    !$=$! Node l (mirror (mirror r))
+  \end{haskell}
+  \pause
+  \begin{haskell}
+    !$=$! Node l r
+  \end{haskell}
+  В каждом предположении фигурирует своё непосредственное поддерево.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Когда предположение слишком слабое}
+  Зададим обращение списка и сравним его с версией с аккумулятором:
+  \begin{haskellsmall}
+    reverse []       = []
+    reverse (x : xs) = reverse xs ++ [x]
+
+    revAcc []       acc = acc
+    revAcc (x : xs) acc = revAcc xs (x : acc)
+  \end{haskellsmall}
+  Хотим доказать \haskinline|revAcc xs []| $=$ \haskinline|reverse xs|. Что произойдёт на первом шаге? \pause
+  \begin{haskell}
+      revAcc (x : xs) []
+    !$=$! revAcc xs [x]
+  \end{haskell}
+  Предположение говорит только о вызове с \haskinline|[]|. Какое свойство охватит и новый аккумулятор?
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Усилим утверждение}
+  Для каждого \haskinline|xs| докажем равенство \emph{при любом} \haskinline|acc|:
+  \begin{haskell}
+    revAcc xs acc !$=$! reverse xs ++ acc
+  \end{haskell}
+  База следует из определения. В шаге выберем для хвоста аккумулятор \haskinline|x : acc|: \pause
+  \begin{haskellsmall}
+      revAcc (x : xs) acc
+    !$=$! revAcc xs (x : acc)
+    !$=$! reverse xs ++ (x : acc)
+    !$=$! reverse xs ++ ([x] ++ acc)
+    !$=$! (reverse xs ++ [x]) ++ acc
+    !$=$! reverse (x : xs) ++ acc
+  \end{haskellsmall}
+  Использовали ассоциативность и уравнение для \haskinline|reverse|. При \haskinline|acc = []| получаем исходное свойство по закону правой единицы.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Для самостоятельной работы}
+  Задания 1 и 2: попробуйте доказать вручную, затем в Lean и Liquid Haskell.
+  \begin{enumerate}
+    \item Докажите закон правой единицы \haskinline|xs ++ []| $=$ \haskinline|xs|. Почему для левой единицы индукция не понадобилась?
+    \item Для \haskinline|Tree Integer| докажите: \haskinline|sumTree (mirror t)| $=$ \haskinline|sumTree t|. Какое свойство сложения понадобится в случае \haskinline|Node|?
+    \item Всегда ли отражение сохраняет результат \haskinline|foldTree id op|? Найдите контрпример. Какое свойство \haskinline|op| гарантирует равенство результатов?
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Дополнительное чтение}
+  \begin{itemize}
+    \item Graham Hutton, \href{https://people.cs.nott.ac.uk/pszgmh/pih.html}{Programming in Haskell}, глава 16, \emph{Reasoning about programs}.
+    \item \href{https://people.cs.nott.ac.uk/pszgmh/afp.html}{Видеолекции Хаттона}, занятия 11--14. Быстрое обращение списка и обход дерева.
+    \item \href{https://nikivazou.github.io/floc26/Lecture_01_RefinementTypes.html}{Refinement Types} (Ники Вазу), \href{https://ruhaskell.org/posts/utils/2016/12/16/liquidhaskell-hello.html}{LiquidHaskell: знакомство} и \href{https://liquid.kosmikus.org/}{Liquid Haskell Tutorial}.
+    \item \href{https://doi.org/10.1145/3242744.3242756}{Theorem Proving for All}, \S\,2.3: индукция по списку в Liquid Haskell.
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Дополнительное чтение: Lean}
+  \small
+  \begin{itemize}
+    \setlength{\itemsep}{1pt}
+    \item \href{https://lean-lang.org/functional_programming_in_lean/}{Functional Programming in Lean}. Введение для программистов.
+    \item \href{https://lean-lang.org/theorem_proving_in_lean4/}{Theorem Proving in Lean 4}. От \href{https://lean-lang.org/theorem_proving_in_lean4/Introduction/}{введения} к тактикам и доказательствам по индукции.
+    \item \href{https://leanprover-community.github.io/mathematics_in_lean/}{Mathematics in Lean}. Математические доказательства с библиотекой mathlib.
+    \item \href{https://adam.math.hhu.de/}{Lean Game Server}. Интерактивные задачи на доказательство.
+    \item \href{https://leanprover-community.github.io/logic_and_proof/}{Logic and Proof}, главы 17--18. Индукция на бумаге и в Lean 4.
+    \item Heather Macbeth, \href{https://hrmacbeth.github.io/math2001/}{The Mechanics of Proof}, главы 1 и 6. Равенства и индукция в Lean 4.
+    \item \href{https://leanprover-community.github.io/}{Lean community}: учебные материалы и сообщество Lean.
+  \end{itemize}
+\end{frame}
+\end{document}
