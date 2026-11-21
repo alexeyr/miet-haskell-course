@@ -434,13 +434,16 @@ withStrategy s x = runEval (s x)
 
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
+  \small
   \begin{itemize}
-    \item \href{https://simonmar.github.io/pages/pcph.html}{Parallel and Concurrent Programming in Haskell} (книга, 2013, доступна бесплатно)
+    \setlength{\itemsep}{1pt}
+    \item \href{https://simonmar.github.io/pages/pcph.html}{Parallel and Concurrent Programming in Haskell} (бесплатная книга, 2013)
     \item \href{https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/parallel_haskell2.pdf}{A Tutorial on Parallel and Concurrent Programming in Haskell}
-    \item \href{https://erlang.org/}{Erlang} Функциональный язык, построенный на модели акторов (взаимодействующих только через отправку сообщений друг другу вместо общих переменных).
-    \item \href{https://stackoverflow.com/questions/23326920/difference-between-par-monad-and-eval-monad-with-deepseq/23428610#23428610}{Ответ на Stack Overflow про разницу между \haskinline|Eval| и \haskinline|Par|} (ещё один в конце главы 4 первой ссылки).
-    \item \href{https://hackage.haskell.org/package/streamly}{Streamly: Beautiful Streaming, Concurrent and Reactive Composition}
-    \item \href{https://hackage.haskell.org/package/lvish}{lvish} Пакет, обобщающий \haskinline|Par| на основе теории решёток. К сожалению, мёртв с 2014.
+    \item \href{https://learntla.com/intro/conceptual-overview.html}{Learn TLA+}. Поиск гонки между банковскими переводами.
+    \item \href{https://erlang.org/}{Erlang}. Язык на основе акторов, которые обмениваются сообщениями.
+    \item \href{https://stackoverflow.com/questions/23326920/difference-between-par-monad-and-eval-monad-with-deepseq/23428610#23428610}{Разница между \haskinline|Eval| и \haskinline|Par|} (см. также главу 4 книги Марлоу).
+    \item \href{https://hackage.haskell.org/package/streamly}{Streamly}. Конкурентная обработка потоков данных.
+    \item \href{https://hackage.haskell.org/package/lvish}{lvish}. Обобщение \haskinline|Par| на основе теории решёток (2014).
   \end{itemize}
 \end{frame}
 
