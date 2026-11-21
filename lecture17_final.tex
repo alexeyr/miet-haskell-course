@@ -54,13 +54,16 @@
 
 \begin{frame}[fragile]
   \frametitle{Библиотеки и инструменты Haskell}
+  \small
   \begin{itemize}
+    \setlength{\itemsep}{0pt}
     \item Сборка проектов и управление зависимостями: \href{https://cabal.readthedocs.io/en/stable/}{cabal} и \href{https://docs.haskellstack.org/en/stable/}{stack}.
     \item \href{https://haskell-language-server.readthedocs.io/en/latest/features.html}{Haskell Language Server}: показывает типы при наведении в редакторе и предлагает, чем заполнить типизированные дыры.
     \item Сериализация значений Haskell: \hackage{aeson} для JSON, \hackage{binary} для двоичного представления.
     \item \href{https://hackage.haskell.org/package/criterion/docs/Criterion-Main.html}{criterion}: измерение производительности. Глубину вычисления результата задают \haskinline|whnf| и \haskinline|nf|.
     \item Линзы (\hackage{lens}): обобщение геттеров и сеттеров.
     \item Альтернативы \haskinline|show| для больших структур: \hackage{pretty-show} и \hackage{prettyprinter}.
+    \item \href{https://github.com/Gabriella439/post-rfc/blob/main/sotu.md}{State of the Haskell ecosystem} (обновлён в 2022).
   \end{itemize}
 \end{frame}
 
@@ -399,15 +402,17 @@
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
-    \item \href{https://blog.acolyer.org/2014/11/24/use-of-formal-methods-at-amazon-web-services/}{Use of Formal Methods at Amazon Web Services}. Обзор опыта AWS: поиск ошибок в проектах распределённых систем с помощью TLA+.
+    \setlength{\itemsep}{0pt}
     \item \href{https://sdiehl.github.io/wiwinwlh/}{What I Wish I Knew When Learning Haskell}
-    \item \href{https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/}{An opinionated guide to Haskell in 2018}
+    \item \href{https://well-typed.com/blog/tags/unfolder/}{The Haskell Unfolder} (видео с примерами кода).
+    \item Matt Parsons, \href{https://leanpub.com/production-haskell}{Production Haskell} (платная книга).
     \item Doug Hoyte, \href{https://letoverlambda.com/}{Let Over Lambda} (бесплатная книга о макросах в Common Lisp).
     \item \href{https://realworldocaml.org/}{Real World OCaml: Functional Programming for the Masses} (бесплатная книга)
     \item \href{https://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.Documentation}{Много ссылок по Agda}
     \item \href{https://rocq-prover.org/docs}{Книги по Rocq}
     \item \href{https://idris2.readthedocs.io/en/latest/tutorial/index.html}{Введение в Idris}
     \item \href{https://doc.rust-lang.org/book/}{The Rust Programming Language} (бесплатная книга)
+    \item \href{https://blog.acolyer.org/2014/11/24/use-of-formal-methods-at-amazon-web-services/}{Use of Formal Methods at Amazon Web Services}. TLA+ для распределённых систем.
   \end{itemize}
 \end{frame}
 
