@@ -15,7 +15,7 @@
           \pause
     \item Сначала вычисляются аргументы \haskinline|g(x, y)| и \haskinline|h(z)| (гарантированно в этом порядке или нет), потом их значения передаются в \haskinline|f|.
     \item Это называется \emph{передачей аргументов по значению (call-by-value)}.
-    \item Для вычисления выражения нужно вычислить все подвыражения.
+    \item Перед вызовом функции вычисляются все её аргументы.
     \item Исключения в C-подобных языках?
           \pause
     \item \haskinline|&&|, \haskinline{||}, \haskinline|? :|.
@@ -107,8 +107,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           \begin{itemize}
             \item Можно сделать очень много лишних вычислений.
                   \pause
-            \item Как только мы используем какую-то переменную более одного раза
-                  \pause (если переменные в её определении не изменились).
+            \item При каждом использовании параметра выражение аргумента вычисляется заново.
           \end{itemize}
   \end{itemize}
 \end{frame}
@@ -117,9 +116,9 @@ twice({ println("evaluating"); 2 }) !\pause!
   \frametitle{Передача по необходимости}
   \begin{itemize}
     \item В Haskell используется \emph{передача по необходимости (call-by-need)}:
-    \item Как передача по имени, но значение каждой переменной вычисляется только один раз.
+    \item Аргумент вычисляется, когда впервые требуется его значение.
           \pause
-    \item Это имеет смысл потому, что все переменные неизменяемы.
+    \item При следующих обращениях уже вычисленная часть результата используется повторно.
           \pause
     \item При этом значения тоже не обязательно вычислять \enquote{до конца}: мы хотим, чтобы
           \begin{haskell}
@@ -133,9 +132,9 @@ twice({ println("evaluating"); 2 }) !\pause!
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Нормальная форма}
+  \frametitle{Нормальная форма (НФ)}
   \begin{itemize}
-    \item Выражение находится в нормальной форме, если там нет ничего, что можно вычислить (редуцировать).
+    \item Выражение находится в нормальной форме (\emph{normal form}, NF), если там нет ничего, что можно вычислить (редуцировать).
     \item Примеры: \pause
           \begin{haskell}
             42
@@ -166,16 +165,16 @@ twice({ println("evaluating"); 2 }) !\pause!
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Слабая заголовочная нормальная форма}
+  \frametitle{Слабая заголовочная нормальная форма (СЗНФ)}
   \begin{itemize}
-    \item Выражение находится в слабой заголовочной нормальной форме (WHNF), если это:
+    \item Выражение находится в СЗНФ (\emph{weak head normal form}, WHNF), если это:
           \begin{itemize}
             \item Лямбда.
             \item Литерал.
             \item Конструктор данных, возможно с аргументами.
             \item Частичное применение функции, которому для выполнения её тела ещё нужны аргументы.
           \end{itemize}
-          Аргументы здесь "--- любые выражения \pause
+          В ленивых полях конструктора могут быть любые выражения \pause
           (а для НФ они тоже должны быть в НФ).
     \item Примеры: \pause
           \begin{haskellsmall}
@@ -201,7 +200,7 @@ twice({ println("evaluating"); 2 }) !\pause!
             case x of
               (y, z) -> ...
           \end{haskell}
-          требует привести \haskinline|x| к WHNF. Схематически: \pause
+          требует привести \haskinline|x| к СЗНФ. Схематически: \pause
           \begin{haskell}
             x: (*thunk1*, *thunk2*)  *thunk1*: !$\langle$!length [1,3]!$\rangle$!
             y: *thunk1*              *thunk2*: !$\langle$!undefined!$\rangle$!
@@ -256,7 +255,7 @@ twice({ println("evaluating"); 2 }) !\pause!
       \begin{itemize}
         \small
         \item \href{https://github.com/carlohamalainen/ghc-vis-ds}{ghc-vis-ds}: значения из GHCi в браузере.
-        \item Щелчок по узлу \texttt{Thunk} выполняет отложенное вычисление до WHNF.
+        \item Щелчок по узлу \texttt{Thunk} выполняет отложенное вычисление до СЗНФ.
         \item Видны отложенные вычисления и общие ссылки.
         \item \href{https://ghc-vis-ds.hamalainen.dev}{Онлайн-демо с примерами}.
       \end{itemize}
@@ -273,13 +272,13 @@ twice({ println("evaluating"); 2 }) !\pause!
 \begin{frame}[fragile]
   \frametitle{Примеры}
   \begin{itemize}
-    \item Ещё примеры:
-          \pause
     \item
           \begin{haskell}
             square x = x*x
             square (square (1+1))
           \end{haskell}
+          Сколько раз вычислится \haskinline|1+1|?
+          \pause
     \item \haskinline|length (take 2 (filter even [1..]))|
           \pause
     \item
@@ -296,50 +295,36 @@ twice({ println("evaluating"); 2 }) !\pause!
 
 \begin{frame}[fragile]
   \frametitle{Минусы ленивости}
+  \small
   \begin{itemize}
-    \item Ленивость позволяет избежать ненужных вычислений.
-    \item Но хранение и обработка отложенных вычислений требуют дополнительных затрат.
-    \item Отложенные вычисления могут занимать больше памяти, чем их результат (а могут и меньше).
+    \item Хранение и обработка отложенных вычислений требуют ресурсов.
+    \item Отложенное вычисление может занимать больше памяти, чем результат.
     \item Классический пример:
           \begin{haskellsmall}
-            sum [] acc = acc
-            sum (x:xs) acc = sum xs (x + acc)
+            sumAcc [] acc = acc
+            sumAcc (x:xs) acc = sumAcc xs (x + acc)
 
-            sum [1..100] 0!$\pause \rightsquigarrow$! sum (1:[2..100]) 0!$\pause \rightsquigarrow$!
-            sum [2..100] !$\langle$!1 + 0!$\rangle$!!$\pause \rightsquigarrow$! sum (2:[3..100]) !$\langle$!1 + 0!$\rangle$!!$\pause \rightsquigarrow$!
-            sum [3..100] !$\langle$!2 + !$\langle$!1 + 0!$\rangle$!!$\rangle$!!$\pause \rightsquigarrow \ \ldots\ \rightsquigarrow$!
+            sumAcc [1..100] 0!$\pause \rightsquigarrow$! sumAcc (1:[2..100]) 0!$\pause \rightsquigarrow$!
+            sumAcc [2..100] !$\langle$!1 + 0!$\rangle$!!$\pause \rightsquigarrow$! sumAcc (2:[3..100]) !$\langle$!1 + 0!$\rangle$!!$\pause \rightsquigarrow$!
+            sumAcc [3..100] !$\langle$!2 + !$\langle$!1 + 0!$\rangle$!!$\rangle$!!$\pause \rightsquigarrow \ \ldots\ \rightsquigarrow$!
             !$\langle$!100 + ... + !$\langle$!1 + 0!$\rangle$!!$\rangle$!!$\pause \rightsquigarrow $! 5050
           \end{haskellsmall}
+    \item \haskinline|sumAcc xs acc = foldl (flip (+)) acc xs|.
+          Здесь \haskinline|foldl| копит отложенные сложения. Строгий вариант "--- \haskinline|foldl'|.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Минусы ленивости}
-  \begin{itemize}
-    \item Такой \haskinline|sum| "--- по сути \haskinline|foldl (flip (+))|.
-    \item Из-за этого \haskinline|foldl| "--- ловушка, практически всегда нужно либо \haskinline|foldr|, либо \haskinline|foldl'| (будет позже).
-    \item<2-> Что произойдёт в этом примере?
-  \end{itemize}
-  \begin{overlayarea}{\textwidth}{3.7cm}
-    \begin{onlyenv}<2-6>
-      \begin{haskellsmall}
-        length !$\langle$!take 2 !$\langle$!filter (< 2) [1..]!$\rangle$!!$\rangle$! !\onslide<3->! !$\rightsquigarrow$!
-        length (1 : !$\langle$!take 1 !$\langle$!filter (< 2) [2..]!$\rangle$!!$\rangle$!) !\onslide<4->! !$\rightsquigarrow$!
-        1 + !$\langle$!length !$\langle$!take 1 !$\langle$!filter (< 2) [2..]!$\rangle$!!$\rangle$!!$\rangle$! !\onslide<5->! !$\rightsquigarrow$!
-        1 + !$\langle$!length !$\langle$!take 1 !$\langle$!filter (< 2) [3..]!$\rangle$!!$\rangle$!!$\rangle$! !\onslide<6->! !$\rightsquigarrow\ \ldots$! !\onslide<1->!
-      \end{haskellsmall}
-      \uncover<6->{\small \haskinline|filter| выдаёт \haskinline|1|, но второго элемента не будет: все последующие числа не меньше \haskinline|2|. Поиск продолжается бесконечно; \haskinline|length| не возвращает даже \haskinline|1|.}
-    \end{onlyenv}
-    \begin{onlyenv}<7->
-      \begin{itemize}
-        \item Что же можно сделать?
-        \item Часто компилятор может оптимизировать ленивые вычисления (если знает, что это не изменит результата).
-        \item Или...
-      \end{itemize}
-    \end{onlyenv}
-  \end{overlayarea}
+  \frametitle{Когда ленивость не помогает}
+  Что произойдёт в этом примере?
+  \begin{haskellsmall}
+    length !$\langle$!take 2 !$\langle$!filter (< 2) [1..]!$\rangle$!!$\rangle$! !\onslide<2->! !$\rightsquigarrow$!
+    length (1 : !$\langle$!take 1 !$\langle$!filter (< 2) [2..]!$\rangle$!!$\rangle$!) !\onslide<3->! !$\rightsquigarrow$!
+    1 + !$\langle$!length !$\langle$!take 1 !$\langle$!filter (< 2) [2..]!$\rangle$!!$\rangle$!!$\rangle$! !\onslide<4->! !$\rightsquigarrow$!
+    1 + !$\langle$!length !$\langle$!take 1 !$\langle$!filter (< 2) [3..]!$\rangle$!!$\rangle$!!$\rangle$! !\onslide<5->! !$\rightsquigarrow\ \ldots$! !\onslide<1->!
+  \end{haskellsmall}
+  \uncover<5->{\small \haskinline|filter| выдаёт \haskinline|1|, но второго элемента не будет: все последующие числа не меньше \haskinline|2|. Поиск продолжается бесконечно; \haskinline|length| не возвращает даже \haskinline|1|.}
 \end{frame}
-
 
 \begin{frame}[fragile,t]
   \frametitle{\haskinline|foldr|: ленивый шаг}
@@ -354,7 +339,7 @@ twice({ println("evaluating"); 2 }) !\pause!
         foldr step [] [1..] !\onslide<2->! !$\rightsquigarrow$!
         !$\langle$!1 * 2!$\rangle$! : !$\langle$!foldr step [] [2..]!$\rangle$! !\onslide<1->!
       \end{haskellsmall}
-      \uncover<3->{Это уже WHNF: \haskinline|(:)| не требует вычисления головы и хвоста.}
+      \uncover<3->{Это уже СЗНФ: \haskinline|(:)| не требует вычисления головы и хвоста.}
     \end{onlyenv}
     \begin{onlyenv}<4->
       Можно потребить только часть результата:
@@ -378,14 +363,14 @@ twice({ println("evaluating"); 2 }) !\pause!
     \item Мы можем управлять ленивостью явно.
     \item Базовый инструмент для этого: \enquote{волшебная} (её нельзя реализовать на самом Haskell) функция \haskinline|seq :: a -> b -> b|.
           \pause
-    \item \haskinline|seq !$e_1$! !$e_2$!| возвращает $e_2$, но требует вычисления $e_1$ до WHNF. Порядок вычисления аргументов не гарантируется.
+    \item \haskinline|seq !$e_1$! !$e_2$!| возвращает $e_2$, но требует вычисления $e_1$ до СЗНФ. Порядок вычисления аргументов не гарантируется.
           \pause
     \item Обычно $e_1$ "--- переменная в $e_2$.
     \item Пример использования:
           \begin{haskell*}{escapeinside=||}
             f $! x = seq x (f x)
           \end{haskell*}
-    \item Это аналог \haskinline|$|, только вычисляющий аргумент до WHNF перед вызовом функции.
+    \item Это аналог \haskinline|$|, только вычисляющий аргумент до СЗНФ перед вызовом функции.
   \end{itemize}
 \end{frame}
 
@@ -396,7 +381,7 @@ twice({ println("evaluating"); 2 }) !\pause!
     class NFData a where
       rnf :: a -> ()
   \end{haskellsmall}
-  \href{https://hackage.haskell.org/package/deepseq/docs/Control-DeepSeq.html#v:rnf}{\haskinline{rnf}} (\emph{reduce to normal form}) приводит аргумент к НФ и возвращает \haskinline|()|.
+  \href{https://hackage.haskell.org/package/deepseq/docs/Control-DeepSeq.html#v:rnf}{\haskinline{rnf}} (\emph{reduce to normal form}) приводит аргумент к НФ и возвращает \haskinline|()|. Функцию \haskinline|rnf| приводит лишь к СЗНФ: редексы под лямбдой остаются.
   Для пары: \pause
   \begin{haskellsmall}
     instance (NFData a, NFData b) => NFData (a, b) where
@@ -407,7 +392,7 @@ twice({ println("evaluating"); 2 }) !\pause!
     deepseq x result = rnf x `seq` result
     force x = x `deepseq` x
   \end{haskellsmall}
-  \haskinline|force x| возвращает \haskinline|x| в НФ. Для функций достаточно WHNF: тело под лямбдой не вычисляется.
+  \haskinline|force x| возвращает сам \haskinline|x| после вычисления \haskinline|rnf x|.
 \end{frame}
 
 \begin{frame}[fragile]
@@ -433,27 +418,27 @@ twice({ println("evaluating"); 2 }) !\pause!
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{\haskinline|sum| через \haskinline|seq|}
+  \frametitle{\haskinline|sumAcc| через \haskinline|seq|}
   \begin{itemize}
-    \item Теперь можем определить \haskinline|sum| так:\pause
+    \item Теперь можем определить \haskinline|sumAcc| так:\pause
           \begin{haskell*}{escapeinside=||}
-            sum [] acc = acc
-            sum (x:xs) acc = sum xs $! x + acc
+            sumAcc [] acc = acc
+            sumAcc (x:xs) acc = sumAcc xs $! x + acc
           \end{haskell*}
     \item Или так:\pause
           \begin{haskell}
-            sum [] acc = acc
-            sum (x:xs) acc = let a1 = x + acc in
-                             a1 `seq` sum xs a1
+            sumAcc [] acc = acc
+            sumAcc (x:xs) acc = let a1 = x + acc in
+                             a1 `seq` sumAcc xs a1
           \end{haskell}
     \item И процесс вычисления:
-          \begin{haskell}
-            sum [1..100] 0 !$\rightsquigarrow$! sum (1:[2..100]) 0 !$\pause \rightsquigarrow$!
-            let a1 = !$\langle$!1 + 0!$\rangle$! in a1 `seq` sum [2..100] a1 !$\pause \rightsquigarrow$!
-            sum [2..100] 1 !$\rightsquigarrow$! sum (2:[3..100]) 1 !$\pause \rightsquigarrow$!
-            let a1 = !$\langle$!2 + 1!$\rangle$! in a1 `seq` sum [3..100] a1 !$\pause \rightsquigarrow$!
+          \begin{haskellsmall}
+            sumAcc [1..100] 0 !$\rightsquigarrow$! sumAcc (1:[2..100]) 0 !$\pause \rightsquigarrow$!
+            let a1 = !$\langle$!1 + 0!$\rangle$! in a1 `seq` sumAcc [2..100] a1 !$\pause \rightsquigarrow$!
+            sumAcc [2..100] 1 !$\rightsquigarrow$! sumAcc (2:[3..100]) 1 !$\pause \rightsquigarrow$!
+            let a1 = !$\langle$!2 + 1!$\rangle$! in a1 `seq` sumAcc [3..100] a1 !$\pause \rightsquigarrow$!
             !$\rightsquigarrow\ \ldots\ \rightsquigarrow\ $!5050
-          \end{haskell}
+          \end{haskellsmall}
     \item Заметьте, что список \haskinline|[1..100]| никогда не появляется целиком в памяти!
   \end{itemize}
 \end{frame}
@@ -467,8 +452,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           \begin{haskellsmall}
             foldl' :: (a -> b -> a) -> a -> [b] -> a
             foldl' f acc []     = acc
-            foldl' f acc (x:xs) = let acc' = f acc x
-                                  in acc' `seq` foldl' f acc' xs
+            foldl' f acc (x:xs) = acc `seq` foldl' f (f acc x) xs
           \end{haskellsmall}
     \item \pause
           \begin{haskellsmall}
@@ -489,7 +473,7 @@ twice({ println("evaluating"); 2 }) !\pause!
       where (s', l') = foldl' step (0, 0) xs
             step (s, l) x = (s + x, l + 1)
   \end{haskellsmall}
-  \haskinline|foldl'| вычисляет пару до WHNF. Что происходит с её полями? \pause
+  \haskinline|foldl'| вычисляет пару до СЗНФ. Что происходит с её полями? \pause
   \begin{haskellsmall}
     foldl' step (0, 0) [1, 2] !$\pause \rightsquigarrow$!
     foldl' step (!$\langle$!0 + 1!$\rangle$!, !$\langle$!0 + 1!$\rangle$!) [2] !$\pause \rightsquigarrow$!
@@ -515,7 +499,7 @@ twice({ println("evaluating"); 2 }) !\pause!
           \begin{haskell}
             step (s, l) x = s `seq` l `seq` (s + x, l + 1)
           \end{haskell}
-          Когда \haskinline|foldl'| требует результат шага, \texttt{!} вычисляет поля предыдущей пары до WHNF. Для \haskinline|Double| и \haskinline|Int| это уже НФ: эффект тот же, что у \haskinline|(s, l) `deepseq` (s + x, l + 1)|.
+          Когда \haskinline|foldl'| требует результат шага, \texttt{!} вычисляет поля предыдущей пары до СЗНФ. Для \haskinline|Double| и \haskinline|Int| это уже НФ: эффект тот же, что у \haskinline|(s, l) `deepseq` (s + x, l + 1)|.
     \item Полные правила перевода \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/strict.html#bang-patterns-informal}{довольно сложные}.
   \end{itemize}
 \end{frame}
@@ -533,7 +517,7 @@ twice({ println("evaluating"); 2 }) !\pause!
                     step (SPair s l) x = SPair (s + x) (l + 1)
           \end{haskellsmall*}
           \pause
-    \item Восклицательный знак означает, что любое вычисление значения с этим конструктором вычислит и эти поля (до WHNF).
+    \item Восклицательный знак означает, что любое вычисление значения с этим конструктором вычислит и эти поля (до СЗНФ).
     \item То есть конструктор работает как
           \begin{haskell}
             SPair a b = a `seq` b `seq` SPair' a b
