@@ -155,7 +155,7 @@ twice({ println("evaluating"); 2 }) !\pause!
 \begin{frame}[fragile]
   \frametitle{Теоремы о нормальных формах в лямбда-исчислении}
   \begin{itemize}
-    \item В лямбда-исчислении можно доказать:
+    \item См. \href{https://arxiv.org/abs/0804.3434}{конспект Питера Селингера}, §~4.2.
     \item Два порядка вычисления одного выражения не могут привести к разным значениям (нормальным формам).
     \item Но может случиться, что один из них даёт значение, а другой "--- нет.
     \item Если нормальная форма существует, нормальный порядок редукции найдёт её.
@@ -541,6 +541,7 @@ twice({ println("evaluating"); 2 }) !\pause!
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение: память}
   \begin{itemize}
+    \item \href{https://www.plai.org/}{Programming Languages: Application and Interpretation} (бесплатная книга). Глава \emph{Laziness}: как интерпретатор откладывает вычисление и запоминает результат.
     \item \href{https://www.youtube.com/watch?v=I4lnCG18TaY}{Joachim Breitner, Thunks, Sharing, Laziness: The Haskell Heap Visualized}: видеодемонстрация отложенных вычислений, общих ссылок и циклических структур с помощью ghc-vis.
     \item \href{https://haskell.foundation/hs-opt-handbook.github.io/src/Preliminaries/what_makes_fast_hs.html}{The Programs of Consistent Lethargy (Haskell Optimization Handbook)}: ленивость и расход памяти; почему \haskinline|foldl'| не вычисляет поля пары до конца.
   \end{itemize}

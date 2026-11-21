@@ -12,41 +12,66 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Веб-интерфейсы}
+  \small
+  Что происходит при нажатии кнопки?
+  \begin{itemize}
+    \item \href{https://haskell-miso.org/}{Miso}: код на Haskell компилируется в JavaScript или WebAssembly. В браузере нажатие обновляет модель и представление.
+    \item \href{https://data-star.dev/}{Datastar} и \hackage{datastar-hs}: сервер на Haskell может ответить на нажатие фрагментом HTML. Браузер обновляет часть страницы. Пример: \href{https://carlo-hamalainen.net/2026/08/06/ghc-vis-ds/}{ghc-vis-ds} из лекции 9.
+    \item \href{https://elm-lang.org/}{Elm} "--- отдельный функциональный язык для веб-интерфейсов. В \href{https://guide.elm-lang.org/architecture/}{The Elm Architecture} нажатие порождает сообщение. Функция \texttt{update} вычисляет новую модель, а \texttt{view} описывает, что увидит пользователь.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Настольные графические интерфейсы}
+  \small
+  \begin{itemize}
+    \item \href{https://github.com/fjvallarino/monomer}{Monomer}: GUI для Windows, macOS и Linux. Как и в Elm, события обновляют модель интерфейса.
+    \item \href{https://github.com/haskell-gi/haskell-gi}{gi-gtk}: виджеты \href{https://www.gtk.org/}{GTK} и обработчики событий в \texttt{IO}.
+          \begin{itemize}
+            \item Для GTK 3 есть \href{https://github.com/owickstrom/gi-gtk-declarative}{gi-gtk-declarative}: интерфейс описывается деревом виджетов.
+          \end{itemize}
+    \item \href{https://github.com/haskell-game/dear-imgui.hs}{dear-imgui.hs} "--- интерфейс в немедленном режиме (\emph{immediate mode}). В каждом кадре вызываем \texttt{button} и сразу узнаём, нажата ли кнопка.
+    \item \href{https://github.com/jtdaugherty/brick}{brick}: интерактивные интерфейсы в терминале.
+    \item \href{https://bradrn.com/posts/hs-gui-libs.html}{The Big List of Haskell GUI Libraries} (2022): обзор библиотек и сравнение подходов.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Библиотеки и инструменты Haskell}
   \begin{itemize}
     \item Сборка проектов и управление зависимостями: \href{https://cabal.readthedocs.io/en/stable/}{cabal} и \href{https://docs.haskellstack.org/en/stable/}{stack}.
-    \item \hackage{aeson}: преобразование между JSON и типами Haskell.
+    \item \href{https://haskell-language-server.readthedocs.io/en/latest/features.html}{Haskell Language Server}: показывает типы при наведении в редакторе и предлагает, чем заполнить типизированные дыры.
+    \item Сериализация значений Haskell: \hackage{aeson} для JSON, \hackage{binary} для двоичного представления.
+    \item \href{https://hackage.haskell.org/package/criterion/docs/Criterion-Main.html}{criterion}: измерение производительности. Глубину вычисления результата задают \haskinline|whnf| и \haskinline|nf|.
     \item Линзы (\hackage{lens}): обобщение геттеров и сеттеров.
     \item Альтернативы \haskinline|show| для больших структур: \hackage{pretty-show} и \hackage{prettyprinter}.
   \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]
-  \frametitle{Веб-интерфейсы}
-  \small
-  Что происходит при нажатии кнопки?
+\begin{frame}
+  \frametitle{Серверная часть веб-приложения}
   \begin{itemize}
-    \item \href{https://haskell-miso.org/}{Miso}: код на Haskell работает в браузере. Нажатие порождает действие, которое обновляет модель; по ней строится новое представление.
-    \item \href{https://data-star.dev/}{Datastar} и \hackage{datastar-hs}: нажатие может вызвать запрос к серверу на Haskell. Сервер присылает фрагмент HTML, и браузер обновляет часть страницы. Так устроен интерфейс \href{https://carlo-hamalainen.net/2026/08/06/ghc-vis-ds/}{ghc-vis-ds} из лекции 9.
-    \item \href{https://elm-lang.org/}{Elm} "--- отдельный функциональный язык для веб-интерфейсов. В \href{https://guide.elm-lang.org/architecture/}{The Elm Architecture} нажатие порождает сообщение. Функция \texttt{update} вычисляет новую модель, а \texttt{view} описывает, что увидит пользователь.
+    \item \href{https://github.com/scotty-web/scotty/tree/master/examples}{Scotty}: маршруты, обработка HTTP-запросов и ответы в JSON.
+    \item \href{https://www.yesodweb.com/book}{Yesod}: фреймворк с типизированными маршрутами, HTML-шаблонами и формами. В книге разобран пример блога.
+    \item \href{https://aosabook.org/en/posa/warp.html}{Warp}: как устроен HTTP-сервер, на котором можно запускать приложения на Scotty и Yesod.
+    \item HTTP-клиент \href{https://hackage.haskell.org/package/http-conduit/docs/Network-HTTP-Simple.html}{\texttt{Network.HTTP.Simple}}: \href{https://hackage.haskell.org/package/http-conduit/docs/Network-HTTP-Simple.html\#v:httpJSON}{\texttt{httpJSON}} отправляет запрос другому сервису и разбирает JSON в ответе.
+    \item \href{https://www.yesodweb.com/book/persistent}{persistent}: работа с SQLite, PostgreSQL и MySQL через записи Haskell.
+    \item \href{https://github.com/bitemyapp/esqueleto}{esqueleto}: типобезопасные SQL-запросы для persistent, в том числе с \texttt{JOIN}.
   \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Нерассмотренные части Haskell: язык}
+  \small
   \begin{itemize}
-    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#type-families}{Семейства типов}.
-    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#arbitrary-rank-polymorphism}{Типы высших рангов} с \haskinline|forall| \emph{внутри} типа.
-          \begin{itemize}
-            \item Важный пример: монада \haskinline|ST|.
-          \end{itemize}
-    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#existentially-quantified-data-constructors}{Экзистенциальные типы} (выраженные всё равно через \haskinline|forall|).
-    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#pattern-synonyms}{Синонимы образцов}.
-    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#template-haskell}{Template Haskell}: генерация кода во время компиляции.
-          \begin{itemize}
-            \item Могли видеть использование в документации QuickCheck/Hedgehog.
-          \end{itemize}
-    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/ffi.html}{Foreign Function Interface} для интеграции с \href{https://www.open-std.org/jtc1/sc22/wg14/}{C}.
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/generics.html}{\haskinline{deriving Generic}} даёт общее представление конструкторов и полей. По нему можно задать правило вывода экземпляров для своего класса. Так делают \hackage{aeson} и \hackage{binary}.
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/type_families.html}{Семейства типов}.
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/rank_polymorphism.html}{Типы высших рангов} с \haskinline|forall| \emph{внутри} типа (пример: \href{https://hackage.haskell.org/package/base/docs/Control-Monad-ST.html#v:runST}{\haskinline{runST}}).
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/existential_quantification.html}{Экзистенциальные типы}.
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/pattern_synonyms.html}{Синонимы образцов}.
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/template_haskell.html}{Template Haskell}: генерация кода при компиляции (см. примеры в QuickCheck и Hedgehog).
+    \item Вызов кода на других языках: \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/ffi.html}{FFI} для \href{https://www.open-std.org/jtc1/sc22/wg14/}{C}, \hackage{inline-c-cpp} для \href{https://www.open-std.org/jtc1/sc22/wg21/}{C++} (используется в \href{https://github.com/haskell-game/dear-imgui.hs}{dear-imgui.hs}), \href{https://github.com/harmont-dev/hsrs}{hsrs} для \href{https://rust-lang.org/}{Rust}.
   \end{itemize}
 \end{frame}
 
@@ -65,7 +90,7 @@
     \item Композиция монад не обязательно монада.
           \pause
     \item Трансформеры монад: \hackage{transformers} и \hackage{mtl}
-    \item \href{https://www.microsoft.com/en-us/research/publication/algebraic-effects-for-functional-programming/}{Алгебраические эффекты}
+    \item \href{https://www.microsoft.com/en-us/research/wp-content/uploads/2016/08/algeff-tr-2016-v2.pdf}{Алгебраические эффекты}
     \item \href{https://haskellforall.com/2012/06/you-could-have-invented-free-monads}{Свободные (free)} и \href{https://okmij.org/ftp/Haskell/extensible/more.pdf}{\enquote{более свободные} (freer)} монады
     \item Небольшой обзор: \href{https://ocharles.org.uk/posts/2016-01-26-transformers-free-monads-mtl-laws.html}{Monad transformers, free monads, mtl, laws and a new approach}
   \end{itemize}
@@ -74,7 +99,7 @@
 \begin{frame}[fragile]
   \frametitle{Будущее (и недавнее прошлое) Haskell}
   \begin{itemize}
-    \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/exts/linear_types.html}{Линейные типы} (GHC 9.0+): значения, которые можно использовать только один раз.
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/linear_types.html}{Линейные типы} (GHC 9.0+): значения, которые можно использовать только один раз.
           \begin{itemize}
             \item Меньше сборки мусора.
             \item Можно использовать изменяемые структуры данных.
@@ -114,7 +139,7 @@
   \begin{itemize}
     \item Лямбда-исчисление: то, с чего всё началось.
           \begin{itemize}
-            \item И множество его обобщений.
+            \item Питер Селингер, \href{https://arxiv.org/abs/0804.3434}{Lecture Notes on the Lambda Calculus}: от бестипового исчисления до полиморфизма и вывода типов.
           \end{itemize}
           \pause
     \item Математическая логика в целом
@@ -127,6 +152,9 @@
           \end{itemize}
           \pause
     \item Теория категорий: источник понятий функтора, монады, естественного преобразования.
+          \begin{itemize}
+            \item Bartosz Milewski, \href{https://github.com/hmemcpy/milewski-ctfp-pdf}{Category Theory for Programmers}.
+          \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -134,13 +162,12 @@
 \begin{frame}[fragile]
   \frametitle{Дополнительное чтение}
   \begin{itemize}
-    \item \href{http://dev.stephendiehl.com/hask/}{What I Wish I Knew When Learning Haskell}
+    \item \href{https://sdiehl.github.io/wiwinwlh/}{What I Wish I Knew When Learning Haskell}
     \item \href{https://lexi-lambda.github.io/blog/2018/02/10/an-opinionated-guide-to-haskell-in-2018/}{An opinionated guide to Haskell in 2018}
-    \item \href{https://realworldocaml.org/}{Real World OCaml: Functional Programming for the Masses} (книга, доступна бесплатно)
+    \item \href{https://realworldocaml.org/}{Real World OCaml: Functional Programming for the Masses} (бесплатная книга)
     \item \href{https://wiki.portal.chalmers.se/agda/pmwiki.php?n=Main.Documentation}{Много ссылок по Agda}
-    \item \href{http://docs.idris-lang.org/en/latest/tutorial/index.html}{Введение в Idris}
-    \item \href{https://doc.rust-lang.org/book/}{The Rust Programming Language} (книга, доступна бесплатно)
-    \item \href{https://github.com/hmemcpy/milewski-ctfp-pdf}{Category Theory for Programmers} (книга, доступна бесплатно)
+    \item \href{https://idris2.readthedocs.io/en/latest/tutorial/index.html}{Введение в Idris}
+    \item \href{https://doc.rust-lang.org/book/}{The Rust Programming Language} (бесплатная книга)
   \end{itemize}
 \end{frame}
 
