@@ -22,6 +22,17 @@
 \end{frame}
 
 \begin{frame}[fragile]
+  \frametitle{Веб-интерфейсы}
+  \small
+  Что происходит при нажатии кнопки?
+  \begin{itemize}
+    \item \href{https://haskell-miso.org/}{Miso}: код на Haskell работает в браузере. Нажатие порождает действие, которое обновляет модель; по ней строится новое представление.
+    \item \href{https://data-star.dev/}{Datastar} и \hackage{datastar-hs}: нажатие может вызвать запрос к серверу на Haskell. Сервер присылает фрагмент HTML, и браузер обновляет часть страницы. Так устроен интерфейс \href{https://carlo-hamalainen.net/2026/08/06/ghc-vis-ds/}{ghc-vis-ds} из лекции 9.
+    \item \href{https://elm-lang.org/}{Elm} "--- отдельный функциональный язык для веб-интерфейсов. В \href{https://guide.elm-lang.org/architecture/}{The Elm Architecture} нажатие порождает сообщение. Функция \texttt{update} вычисляет новую модель, а \texttt{view} описывает, что увидит пользователь.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
   \frametitle{Нерассмотренные части Haskell: язык}
   \begin{itemize}
     \item \href{https://downloads.haskell.org/~ghc/latest/docs/html/users_guide/glasgow_exts.html#type-families}{Семейства типов}.
@@ -82,14 +93,15 @@
   \frametitle{Альтернативы Haskell}
   \small
   \begin{itemize}
+    \setlength{\itemsep}{1pt}
     \item \href{https://ocaml.org/}{OCaml}: похож на \href{https://www.haskell.org/}{Haskell} без ленивости и классов типов.
-    \item \href{https://www.erlang.org/}{Erlang}: динамический функциональный язык, ориентированный на многозадачность.
+    \item \href{https://www.erlang.org/}{Erlang}: функциональный язык с моделью акторов (процессов, взаимодействующих через сообщения).
     \item Семейство Lisp: \href{https://lisp-lang.org/}{Common Lisp} и \href{https://racket-lang.org/}{Racket}.
           \pause
     \item Для JVM: \href{https://www.scala-lang.org/}{Scala}, \href{https://clojure.org/}{Clojure}.
     \item Для .Net: \href{https://fsharp.org/}{F\#} (почти тот же \href{https://ocaml.org/}{OCaml}).
           \pause
-    \item \href{https://rust-lang.org/}{Rust}: система типов отслеживает время жизни значений. Альтернатива \href{https://www.open-std.org/jtc1/sc22/wg21/}{C++} для низкоуровневого программирования без сборщика мусора.
+    \item \href{https://rust-lang.org/}{Rust}: альтернатива \href{https://www.open-std.org/jtc1/sc22/wg21/}{C++} без сборщика мусора; типы отслеживают время жизни значений.
           \pause
     \item Языки с зависимыми типами: \href{https://agda.readthedocs.io/}{Agda}, \href{https://idris-lang.org/}{Idris}, \href{https://rocq-prover.org/}{Rocq}.
           \pause
