@@ -23,14 +23,18 @@ infixl 4 <**>
 
 -- Задание 1 -----------------------------------------
 
--- реализуйте join' через >>== и наоборот
+-- Реализуйте оба метода по умолчанию: join' через >>== и наоборот.
+-- В каждом экземпляре определите хотя бы один из них, иначе методы зациклятся.
 class Applicative' m => Monad' m where
+  {-# MINIMAL (>>==) | join' #-}
   (>>==) :: m a -> (a -> m b) -> m b
   (>>==) = error "implement using join' (and Applicative')"
   join' :: m (m a) -> m a
   join' = error "implement using >>== (and Applicative')"
 
--- пример
+infixl 1 >>==
+
+-- Примеры: Maybe получает join' по умолчанию, а [] получает >>==.
 instance Functor' Maybe where
   _ <$$> Nothing = Nothing
   f <$$> Just x = Just (f x)
@@ -39,11 +43,8 @@ instance Applicative' Maybe where
   Just f <**> Just x = Just (f x)
   _ <**> _ = Nothing
 instance Monad' Maybe where
-  -- достаточно было бы определить одну из функций >>== и join'
   Nothing >>== _ = Nothing
   Just x >>== f = f x
-  join' Nothing = Nothing
-  join' (Just x) = x
 
 instance Functor' [] where
   f <$$> xs = map f xs
@@ -51,8 +52,6 @@ instance Applicative' [] where
   pure' x = [x]
   fs <**> xs = [f x | f <- fs, x <- xs]
 instance Monad' [] where
-  -- достаточно было бы определить одну из функций >>== и join'
-  xs >>== f = [y | x <- xs, y <- f x]
   join' xss = [x | xs <- xss, x <- xs]
 
 -- Задание 2 -----------------------------------------
@@ -64,7 +63,7 @@ instance Monad' [] where
 
 -- Добавьте тесты! Используйте не только те примеры, которые приведены здесь.
 -- Попробуйте написать тесты _до_ реализации, чтобы проверить, правильных ли
--- результатов вы ожидаете. Можно также использовать тесты свойств.
+-- результатов вы ожидаете. Свойства добавляйте в test/Properties.hs.
 
 -- "Поднимает" функцию от двух аргументов в функцию, работающую с действиями
 -- liftA2' (+) (Just 1) (Just 2) == Just 3
@@ -92,8 +91,8 @@ filterA :: Applicative' f => (a -> f Bool) -> [a] -> f [a]
 filterA = undefined
 
 -- Композиция монадических функций
--- composeM Just Just == Just (т.е. для всех x: composeM Just Just x == Just x)
--- composeM Just (const Nothing) == const Nothing
+-- composeM Just Just 3 == Just 3
+-- composeM Just (const Nothing) True == (Nothing :: Maybe Bool)
 composeM :: Monad' m => (b -> m c) -> (a -> m b) -> (a -> m c)
 composeM = undefined
 

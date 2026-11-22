@@ -1,17 +1,26 @@
-import FunctorsMonads
-import Streams hiding (main)
+import qualified Properties
+import FunctorsMonads (Monad'(..))
 import Test.Hspec
--- Раскомментируйте QuickCheck или Hegdehog, в зависимости от того, что будете использовать
--- Документация https://hspec.github.io/quickcheck.html
--- import Test.Hspec.QuickCheck
--- Документация в https://github.com/parsonsmatt/hspec-hedgehog#readme
--- import Test.Hspec.Hedgehog
-
--- Добавьте минимум 5 тестов свойств для функций из первых 2 лабораторных (скопируйте определения тестируемых функций сюда).
+import Test.Tasty (defaultMain, localOption, testGroup)
+import Test.Tasty.Hspec (TreatPendingAs(..), testSpec)
 
 main :: IO ()
-main = hspec $ do
-    describe "functors and monads" $ do
-        it "" $ pending
-    describe "streams" $ do
-        it "" $ pending
+main = do
+    examples <- testSpec "Hspec" spec
+    defaultMain $ testGroup "Lab3"
+        [ localOption TreatPendingAsSuccess examples
+        , Properties.tests
+        ]
+
+spec :: Spec
+spec = do
+    describe "Monad'" $ do
+        it "join' для Maybe через метод по умолчанию" $ do
+            pending
+            join' (Just (Just True)) `shouldBe` Just True
+        it ">>== для списков через метод по умолчанию" $ do
+            pending
+            ([1, 2] >>== replicate 2) `shouldBe` [1, 1, 2, 2 :: Int]
+    describe "Streams" $ do
+        it "sTake возвращает пустой список при n <= 0" pending
+        it "sInterleave чередует элементы двух потоков" pending
