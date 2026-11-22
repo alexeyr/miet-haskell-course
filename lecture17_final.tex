@@ -96,11 +96,11 @@
 \begin{frame}[fragile]
   \frametitle{Подходы к эффектам}
   \begin{itemize}
-    \item Многие монады (и аппликативные функторы) можно рассматривать как побочные эффекты.
+    \item Монады позволяют описывать вычисления с разными эффектами.
           \begin{itemize}
-            \item \haskinline|IO|: понятно.
-            \item \haskinline|State|: чтение и запись в память.
-            \item \haskinline|[]|: недетерминированность
+            \item \haskinline|IO| — взаимодействие с внешним миром.
+            \item \haskinline|State| — передача обновлённого состояния.
+            \item \haskinline|[]| — несколько возможных результатов.
             \item \ldots
           \end{itemize}
           \pause
@@ -117,16 +117,17 @@
 \begin{frame}[fragile]
   \frametitle{Будущее (и недавнее прошлое) Haskell}
   \begin{itemize}
-    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/linear_types.html}{Линейные типы} (GHC 9.0+): значения, которые можно использовать только один раз.
+    \item \href{https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/linear_types.html}{Линейные типы} (GHC 9.0+): \haskinline|a %1 -> b| — если результат использован ровно один раз, то и аргумент использован ровно один раз.
           \begin{itemize}
-            \item Меньше сборки мусора.
+            \item Возможность переиспользовать память.
             \item Можно использовать изменяемые структуры данных.
             \item Безопасное изменение состояния типа (например, тип файла может включать, открыт ли он).
           \end{itemize}
           \pause
-    \item \href{https://serokell.io/blog/2018/12/17/why-dependent-haskell}{Зависимые типы}: типы, параметризованные значениями.
+    \item \href{https://ghc.serokell.io/dh}{Зависимые типы}: типы, параметризованные значениями.
           \begin{itemize}
-            \item Стандартный пример: вектор с размером в типе.
+            \item При конкатенации векторов длины складываются:\\
+                  \haskinline|(++) :: Vec n a -> Vec m a -> Vec (n + m) a|.
             \item Библиотека \hackage{singletons} позволяет эмулировать многие применения зависимых типов.
           \end{itemize}
   \end{itemize}
@@ -136,17 +137,19 @@
   \frametitle{Альтернативы Haskell}
   \small
   \begin{itemize}
-    \setlength{\itemsep}{1pt}
-    \item \href{https://ocaml.org/}{OCaml}: похож на \href{https://www.haskell.org/}{Haskell} без ленивости и классов типов.
-    \item \href{https://www.erlang.org/}{Erlang}: акторы (процессы) обмениваются сообщениями.
-    \item Lisp: \href{https://lisp-lang.org/}{Common Lisp} и \href{https://racket-lang.org/}{Racket}. Код пишут вложенными списками: \texttt{(* 3 (+ 1 2))}. Макросы строят из них новый код.
+    \setlength{\itemsep}{0pt}
+    \item \href{https://ocaml.org/}{OCaml} похож на Haskell, но со строгим вычислением по умолчанию и \href{https://ocaml.org/manual/5.3/moduleexamples.html}{системой модулей} вместо классов типов.
+    \item \href{https://www.erlang.org/}{Erlang}: акторы — процессы с обменом сообщениями.
+    \item Lisp: \href{https://lisp-lang.org/}{Common Lisp}, \href{https://racket-lang.org/}{Racket} и \href{https://clojure.org/}{Clojure}. Код — вложенные списки, например \texttt{(* 3 (+ 1 2))}. Макросы строят из них код.
           \pause
-    \item Для JVM: \href{https://www.scala-lang.org/}{Scala}, \href{https://clojure.org/}{Clojure}.
-    \item Для .Net: \href{https://fsharp.org/}{F\#} (почти тот же \href{https://ocaml.org/}{OCaml}).
+    \item Для JVM: \href{https://www.scala-lang.org/}{Scala}, \href{https://clojure.org/}{Clojure}. Для .NET: \href{https://fsharp.org/}{F\#} (близок к OCaml).
           \pause
-    \item \href{https://rust-lang.org/}{Rust}: альтернатива \href{https://www.open-std.org/jtc1/sc22/wg21/}{C++} без сборщика мусора; типы отслеживают время жизни значений.
+    \item \href{https://rust-lang.org/}{Rust}: альтернатива \href{https://www.open-std.org/jtc1/sc22/wg21/}{C++} с безопасным доступом к памяти по умолчанию и алгебраическими типами.
           \pause
-    \item В \href{https://idris-lang.org/}{Idris} и \href{https://fstar-lang.org/}{F*} типы могут зависеть от значений, например \texttt{Vec n} — тип векторов длины \texttt{n}. Ещё пример: уточнения в \href{https://ucsd-progsys.github.io/liquidhaskell/}{Liquid Haskell} (лекция~14).
+    \item \href{https://idris-lang.org/}{Idris} и \href{https://fstar-lang.org/}{F*} поддерживают зависимые типы. Ещё пример: уточнения в \href{https://ucsd-progsys.github.io/liquidhaskell/}{Liquid Haskell} (лекция~14).
+          \begin{itemize}
+            \item Например, в \href{https://agda.readthedocs.io/en/latest/getting-started/what-is-agda.html}{Agda} и \href{https://lean-lang.org/}{Lean} можно писать программы и доказывать теоремы.
+          \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -180,11 +183,22 @@
             \item Логика первого порядка: \href{https://isabelle.in.tum.de/dist/Isabelle2025-2/doc/logics-ZF.pdf}{Isabelle/FOL}.
             \item Теория множеств на основе логики первого порядка: \href{https://isabelle.in.tum.de/dist/Isabelle2025-2/doc/logics-ZF.pdf}{Isabelle/ZF}, \href{https://us.metamath.org/mpeuni/mmtheorems.html}{Metamath (set.mm)}, \href{https://wiki.mizar.org/library/}{Mizar} (\href{https://en.wikipedia.org/wiki/Tarski\%E2\%80\%93Grothendieck_set_theory}{теория Тарского — Гротендика}).
             \item Простая теория типов (логика высших порядков): \href{https://isabelle.in.tum.de/library/HOL/HOL/}{Isabelle/HOL}, \href{https://hol-light.github.io/}{HOL Light}.
-            \item Зависимые типы: \href{https://agda.readthedocs.io/}{Agda}, \href{https://rocq-prover.org/}{Rocq (бывший Coq)}, \href{https://lean-lang.org/}{Lean}, \href{https://fstar-lang.org/}{F*}.
+            \item Зависимые типы: \href{https://agda.readthedocs.io/}{Agda}, \href{https://rocq-prover.org/}{Rocq (бывший Coq)} и \href{https://lean-lang.org/}{Lean}.
           \end{itemize}
   \end{itemize}
 \end{frame}
 
+
+\begin{frame}
+  \frametitle{SMT: выполнимость формул}
+  \begin{itemize}
+    \item \href{https://en.wikipedia.org/wiki/Satisfiability_modulo_theories}{SMT} (\textit{Satisfiability Modulo Theories}) — задача о том, выполнима ли формула в заданной теории, например в арифметике целых чисел.
+    \item Как проверить, что для любых целых $x$ и $y$ из $x < y$ следует $x + 1 \le y$?
+    \pause
+    \item Ищем контрпример: можно ли одновременно выполнить $x < y$ и $x + 1 > y$? Решатель установит, что таких целых чисел нет.
+    \item SMT-решатели: \href{https://github.com/Z3Prover/z3}{Z3} и \href{https://cvc5.github.io/}{cvc5}.
+  \end{itemize}
+\end{frame}
 
 \begin{frame}
   \frametitle{Что такое языки спецификаций?}
@@ -236,12 +250,12 @@
         \item $\Diamond P$: $P$ верно сейчас или позже.
       \end{itemize}
     \item $\Box\mathit{OneLight}$ — всегда горит ровно один сигнал.
-    \item $\mathit{Spec} \triangleq \mathit{Init} \land \Box\mathit{Next}$. Вначале верно $\mathit{Init}$, каждый переход удовлетворяет $\mathit{Next}$.
+    \item $\mathit{Spec} \triangleq \mathit{Init} \land \Box[\mathit{Next}]_{\langle\mathit{Red},\mathit{Green},\mathit{Pressed}\rangle}$. Вначале верно $\mathit{Init}$. Далее каждый шаг — $\mathit{Next}$ или шаг без изменений.
     \item Как потребовать обслуживания каждого запроса?
           \pause
     \item $\Box(\mathit{Pressed} \Rightarrow \Diamond(\mathit{Green} \land \neg\mathit{Pressed}))$:
           в итоге горит зелёный и флаг сброшен.
-    \item Контрпример? \pause $\mathit{Press}$ повторяется вечно, свет остаётся красным.
+    \item Контрпример? \pause После $\mathit{Press}$ — лишь повторные нажатия или шаги без изменений.
     \item Баг:\pause{} после $\mathit{Serve}$ оба действия невыполнимы.
   \end{itemize}
 
@@ -323,7 +337,7 @@
     assert NoSelfParent { no d: Dir | d.parent = d }
     check NoSelfParent for 2
   \end{minted}
-  Как выглядит контрпример с двумя объектами?
+  Как выглядит контрпример, если разрешить не более двух объектов \mintinline{alloy}{FSObject}?
   \pause\par\medskip
   У \mintinline{alloy}{Root} нет родителя, а второй каталог указывает на себя.
   \pause\par
@@ -381,22 +395,23 @@
 \begin{frame}[fragile]
   \frametitle{Dafny: вызов метода с предусловием}
   \small
-  \lstset{style=specification,basicstyle=\footnotesize\ttfamily,morekeywords={method,returns,requires,ensures,forall,in,assert,var,if},morekeywords={[2]int,seq}}
+  \lstset{style=specification,aboveskip=2pt,belowskip=2pt,basicstyle=\footnotesize\ttfamily,morekeywords={method,returns,requires,ensures,forall,in,assert,var,if},morekeywords={[2]int,seq}}
   \begin{lstlisting}
     method MaxSeq(xs: seq<int>) returns (m: int)
       requires |xs| > 0
       ensures m in xs
       ensures forall x :: x in xs ==> x <= m
-  \end{lstlisting}
-  \begin{lstlisting}
     method Use(xs: seq<int>) {
       if |xs| > 0 { var a := MaxSeq(xs); }
       var b := MaxSeq(xs);
     }
   \end{lstlisting}
-  Какой вызов пройдёт проверку?
-  \uncover<2->{Только первый: внутри \textcolor{specKeyword}{\texttt{if}} известно, что последовательность непуста.}
-
+  \begin{itemize}
+    \setlength{\itemsep}{0pt}
+    \item Какой вызов пройдёт проверку? \uncover<2->{Только первый: условие \textcolor{specKeyword}{\texttt{if}} гарантирует, что \texttt{xs} непуста.}
+    \item<2-> Dafny и F* используют \href{https://en.wikipedia.org/wiki/Satisfiability_modulo_theories}{SMT}-решатель Z3 для автоматической проверки условий верификации.
+    \item<2-> F* позволяет проверять контракты и инварианты циклов в \href{https://fstar-lang.org/\#pal}{C (PAL)} и \href{https://fstar-lang.org/\#pal-cs}{C\# (PAL-CS)} или генерировать код на C из программ на \href{https://fstar-lang.org/\#pulse}{Pulse}.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
