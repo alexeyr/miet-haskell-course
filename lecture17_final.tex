@@ -414,7 +414,7 @@
   \begin{itemize}
     \setlength{\itemsep}{0pt}
     \item Какой вызов пройдёт проверку? \uncover<2->{Только первый: условие \textcolor{specKeyword}{\texttt{if}} гарантирует, что \texttt{xs} непуста.}
-    \item<2-> Dafny и F* используют \href{https://en.wikipedia.org/wiki/Satisfiability_modulo_theories}{SMT}-решатель Z3 для автоматической проверки условий верификации.
+    \item<2-> Для проверки программ Dafny, F* и Liquid Haskell используют \href{https://en.wikipedia.org/wiki/Satisfiability_modulo_theories}{SMT}-решатели, например Z3.
     \item<2-> F* позволяет проверять контракты и инварианты циклов в \href{https://fstar-lang.org/\#pal}{C (PAL)} и \href{https://fstar-lang.org/\#pal-cs}{C\# (PAL-CS)} или генерировать код на C из программ на \href{https://fstar-lang.org/\#pulse}{Pulse}.
   \end{itemize}
 \end{frame}
