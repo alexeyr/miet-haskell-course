@@ -57,9 +57,7 @@ instance Monad' [] where
 -- Задание 2 -----------------------------------------
 
 -- Реализуйте функции, следуя типам.
--- liftA2' и seqA были на лекции, но:
--- 1. можно попробовать восстановить самостоятельно
--- 2. они могут быть использованы для других заданий
+-- Попробуйте восстановить liftA2' из лекции и использовать в следующих функциях.
 
 -- Добавьте тесты! Используйте не только те примеры, которые приведены здесь.
 -- Попробуйте написать тесты _до_ реализации, чтобы проверить, правильных ли
@@ -70,12 +68,6 @@ instance Monad' [] where
 -- liftA2' (+) Nothing (Just 2) == Nothing
 liftA2' :: Applicative' f => (a -> b -> c) -> f a -> f b -> f c
 liftA2' = undefined
-
--- Выполняет все действия в списке и собирает их результаты в один список
--- seqA [Just 1, Just 2] == Just [1, 2]
--- seqA [Just 1, Just 2, Nothing] == Nothing
-seqA :: Applicative' f => [f a] -> f [a]
-seqA = undefined
 
 -- Применяет функцию, возвращающую действия, ко всем элементам списка, выполняет эти действия
 -- и собирает результаты в список
@@ -90,11 +82,19 @@ traverseA = undefined
 filterA :: Applicative' f => (a -> f Bool) -> [a] -> f [a]
 filterA = undefined
 
--- Композиция монадических функций
--- composeM Just Just 3 == Just 3
--- composeM Just (const Nothing) True == (Nothing :: Maybe Bool)
-composeM :: Monad' m => (b -> m c) -> (a -> m b) -> (a -> m c)
-composeM = undefined
+-- Найдите первый элемент, для которого предикат с эффектом возвращает True.
+-- Проверяйте элементы слева направо. После совпадения остальные не проверяйте.
+-- Если совпадений нет, результат поиска внутри действия — Nothing.
+-- В GHCi: import Text.Read (readMaybe)
+-- let positive s = (> 0) <$> readMaybe s
+-- findM positive ["-2", "3", "bad"] == Just (Just "3")
+-- findM positive ["-2", "bad", "3"] == Nothing
+-- findM positive ["-2", "0"] == Just Nothing
+findM :: Monad' m => (a -> m Bool) -> [a] -> m (Maybe a)
+findM = undefined
+
+-- Вопрос: почему для произвольного Applicative' нельзя определить findA
+-- с тем же поведением, включая остановку проверок после первого совпадения?
 
 -- Задание 3 -----------------------------------------
 
@@ -102,12 +102,18 @@ composeM = undefined
 
 -- Добавьте тесты на поведение функций из задания 2 с этими экземплярами
 
-instance Functor' (Either t) where
+-- Значения хранятся в листьях. Отображение сохраняет форму дерева.
+-- При связывании каждый лист заменяется деревом, которое возвращает функция.
+-- Согласуйте <**> с таким связыванием.
+data Tree a = Leaf a | Node (Tree a) (Tree a)
+  deriving (Eq, Show)
+
+instance Functor' Tree where
   (<$$>) = undefined
-instance Applicative' (Either t) where
+instance Applicative' Tree where
   pure' = undefined
   (<**>) = undefined
-instance Monad' (Either t) where
+instance Monad' Tree where
 
 instance Functor' ((->) t) where -- (->) a b -- то же самое, что a -> b
   (<$$>) = undefined
@@ -115,3 +121,31 @@ instance Applicative' ((->) t) where
   pure' = undefined
   (<**>) = undefined
 instance Monad' ((->) t) where
+
+
+-- Задание 4 -----------------------------------------
+
+-- В test/ClassLaws.hs изучите functorLaws и applicativeLaws. Запустите их
+-- для готовых экземпляров Maybe и []. После задания 3 включите также группы
+-- для Tree и функций, сняв их ignoreTestBecause.
+-- По этому образцу реализуйте monadLaws: проверьте левую и правую единицы,
+-- ассоциативность >>== и согласованность >>== с <**>. Затем снимите
+-- ignoreTestBecause перед monadLaws и запустите проверки для всех экземпляров.
+
+-- Необязательное задание: независимые проверки -------------------------
+
+data Validation a = Failure [String] | Success a
+  deriving (Eq, Show)
+
+-- Реализуйте Functor' и Applicative' для Validation. Если все проверки
+-- успешны, объедините их результаты. При ошибках соберите все сообщения
+-- в порядке проверок слева направо.
+-- Например, liftA2' (,) объединяет результаты проверок имени и возраста:
+-- если имя пустое и возраст отрицательный, нужны оба сообщения об ошибках.
+-- Добавьте примеры и включите группу Validation в test/ClassLaws.hs.
+-- Можно ли определить >>== так, чтобы он согласовывался с таким <**>?
+instance Functor' Validation where
+  (<$$>) = undefined
+instance Applicative' Validation where
+  pure' = undefined
+  (<**>) = undefined

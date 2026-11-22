@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module Properties where
 
+import qualified ClassLaws
 import Hedgehog (Property, property)
 import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.ExpectedFailure (ignoreTestBecause)
@@ -10,7 +11,8 @@ import Test.Tasty.Hedgehog (testPropertyNamed)
 -- затем снимите её ignoreTestBecause. Добавьте свои свойства.
 tests :: TestTree
 tests = testGroup "Hedgehog"
-    [ testGroup "Streams"
+    [ ClassLaws.tests
+    , testGroup "Streams"
         [ ignoreTestBecause "Реализовать в лабораторной 3" $
             testPropertyNamed "minMax совпадает с minMaxSlow"
                 "prop_minMaxReference" prop_minMaxReference
@@ -20,8 +22,8 @@ tests = testGroup "Hedgehog"
         ]
     , testGroup "FunctorsMonads"
         [ ignoreTestBecause "Реализовать в лабораторной 3" $
-            testPropertyNamed "traverseA согласуется с seqA"
-                "prop_traverseSequence" prop_traverseSequence
+            testPropertyNamed "traverseA совпадает с Prelude.traverse для Maybe"
+                "prop_traverseMaybe" prop_traverseMaybe
         ]
     ]
 
@@ -37,7 +39,7 @@ prop_streamFunctorIdentity = property $ fail "Реализуйте свойст�
 -- Аналогично проверьте закон композиции Functor и все законы Applicative и Monad
 -- для Stream: для каждого закона сравните первые n элементов обеих сторон.
 
--- Для функции f с результатом Maybe сравните traverseA f xs и seqA (map f xs).
+-- Для функции f с результатом Maybe сравните traverseA f xs и Prelude.traverse f xs.
 -- Подберите данные так, чтобы встречались как успех, так и неудача.
-prop_traverseSequence :: Property
-prop_traverseSequence = property $ fail "Реализуйте свойство"
+prop_traverseMaybe :: Property
+prop_traverseMaybe = property $ fail "Реализуйте свойство"
