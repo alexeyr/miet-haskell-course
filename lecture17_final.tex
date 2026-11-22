@@ -138,9 +138,9 @@
   \small
   \begin{itemize}
     \setlength{\itemsep}{0pt}
-    \item \href{https://ocaml.org/}{OCaml} похож на Haskell, но со строгим вычислением по умолчанию и \href{https://ocaml.org/manual/5.3/moduleexamples.html}{системой модулей} вместо классов типов.
-    \item \href{https://www.erlang.org/}{Erlang}: акторы — процессы с обменом сообщениями.
-    \item Lisp: \href{https://lisp-lang.org/}{Common Lisp}, \href{https://racket-lang.org/}{Racket} и \href{https://clojure.org/}{Clojure}. Код — вложенные списки, например \texttt{(* 3 (+ 1 2))}. Макросы строят из них код.
+    \item \href{https://ocaml.org/}{OCaml} похож на Haskell, но строгий по умолчанию. Вместо классов типов — \href{https://ocaml.org/manual/5.3/moduleexamples.html}{система модулей}.
+    \item \href{https://www.erlang.org/}{Erlang}: \href{https://en.wikipedia.org/wiki/Actor_model}{акторы} — процессы с обменом сообщениями.
+    \item Lisp: \href{https://lisp-lang.org/}{Common Lisp}, \href{https://racket-lang.org/}{Racket} и \href{https://clojure.org/}{Clojure}. Код — \href{https://en.wikipedia.org/wiki/S-expression}{S-выражения}, например \texttt{(* 3 (+ 1 2))}. \href{https://gigamonkeys.com/book/macros-defining-your-own.html}{Макросы} порождают код и вводят новые конструкции языка.
           \pause
     \item Для JVM: \href{https://www.scala-lang.org/}{Scala}, \href{https://clojure.org/}{Clojure}. Для .NET: \href{https://fsharp.org/}{F\#} (близок к OCaml).
           \pause
@@ -148,7 +148,7 @@
           \pause
     \item \href{https://idris-lang.org/}{Idris} и \href{https://fstar-lang.org/}{F*} поддерживают зависимые типы. Ещё пример: уточнения в \href{https://ucsd-progsys.github.io/liquidhaskell/}{Liquid Haskell} (лекция~14).
           \begin{itemize}
-            \item Например, в \href{https://agda.readthedocs.io/en/latest/getting-started/what-is-agda.html}{Agda} и \href{https://lean-lang.org/}{Lean} можно писать программы и доказывать теоремы.
+            \item Во многих таких языках можно и писать программы, и доказывать теоремы (например, в \href{https://agda.readthedocs.io/en/latest/getting-started/what-is-agda.html}{Agda} и \href{https://lean-lang.org/}{Lean}).
           \end{itemize}
   \end{itemize}
 \end{frame}
