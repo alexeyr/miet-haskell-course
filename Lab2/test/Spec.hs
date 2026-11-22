@@ -106,9 +106,9 @@ spec = do
             it "деление отрицательных чисел округляет вниз" $ pending
             it "деление на ноль вызывает ошибку" $ pending
         describe "desugar" $ do
-            it "преобразует Incr в присваивание" $ pending
+            it "сохраняет поведение Incr: значение переменной увеличивается на единицу" $ pending
             it "преобразует For с порядком initialization, condition, body, step" $ pending
-            it "преобразует Block [] в DSkip" $ pending
+            it "сохраняет поведение Block []: состояние не меняется" $ pending
         describe "runSimpler и run" $ do
             it "пустой блок сохраняет значения переменных" $ pending
             it "цикл с ложным начальным условием не выполняет тело" $ pending

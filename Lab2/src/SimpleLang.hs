@@ -66,8 +66,6 @@ eval state expr = undefined
 
 -- Задание 3 -----------------------------------------
 
--- Можно выразить Incr через Assign, For через While, Block через 
--- последовательное выполнение двух инструкций (; в C).
 -- Следующий тип задаёт упрощённый набор инструкций (промежуточный язык Simpler).
 data DietStatement = DAssign String Expression
                    | DIf Expression DietStatement DietStatement
@@ -76,7 +74,7 @@ data DietStatement = DAssign String Expression
                    | DSkip
                      deriving (Show, Eq)
 
--- упрощает программу Simple
+-- Переведите программу в DietStatement, сохранив её поведение.
 desugar :: Statement -> DietStatement
 desugar = undefined
 
