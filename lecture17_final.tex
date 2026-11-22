@@ -195,7 +195,12 @@
     \item \href{https://en.wikipedia.org/wiki/Satisfiability_modulo_theories}{SMT} (\textit{Satisfiability Modulo Theories}) — задача о том, выполнима ли формула в заданной теории, например в арифметике целых чисел.
     \item Как проверить, что для любых целых $x$ и $y$ из $x < y$ следует $x + 1 \le y$?
     \pause
-    \item Ищем контрпример: можно ли одновременно выполнить $x < y$ и $x + 1 > y$? Решатель установит, что таких целых чисел нет.
+    \item Ищем контрпример: можно ли одновременно выполнить $x < y$ и $x + 1 > y$?
+    \pause
+    \item Решатель установит, что таких целых чисел нет.
+    \item А если $x$ и $y$ вещественные?
+    \pause
+    \item При $x=0$ и $y=\tfrac12$ имеем $0<\tfrac12$, но $1>\tfrac12$.
     \item SMT-решатели: \href{https://github.com/Z3Prover/z3}{Z3} и \href{https://cvc5.github.io/}{cvc5}.
   \end{itemize}
 \end{frame}
