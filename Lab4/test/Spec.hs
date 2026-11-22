@@ -60,3 +60,11 @@ main = hspec $ do
       (status, errors) `shouldBe` (ExitSuccess, "")
       output `shouldBe` unlines ["milk", "bread", "tea"]
     it "читает файл и выводит выбранные строки с номерами" pending
+
+  describe "Диапазоны с одной границей (необязательно)" $ do
+    it "выбирает строки от начала и до конца ввода" $ do
+      pending
+      (status, output, errors) <- readProcessWithExitCode
+        "pick-lines" ["--lines=-2,5-"] (unlines ["a", "b", "c", "d", "e", "f"])
+      (status, errors) `shouldBe` (ExitSuccess, "")
+      output `shouldBe` unlines ["a", "b", "e", "f"]
