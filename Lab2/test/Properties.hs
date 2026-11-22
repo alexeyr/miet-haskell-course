@@ -6,8 +6,9 @@ import Test.Tasty (TestTree, testGroup)
 import Test.Tasty.ExpectedFailure (ignoreTestBecause)
 import Test.Tasty.Hedgehog (testPropertyNamed)
 
--- Эти свойства предстоит реализовать в лабораторной 3.
--- Для каждого свойства замените заглушку генерацией входных данных
+-- В лабораторной 3 реализуйте свойства для многочленов и метода Ньютона,
+-- а для SimpleLang выберите по одному свойству из каждой из трёх групп ниже.
+-- Для каждого реализуемого свойства замените заглушку генерацией входных данных
 -- и проверкой, затем снимите соответствующий ignoreTestBecause ниже.
 -- Список не исчерпывающий: добавьте собственные свойства.
 -- Каждая заглушка соответствует одному свойству, а не всей операции.
@@ -31,28 +32,34 @@ tests = testGroup "Hedgehog (лабораторная 3)"
             testPropertyNamed "Результат Хэлли удовлетворяет заданной невязке"
                 "prop_halleyResidual" prop_halleyResidual
         ]
-    , testGroup "SimpleLang"
-        [ ignoreTestBecause "Реализовать в лабораторной 3" $
-            testPropertyNamed "Чтение после обновления переменной"
-                "prop_extendLookup" prop_extendLookup
-        , ignoreTestBecause "Реализовать в лабораторной 3" $
-            testPropertyNamed "Обновление сохраняет остальные переменные"
-                "prop_extendOther" prop_extendOther
-        , ignoreTestBecause "Реализовать в лабораторной 3" $
-            testPropertyNamed "Вычисление суммы выражений"
-                "prop_evalPlus" prop_evalPlus
-        , ignoreTestBecause "Реализовать в лабораторной 3" $
-            testPropertyNamed "Incr увеличивает переменную на единицу"
-                "prop_runIncr" prop_runIncr
-        , ignoreTestBecause "Реализовать в лабораторной 3" $
-            testPropertyNamed "Объединение блоков сохраняет порядок выполнения"
-                "prop_blockSequence" prop_blockSequence
-        , ignoreTestBecause "Реализовать в лабораторной 3" $
-            testPropertyNamed "factorial совпадает с реализацией на Haskell"
-                "prop_factorialReference" prop_factorialReference
-        , ignoreTestBecause "Реализовать в лабораторной 3" $
-            testPropertyNamed "Результат squareRoot ограничивает вход соседними квадратами"
-                "prop_squareRootBounds" prop_squareRootBounds
+    , testGroup "SimpleLang (по одному свойству из каждой группы)"
+        [ testGroup "Состояние"
+            [ ignoreTestBecause "Реализовать в лабораторной 3" $
+                testPropertyNamed "Чтение после обновления переменной"
+                    "prop_extendLookup" prop_extendLookup
+            , ignoreTestBecause "Реализовать в лабораторной 3" $
+                testPropertyNamed "Обновление сохраняет остальные переменные"
+                    "prop_extendOther" prop_extendOther
+            ]
+        , testGroup "Вычисление выражений и выполнение инструкций"
+            [ ignoreTestBecause "Реализовать в лабораторной 3" $
+                testPropertyNamed "Вычисление суммы выражений"
+                    "prop_evalPlus" prop_evalPlus
+            , ignoreTestBecause "Реализовать в лабораторной 3" $
+                testPropertyNamed "Incr увеличивает переменную на единицу"
+                    "prop_runIncr" prop_runIncr
+            , ignoreTestBecause "Реализовать в лабораторной 3" $
+                testPropertyNamed "Объединение блоков сохраняет порядок выполнения"
+                    "prop_blockSequence" prop_blockSequence
+            ]
+        , testGroup "Программа целиком"
+            [ ignoreTestBecause "Реализовать в лабораторной 3" $
+                testPropertyNamed "factorial совпадает с реализацией на Haskell"
+                    "prop_factorialReference" prop_factorialReference
+            , ignoreTestBecause "Реализовать в лабораторной 3" $
+                testPropertyNamed "Результат squareRoot ограничивает вход соседними квадратами"
+                    "prop_squareRootBounds" prop_squareRootBounds
+            ]
         ]
     ]
 
