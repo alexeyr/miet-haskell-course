@@ -4,12 +4,25 @@ import CLI (Options(..), parserInfo)
 import Data.Either (isLeft)
 import Data.Foldable (traverse_)
 import Data.List.NonEmpty (NonEmpty(..))
+import LineRange (mkRange)
 import Options.Applicative (ParserResult(..), defaultPrefs, execParserPure)
 import Selection
+import System.Exit (ExitCode(ExitSuccess))
+import System.Process (readProcessWithExitCode)
 import Test.Hspec
 
 main :: IO ()
 main = hspec $ do
+  describe "mkRange" $ do
+    it "возвращает исходные границы, в том числе совпадающие" $ do
+      pending
+      mkRange 2 5 `shouldBe` Just (LineRange 2 5)
+      mkRange 1 1 `shouldBe` Just (LineRange 1 1)
+    it "отклоняет неположительную левую границу и обратный диапазон" $ do
+      pending
+      mkRange 0 2 `shouldBe` Nothing
+      mkRange 3 2 `shouldBe` Nothing
+
   describe "parseSelection" $ do
     it "разбирает номера и включительные диапазоны" $ do
       pending
@@ -39,5 +52,11 @@ main = hspec $ do
     it "сообщает об ошибке при отсутствии --lines или неверном выборе" pending
 
   describe "Ввод-вывод" $ do
+    it "читает стандартный ввод и выводит только текст без --number" $ do
+      pending
+      -- Последний аргумент readProcessWithExitCode передаётся программе на stdin.
+      (status, output, errors) <- readProcessWithExitCode
+        "pick-lines" ["--lines", "1,3-4"] (unlines ["milk", "eggs", "bread", "tea"])
+      (status, errors) `shouldBe` (ExitSuccess, "")
+      output `shouldBe` unlines ["milk", "bread", "tea"]
     it "читает файл и выводит выбранные строки с номерами" pending
-    it "читает стандартный ввод и выводит только текст без --number" pending

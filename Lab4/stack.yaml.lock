@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/topics/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: liquid-prelude-0.9.10.1.2@sha256:cd9203369b25081b65cf60c1a228400928cba48fa88dc190c2c45b6e865cc190,1465
+    pantry-tree:
+      sha256: 5098ec486534c65de1b3f70502bbc7f6d60b0bf541fb41a47978127ab775a99b
+      size: 882
+  original:
+    hackage: liquid-prelude-0.9.10.1.2
 snapshots:
 - completed:
     sha256: 3a80466f5d716f7e02425f64d09cf1c55b0da74bfc0828cb91862b91677c4af3

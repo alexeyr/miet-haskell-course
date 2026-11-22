@@ -4,6 +4,7 @@ language: GHC2021
 ghc-options: -Wall
 extra-source-files:
 - README.md
+- proofs/*.hs
 dependencies:
 - base >= 4.7 && < 5
 
@@ -25,8 +26,11 @@ tests:
   Lab4-test:
     main: Spec.hs
     source-dirs: test
+    build-tools:
+    - Lab4:pick-lines
     dependencies:
     - Lab4
     - hspec
     - hedgehog
     - optparse-applicative
+    - process

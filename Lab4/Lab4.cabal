@@ -9,10 +9,13 @@ version:        0.1.0.0
 build-type:     Simple
 extra-source-files:
     README.md
+    proofs/PickExercise.hs
 
 library
   exposed-modules:
       CLI
+      LineRange
+      Pick
       Selection
   other-modules:
       Paths_Lab4
@@ -46,10 +49,13 @@ test-suite Lab4-test
   hs-source-dirs:
       test
   ghc-options: -Wall
+  build-tools:
+      pick-lines
   build-depends:
       Lab4
     , base >=4.7 && <5
     , hedgehog
     , hspec
     , optparse-applicative
+    , process
   default-language: GHC2021

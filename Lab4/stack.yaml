@@ -2,3 +2,5 @@ resolver:
   url: https://raw.githubusercontent.com/commercialhaskell/stackage-snapshots/master/lts/24/57.yaml
 packages:
 - .
+extra-deps:
+- liquid-prelude-0.9.10.1.2
