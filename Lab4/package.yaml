@@ -1,0 +1,32 @@
+name: Lab4
+version: 0.1.0.0
+language: GHC2021
+ghc-options: -Wall
+extra-source-files:
+- README.md
+dependencies:
+- base >= 4.7 && < 5
+
+library:
+  source-dirs: src
+  dependencies:
+  - megaparsec
+  - optparse-applicative
+
+executables:
+  pick-lines:
+    main: Main.hs
+    source-dirs: app
+    dependencies:
+    - Lab4
+    - optparse-applicative
+
+tests:
+  Lab4-test:
+    main: Spec.hs
+    source-dirs: test
+    dependencies:
+    - Lab4
+    - hspec
+    - hedgehog
+    - optparse-applicative

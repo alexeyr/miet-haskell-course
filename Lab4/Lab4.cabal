@@ -1,0 +1,55 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.39.6.
+--
+-- see: https://github.com/sol/hpack
+
+name:           Lab4
+version:        0.1.0.0
+build-type:     Simple
+extra-source-files:
+    README.md
+
+library
+  exposed-modules:
+      CLI
+      Selection
+  other-modules:
+      Paths_Lab4
+  hs-source-dirs:
+      src
+  ghc-options: -Wall
+  build-depends:
+      base >=4.7 && <5
+    , megaparsec
+    , optparse-applicative
+  default-language: GHC2021
+
+executable pick-lines
+  main-is: Main.hs
+  other-modules:
+      Paths_Lab4
+  hs-source-dirs:
+      app
+  ghc-options: -Wall
+  build-depends:
+      Lab4
+    , base >=4.7 && <5
+    , optparse-applicative
+  default-language: GHC2021
+
+test-suite Lab4-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Paths_Lab4
+  hs-source-dirs:
+      test
+  ghc-options: -Wall
+  build-depends:
+      Lab4
+    , base >=4.7 && <5
+    , hedgehog
+    , hspec
+    , optparse-applicative
+  default-language: GHC2021
