@@ -158,7 +158,6 @@
   \frametitle{Какие определения раскрывает Liquid Haskell?}
   \begin{minted}[autogobble,fontsize=\footnotesize]{haskell}
     {-@ LIQUID "--reflection" @-}
-    {-@ LIQUID "--ple" @-}
     import Prelude hiding (map, (++))
 
     {-@ reflect map @-}
@@ -172,23 +171,63 @@
     []       ++ ys = ys
     (x : xs) ++ ys = x : (xs ++ ys)
   \end{minted}
-  \texttt{reflect} даёт доступ к уравнениям функций, а \texttt{--ple} разрешает раскрывать их автоматически.
+  \texttt{reflect} позволяет использовать уравнения этих функций в доказательстве.
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{Тот же шаг индукции в Liquid Haskell}
-  Равенство из примера на Lean теперь записано в уточнении типа результата.
+  \frametitle{Liquid Haskell: база индукции без PLE}
+  Доказываемое равенство записываем в уточнении типа результата.
+  \href{https://github.com/ucsd-progsys/liquidhaskell/blob/master/liquid-prelude/src/Language/Haskell/Liquid/ProofCombinators.hs}{Документация в комментариях}.
   \begin{minted}[autogobble,fontsize=\footnotesize]{haskell}
+    import Language.Haskell.Liquid.ProofCombinators
+
     {-@ mapAppend :: f:(a -> b) -> xs:[a] -> ys:[a]
           -> { map f (xs ++ ys) == map f xs ++ map f ys } @-}
-    mapAppend :: (a -> b) -> [a] -> [a] -> ()
+    mapAppend :: (a -> b) -> [a] -> [a] -> Proof
+    mapAppend f [] ys =
+          map f ([] ++ ys)
+      === map f ys
+      === ([] ++ map f ys)
+      === (map f [] ++ map f ys)
+      *** QED
+  \end{minted}
+  Каждый переход \haskinline|(===)| требует доказать равенство соседних выражений. \haskinline|*** QED| завершает цепочку.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{Liquid Haskell: шаг индукции без PLE}
+  Как получить равенство для хвоста \haskinline|xs|?
+  \pause
+  \begin{minted}[autogobble,fontsize=\footnotesize]{haskell}
+    mapAppend f (x : xs) ys =
+          map f ((x : xs) ++ ys)
+      === map f (x : (xs ++ ys))
+      === (f x : map f (xs ++ ys))
+        ? mapAppend f xs ys
+      === (f x : (map f xs ++ map f ys))
+      === ((f x : map f xs) ++ map f ys)
+      === (map f (x : xs) ++ map f ys)
+      *** QED
+  \end{minted}
+  Подсказка \haskinline|? mapAppend f xs ys| позволяет заменить хвост под \haskinline|(:)|.
+  \pause
+  \par Те же шаги, что и в доказательстве на бумаге. Liquid Haskell автоматически проверяет каждый переход.
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{То же доказательство с PLE}
+  PLE (\emph{Proof by Logical Evaluation}) автоматически раскрывает определения \haskinline|map| и \haskinline|(++)|.
+  \begin{minted}[autogobble,fontsize=\footnotesize]{haskell}
+    {-@ LIQUID "--ple" @-}  -- включаем PLE для всего модуля
+
     mapAppend _ []       _  = ()
   \end{minted}
-  В Lean мы применили \mintinline{lean4}{rw [ih]}. Как здесь получить равенство для хвоста \haskinline|xs|?
+  Что остаётся от шага индукции?
   \begin{haskellsmall}
     mapAppend f (_ : xs) ys =!\pause! mapAppend f xs ys
   \end{haskellsmall}
-  Вызов на строго меньшем списке \haskinline|xs| даёт предположение индукции для хвоста. После раскрытия определений обе стороны начинаются с одной и той же головы.
+  Рекурсивный вызов даёт предположение индукции, как \mintinline{lean4}{rw [ih]} в Lean.
+  \pause\par Все остальные шаги доказательства PLE выполняет автоматически. При желании любой из них можно записать явно.
 \end{frame}
 
 \begin{frame}[fragile]
@@ -288,11 +327,11 @@
   \small
   \begin{itemize}
     \setlength{\itemsep}{1pt}
-    \item \href{https://nikivazou.github.io/floc26/Lecture_01_RefinementTypes.html}{Refinement Types} (Ники Вазу), \href{https://ruhaskell.org/posts/utils/2016/12/16/liquidhaskell-hello.html}{LiquidHaskell: знакомство} и \href{https://liquid.kosmikus.org/}{Liquid Haskell Tutorial}.
-    \item \href{https://fstar-lang.org/tutorial/book/}{Proof-Oriented Programming in F*} (бесплатная книга). \href{https://fstar-lang.org/tutorial/book/part1/part1_lemmas.html}{Доказательство свойств рекурсивных функций по индукции}.
+    \item \href{https://nikivazou.github.io/floc26/Lecture_01_RefinementTypes.html}{Refinement Types} (Niki Vazou), \href{https://ruhaskell.org/posts/utils/2016/12/16/liquidhaskell-hello.html}{LiquidHaskell: знакомство} и \href{https://liquid.kosmikus.org/}{Liquid Haskell Tutorial}.
     \item \href{https://doi.org/10.1145/3242744.3242756}{Theorem Proving for All}, \S\,2.3: индукция по списку в Liquid Haskell.
-    \item Хаттон, \href{https://people.cs.nott.ac.uk/pszgmh/pih.html}{Programming in Haskell} (платная книга), гл. 16 о доказательствах.
-    \item \href{https://people.cs.nott.ac.uk/pszgmh/afp.html}{Видеолекции Хаттона}, 11--14: обращение списка и обход дерева.
+    \item Graham Hutton, \href{https://people.cs.nott.ac.uk/pszgmh/pih.html}{Programming in Haskell} (платная книга), гл. 16 о доказательствах.
+    \item Graham Hutton, \href{https://people.cs.nott.ac.uk/pszgmh/afp.html}{видеолекции 11--14}: обращение списка и обход дерева.
+    \item \href{https://fstar-lang.org/tutorial/book/}{Proof-Oriented Programming in F*} (бесплатная книга). \href{https://fstar-lang.org/tutorial/book/part1/part1_lemmas.html}{Доказательство свойств рекурсивных функций по индукции}.
     \item \href{https://logicforprogrammers.com/}{Logic for Programmers} (платная книга), гл. 2--5: от равенств до Dafny.
   \end{itemize}
 \end{frame}
