@@ -49,11 +49,10 @@ sCycle = undefined
 sIterate :: (a -> a) -> a -> Stream a
 sIterate = undefined
 
--- функция, возвращающая поток из чередующихся элементов двух потоков
--- (для следующего задания нужно сделать эту функцию ленивой по
--- второму аргументу, то есть не сопоставлять его с образцом)
+-- Функция возвращает поток из чередующихся элементов двух потоков.
+-- Первый элемент результата должен быть доступен, даже если второй поток — undefined.
 sInterleave :: Stream a -> Stream a -> Stream a
-sInterleave (_ :> _) _ = undefined
+sInterleave = undefined
 
 -- sTake 5 (sInterleave (sRepeat 1) (sRepeat 2)) == [1, 2, 1, 2, 1]
 
@@ -69,8 +68,7 @@ nats = undefined
 
 -- Элемент на позиции n (начиная с 1) — показатель наибольшей степени двойки,
 -- которая делит n нацело. Подсказка: с помощью sInterleave это можно сделать без
--- проверок на делимость, если её реализация ленива по второму аргументу
--- (подумайте, почему это важно).
+-- проверок на делимость.
 ruler :: Stream Integer
 ruler = undefined
 
@@ -84,10 +82,8 @@ minMaxSlow, minMax, minMaxBang :: Ord a => [a] -> Maybe (a, a)
 minMaxSlow [] = Nothing
 minMaxSlow xs = Just (minimum xs, maximum xs)
 
--- функция minMax должна находить минимальное и максимальное значение списка,
--- так же, как minMaxSlow. Проблема с minMaxSlow в том, что она проходит по списку два раза
--- и поэтому вынуждена сохранять его в памяти целиком. Реализуйте minMax так, чтобы
--- сделать только один проход по списку.
+-- Реализуйте minMax так, чтобы она возвращала тот же результат, что и minMaxSlow,
+-- за один проход по списку.
 
 {- -O0: Total time: ???  bytes allocated in the heap: ???  maximum residency: ??? -}
 {- -O2: Total time: ???  bytes allocated in the heap: ???  maximum residency: ??? -}
@@ -107,7 +103,8 @@ minMaxBang = undefined
 -- Для minMaxBang измерения нужны только при выполнении необязательного задания.
 -- Запишите Total time (первое число), bytes allocated in the heap и maximum residency.
 -- Второй показатель суммирует все выделения памяти, третий оценивает максимум
--- живых данных. По какому из них видно, удерживает ли функция список в памяти?
+-- живых данных. Как различаются эти показатели у minMaxSlow и minMax?
+-- Чем можно объяснить результаты?
 
 main :: IO ()
 main = print $ minMaxSlow $ sTake 1000000 $ ruler
@@ -138,8 +135,6 @@ instance Applicative Stream where
     (<*>) = undefined
 
 instance Monad Stream where
-    -- в этом случае может быть проще использовать реализацию через join
-    -- xs >>= f = join ... where join = ...
     (>>=) = undefined
 
 -- https://hackage.haskell.org/package/base/docs/Data-Foldable.html
