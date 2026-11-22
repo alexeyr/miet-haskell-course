@@ -228,6 +228,11 @@
   \frametitle{TLA+: состояния и действия}
   \begin{itemize}
     \item В \href{https://lamport.azurewebsites.net/tla/tla.html}{TLA+} состояние задают значения переменных: $\mathit{Red}$ и $\mathit{Green}$ — сигналы, $\mathit{Pressed}$ — светофор запомнил нажатие кнопки.
+      \pause
+      \begin{itemize}
+        \item Для цвета можно взять $\mathit{Color} \in \{\text{\texttt{\detokenize{"Red"}}}, \text{\texttt{\detokenize{"Green"}}}\}$.
+      \end{itemize}
+    \pause
     \item Условие «горит ровно один сигнал»:
           $\mathit{OneLight} \triangleq (\mathit{Red} \lor \mathit{Green}) \land \neg(\mathit{Red} \land \mathit{Green})$.
     \item Вначале: $\mathit{Init} \mathrel{\triangleq} \mathit{Red} \land \neg\mathit{Green} \land \neg\mathit{Pressed}$.
@@ -289,12 +294,10 @@
 
 \begin{frame}[fragile]
   \frametitle{Светофор на Quint}
-  \small В \href{https://quint-lang.org/}{Quint} \texttt{any} выбирает одно из доступных действий, а \texttt{all} объединяет условия и обновления одного шага.
-  \begin{lstlisting}[style=specification,language=Quint]
+  \small В \href{https://quint-lang.org/}{Quint} \textcolor{specKeyword}{\texttt{any}} выбирает одно из доступных действий, а \textcolor{specKeyword}{\texttt{all}} объединяет условия и обновления одного шага.
+  \begin{lstlisting}[style=specification,language=Quint,belowskip=0pt]
     module light {
-      var red: bool
-      var green: bool
-      var pressed: bool
+      var red: bool   var green: bool   var pressed: bool
       action init = all { red' = true, green' = false,
                           pressed' = false }
       action press = all { red, pressed' = true,
@@ -308,12 +311,13 @@
         always(pressed implies eventually(green and not(pressed)))
     }
   \end{lstlisting}
+  Модель можно симулировать, проверить в Apalache или TLC и перевести в TLA+.
 \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{Языки спецификаций: Alloy}
   \small
-  В \href{https://alloytools.org/}{Alloy} описывают объекты, отношения и ограничения. Alloy Analyzer может построить разные примеры, удовлетворяющие всем условиям модели.
+  В \href{https://alloytools.org/}{Alloy} описывают объекты, отношения и ограничения. Alloy Analyzer строит примеры, удовлетворяющие модели.
   \medskip
   \begin{columns}[c,onlytextwidth]
     \begin{column}{.69\textwidth}
@@ -331,8 +335,10 @@
       \includegraphics[width=\linewidth,height=.43\textheight,keepaspectratio]{alloy-parent-instance.png}
     \end{column}
   \end{columns}
-  \medskip
-  \href{https://alloy.readthedocs.io/en/latest/}{AlloyDocs}: язык и примеры, включая \href{https://alloy.readthedocs.io/en/latest/language/time.html}{темпоральные операторы Alloy~6}.
+  \begin{itemize}
+    \item Alloy~6 поддерживает \href{https://en.wikipedia.org/wiki/Linear_temporal_logic}{линейную темпоральную логику (LTL)}. Упражнения по LTL: \href{https://ltl-tutor.xyz/}{LTL Tutor}.
+    \item \href{https://alloy.readthedocs.io/en/latest/}{AlloyDocs} — справочник по языку с примерами.
+  \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]
